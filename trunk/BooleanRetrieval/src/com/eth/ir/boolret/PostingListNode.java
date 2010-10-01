@@ -38,5 +38,11 @@ public class PostingListNode implements Serializable {
         this.frequencyInDoc = frequencyInDoc;
     }
 
+    @Override
+    public String toString()
+    {
+        return "[docId="+getDocId()+"freq="+getFrequencyInDoc()+"]";
+    }
+
 
 }
