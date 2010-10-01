@@ -36,5 +36,16 @@ public class PostingList implements Serializable{
         
     }
 
+    public String toString()
+    {
+        StringBuffer str = new StringBuffer();
+        for(PostingListNode pln : getPostingList())
+        {
+            str.append(pln);
+        }
+        str.append("\n");
+        return str.toString();
+    }
+
 
 }

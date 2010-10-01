@@ -154,7 +154,7 @@ public class FileIndexer {
     }
 
     // serialize the index
-    public void serializeToFile(String outputFile) {
+    public void serializeToFile(String outputFile, int i) {
         FileOutputStream ostream = null;
         ObjectOutputStream p = null;
         try {
@@ -165,7 +165,10 @@ public class FileIndexer {
             e.printStackTrace();
         }
         try {
-            p.writeObject(this.index);
+            if(i==1)
+                p.writeObject(this.index);
+            if(i==2)
+                p.writeObject(this.docIndex);
             p.flush();
             p.close();
             System.out.println("Inverted index written to file ==> " + outputFile);
@@ -179,11 +182,13 @@ public class FileIndexer {
 
         String dir = "F://ETH//Projects//InformationRetrieval//BooleanRetrieval//Docs";
         String indexFile = "F://ETH//Projects//InformationRetrieval//BooleanRetrieval//Docs//index";
+        String dirIndexFile = "F://ETH//Projects//InformationRetrieval//BooleanRetrieval//Docs//dirIndex";
         FileIndexer tkz = new FileIndexer();
         tkz.fetchFilesInDirectory(dir);
        // System.out.println("what = " + tkz.index.size());
        tkz.printIndex();
-       tkz.serializeToFile(indexFile);
+       tkz.serializeToFile(indexFile,1);
+       tkz.serializeToFile(dirIndexFile, 2);
 
 
     }
