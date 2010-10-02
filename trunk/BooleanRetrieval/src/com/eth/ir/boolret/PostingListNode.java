@@ -12,21 +12,21 @@ import java.io.Serializable;
  * @author ANSHUMAN
  */
 public class PostingListNode implements Serializable {
-    Integer docId;
+    String docId;
     Integer frequencyInDoc;
 
-    PostingListNode(Integer docId, Integer freq)
+    PostingListNode(String docId, Integer freq)
     {
     this.docId = docId;
     this.frequencyInDoc = freq;
 
     }
 
-    public Integer getDocId() {
+    public String getDocId() {
         return docId;
     }
 
-    public void setDocId(Integer DocId) {
+    public void setDocId(String DocId) {
         this.docId = DocId;
     }
 

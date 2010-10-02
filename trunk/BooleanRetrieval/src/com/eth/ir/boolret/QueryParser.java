@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.lang.String;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -100,18 +101,22 @@ public class QueryParser {
             pla.add(pl);
         }
 
-        String result = new String();
+        HashSet<String> result = new HashSet<String>();
         System.out.println(" pla.size " + pla.size());
 
-        for(int i=0,j=1;i<pla.size();i++,j++)
+        for(int i=0,j=1;i<1;i++,j++)
         {
             
             LinkedList<PostingListNode> plnis = (LinkedList<PostingListNode>)(pla.get(i)).getPostingList();
-            LinkedList<PostingListNode> plnjs = (LinkedList<PostingListNode>)(pla.get(j)).getPostingList();
+            if(!(j==pla.size()-1))
+            
+            {
+                
+            LinkedList<PostingListNode> plnjs = (LinkedList<PostingListNode>) (pla.get(j)).getPostingList();
             System.out.println(" plnis.size = " + plnis.size() + " plnjs.size = " + plnjs.size());
 
-            System.out.println("plnis=" + plnis);
-            System.out.println("plnjs=" + plnjs);
+            System.out.println("term=" + terms[i] + "  plnis  " + plnis);
+            System.out.println("term=" + terms[j] + "plnjs=" + plnjs);
 
 //            if(plnis.size() > plnjs.size())
             for(PostingListNode plni : plnis)
@@ -121,25 +126,15 @@ public class QueryParser {
                     if(plni.getDocId() == plnj.getDocId())
                     {
 
-                        result+= ", " + docIndex.get(plni.getDocId());
+                        result.add(plni.getDocId());
+                       // result+= ", " + docIndex.get(plni.getDocId());
                        // break;
                     }
                 }
             }
-//            else
-//                for(PostingListNode plnj : plnjs)
-//            {
-//                for(PostingListNode plni : plnis)
-//                {
-//                    if(plni.getDocId() == plnj.getDocId())
-//                    {
-//
-//                        result+= ", " + docIndex.get(plnj.getDocId());
-//                    break;
-//                    }
-//                }
-//            }
-            if(j==pla.size()-1) break;
+
+            }
+            
 
         }
         System.out.println(" result " + result);
@@ -153,10 +148,10 @@ public class QueryParser {
     {
         QueryParser x = new QueryParser();
         String indexFile = "F://ETH//Projects//InformationRetrieval//BooleanRetrieval//Docs//index";
-        String docIndexFile = "F://ETH//Projects//InformationRetrieval//BooleanRetrieval//Docs//dirIndex";
+     //   String docIndexFile = "F://ETH//Projects//InformationRetrieval//BooleanRetrieval//Docs//dirIndex";
 
         x.readIndex(indexFile);
-        x.readDocIndex(docIndexFile);
+     //   x.readDocIndex(docIndexFile);
         x.doAQuery();
 
 
