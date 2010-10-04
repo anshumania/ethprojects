@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.eth.ir.boolret;
 
 import java.io.Serializable;
@@ -12,14 +7,13 @@ import java.io.Serializable;
  * @author ANSHUMAN
  */
 public class PostingListNode implements Serializable {
+
     String docId;
     Integer frequencyInDoc;
 
-    PostingListNode(String docId, Integer freq)
-    {
-    this.docId = docId;
-    this.frequencyInDoc = freq;
-
+    PostingListNode(String docId, Integer freq) {
+        this.docId = docId;
+        this.frequencyInDoc = freq;
     }
 
     public String getDocId() {
@@ -38,11 +32,12 @@ public class PostingListNode implements Serializable {
         this.frequencyInDoc = frequencyInDoc;
     }
 
-    @Override
-    public String toString()
-    {
-        return "[docId="+getDocId()+"freq="+getFrequencyInDoc()+"]";
+    public Boolean equals(PostingListNode node) {
+        return (this.docId).equals(node.getDocId());
     }
 
-
+    @Override
+    public String toString() {
+        return "[docId=" + getDocId() + ", freq=" + getFrequencyInDoc() + "]";
+    }
 }

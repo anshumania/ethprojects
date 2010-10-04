@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.eth.ir.boolret;
 
 import java.io.Serializable;
@@ -14,7 +9,7 @@ import java.util.LinkedList;
  */
 public class PostingList implements Serializable{
 
-    Integer frequency;
+    Integer numPostings;
 
     LinkedList<PostingListNode> postingList;
 
@@ -22,30 +17,27 @@ public class PostingList implements Serializable{
         return postingList;
     }
 
-    PostingList()
-    {
+    PostingList() {
         postingList = new LinkedList<PostingListNode>();
+        numPostings = 0;
     }
 
-    public Integer getFrequency() {
-        return frequency;
+    public Integer getNumPostings() {
+        return numPostings;
     }
 
-    public void setFrequency(Integer frequency) {
-        this.frequency = frequency;
-        
+    public void setNumPostings(Integer numPostings) {
+        this.numPostings = numPostings;
     }
 
     public String toString()
     {
         StringBuffer str = new StringBuffer();
-        for(PostingListNode pln : getPostingList())
-        {
+        for(PostingListNode pln : getPostingList()) {
             str.append(pln);
         }
         str.append("\n");
         return str.toString();
     }
-
-
+    
 }
