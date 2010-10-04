@@ -7,8 +7,11 @@ package com.eth.ir.boolret;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -27,6 +30,68 @@ public class QueryParser {
 
     TreeMap<String,PostingList> index = new TreeMap<String,PostingList>();
     HashMap<Integer,String> docIndex = new HashMap<Integer,String>();
+
+    public void doORQuery(String query)
+    {
+
+        String terms[] = query.split("or");
+        TreeMap<String,PostingList> solutionSpace = new TreeMap<String,PostingList>();
+        HashSet<String> result = new HashSet<String>();
+        // PostingList -> LinkedList of PostingListNodes [ docId, freq]
+        for(String term : terms)
+        {
+            PostingList pl = index.get(term.trim());
+
+            for(PostingListNode pln : pl.getPostingList())
+            {
+                result.add(pln.getDocId());
+            }
+
+        }
+
+
+        System.out.println("Result = " + result);
+    }
+
+    public void doNOTQuery(String query)
+    {
+        String terms[] = query.split("not");
+        TreeMap<String,PostingList> solutionSpace = new TreeMap<String,PostingList>();
+        //HashMap<String,Set<String>> result = new HashMap<String,Set<String>>();
+        List<Set<String>> result = new ArrayList<Set<String>>();
+        // PostingList -> LinkedList of PostingListNodes [ docId, freq]
+        for(String term : terms)
+        {
+            System.out.println("termsss=" + term);
+            PostingList pl = index.get(term.trim());
+            solutionSpace.put(term.trim(), pl);
+            Set<String> docSet = new LinkedHashSet<String>();
+            for(PostingListNode pln : pl.getPostingList())
+            {
+                docSet.add(pln.getDocId());
+            }
+            result.add(docSet);
+
+        }
+
+        System.out.println(" result = " + result);
+        Set<String> partialSet = new HashSet<String>();
+        boolean first = true;
+        for(Set<String> iterator : result)
+        {
+           if(first)
+           {
+               //System.out.println(" first = " + iterator.getKey());
+               partialSet = iterator ; //.getValue();
+               first=false;
+            }
+           else
+               partialSet.removeAll(iterator);
+        }
+
+        System.out.println("Result = " + partialSet);
+
+    }
 
     public void doAndQuery(String query)
     {
@@ -104,9 +169,15 @@ public class QueryParser {
         String testQuery = "INDIAN and COMMUNIST and CHINESE";
         String testQuery2 = "BORDER and ISRAEL and SYRIA" ;
         String testQuery3 = "NUCLEAR and WEAPONS and DEVELOPMENT";
-        String testQuery4 = "SIGNING and BAN and TREATY";
-        x.doAndQuery(testQuery4);
-       // x.doOrQuery(testQuery5);
+      //  x.doAndQuery(testQuery4);
+
+        String testQuery5 = "MOSCOW or SUPPORT or AUTONOMY";
+        String testQuery6 = "COUNTRY or NEW or JOIN or UNITED or NATIONS";
+        //x.doORQuery(testQuery6);
+
+        String testQuery7 = "PROVISIONS not TREATY";
+        String testQuery8 = "PREMIER not KHRUSHCHEV";
+        x.doNOTQuery(testQuery8);
 
     }
 
