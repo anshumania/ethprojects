@@ -7,13 +7,10 @@ package com.eth.ir.boolret;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
-import java.lang.String;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -22,8 +19,52 @@ import java.util.TreeMap;
  */
 public class QueryParser {
 
+
+    //retrieve the index.
+    // parse through the index creating treemap of frequecny and dictionary.
+
+    
+
     TreeMap<String,PostingList> index = new TreeMap<String,PostingList>();
     HashMap<Integer,String> docIndex = new HashMap<Integer,String>();
+
+    public void doAndQuery(String query)
+    {
+        String terms[] = query.split("and");
+        TreeMap<String,PostingList> solutionSpace = new TreeMap<String,PostingList>();
+        TreeMap<String,Set<String>> result = new TreeMap<String,Set<String>>();
+
+        // PostingList -> LinkedList of PostingListNodes [ docId, freq]
+        for(String term : terms)
+        {
+            PostingList pl = index.get(term.trim());
+            solutionSpace.put(term.trim(), pl);
+            HashSet<String> docSet = new HashSet<String>();
+            for(PostingListNode pln : pl.getPostingList())
+            {
+                docSet.add(pln.getDocId());
+            }
+            result.put(term.trim(), docSet);
+        }
+
+        Set<String> partialSet = new HashSet<String>();
+        boolean first = true;
+        for(Map.Entry<String,Set<String>> iterator : result.entrySet())
+        {
+           if(first)
+           {
+               partialSet = iterator.getValue();
+               first=false;
+            }
+           else
+               partialSet.retainAll(iterator.getValue());
+        }
+
+        System.out.println("Result = " + partialSet);
+
+    }
+
+
     public void readIndex(String indexFile)
     {
         FileInputStream istream = null;
@@ -55,105 +96,18 @@ public class QueryParser {
         }
     }
 
-   public void readDocIndex(String indexFile)
-    {
-        FileInputStream istream = null;
-        ObjectInputStream p = null;
-        try {
-            istream = new FileInputStream(indexFile);
-            p = new ObjectInputStream(istream);
-        } catch (Exception e) {
-            System.out.println("Can't open output file.");
-            e.printStackTrace();
-        }
-        try {
-            Object x = p.readObject();
-            HashMap<Integer,String> docIndex = (HashMap<Integer,String>)x;
-            System.out.println("docIndex "  + docIndex.size());
-            this.docIndex = docIndex;
-
-
-            for (Map.Entry<Integer,String> entry : docIndex.entrySet()) {
-            Integer key = entry.getKey();
-            String value = entry.getValue();
-            System.out.println("docId = " + key + " DocName =" + value);
-            }
-
-            p.close();
-            System.out.println("DocIndexread from file ==> " + indexFile);
-        } catch (Exception e) {
-            System.out.println("Can't write output file.");
-            e.printStackTrace();
-        }
-    }
-
-
-
-    public void doAQuery()
-    {
-        String testQuery = "BORDER and ISRAEL and SYRIA";
-        ArrayList<PostingList> pla = new ArrayList<PostingList>();
-        String terms[] = testQuery.split("and");
-      
-        for(String term : terms)
-        {
-            PostingList pl = index.get(term.trim());
-            pla.add(pl);
-        }
-
-        HashSet<String> result = new HashSet<String>();
-        System.out.println(" pla.size " + pla.size());
-
-        for(int i=0,j=1;i<1;i++,j++)
-        {
-            
-            LinkedList<PostingListNode> plnis = (LinkedList<PostingListNode>)(pla.get(i)).getPostingList();
-            if(!(j==pla.size()-1))
-            
-            {
-                
-            LinkedList<PostingListNode> plnjs = (LinkedList<PostingListNode>) (pla.get(j)).getPostingList();
-            System.out.println(" plnis.size = " + plnis.size() + " plnjs.size = " + plnjs.size());
-
-            System.out.println("term=" + terms[i] + "  plnis  " + plnis);
-            System.out.println("term=" + terms[j] + "plnjs=" + plnjs);
-
-//            if(plnis.size() > plnjs.size())
-            for(PostingListNode plni : plnis)
-            {
-                for(PostingListNode plnj : plnjs)
-                {
-                    if(plni.getDocId() == plnj.getDocId())
-                    {
-
-                        result.add(plni.getDocId());
-                       // result+= ", " + docIndex.get(plni.getDocId());
-                       // break;
-                    }
-                }
-            }
-
-            }
-            
-
-        }
-        System.out.println(" result " + result);
-
-        
-
-
-    }
-   
     public static void main(String args[])
     {
         QueryParser x = new QueryParser();
-        String indexFile = "F://ETH//Projects//InformationRetrieval//BooleanRetrieval//Docs//index";
-     //   String docIndexFile = "F://ETH//Projects//InformationRetrieval//BooleanRetrieval//Docs//dirIndex";
-
+        String indexFile = "F://ETH//Projects//InformationRetrieval//ethprojects//BooleanRetrieval//Docs//index";
         x.readIndex(indexFile);
-     //   x.readDocIndex(docIndexFile);
-        x.doAQuery();
-
+        String testQuery = "INDIAN and COMMUNIST and CHINESE";
+        String testQuery2 = "BORDER and ISRAEL and SYRIA" ;
+        String testQuery3 = "NUCLEAR and WEAPONS and DEVELOPMENT";
+        String testQuery4 = "SIGNING and BAN and TREATY";
+        x.doAndQuery(testQuery4);
+       // x.doOrQuery(testQuery5);
 
     }
+
 }

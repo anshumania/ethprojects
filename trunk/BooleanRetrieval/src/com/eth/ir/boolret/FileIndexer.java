@@ -148,8 +148,10 @@ public class FileIndexer {
         File[] files = directory.listFiles();
      //   Integer docId = 0;
         for (File file : files) {
+
             //System.out.println("Indexing " + file.getName() + " docId " + docId);
        //     docIndex.put(docId, file.getName());
+            if(!file.isHidden())
             tokenizeFile(file.getName(), file);
          //   docId++;
         }
@@ -191,8 +193,8 @@ public class FileIndexer {
 
     public static void main(String args[]) {
 
-        String dir = "F://ETH//Projects//InformationRetrieval//BooleanRetrieval//Docs";
-        String indexFile = "F://ETH//Projects//InformationRetrieval//BooleanRetrieval//Docs//index";
+        String dir = "F://ETH//Projects//InformationRetrieval//ethprojects//BooleanRetrieval//Docs";
+        String indexFile = "F://ETH//Projects//InformationRetrieval//ethprojects//BooleanRetrieval//Docs//index";
        // String dirIndexFile = "F://ETH//Projects//InformationRetrieval//BooleanRetrieval//Docs//dirIndex";
         FileIndexer tkz = new FileIndexer();
         tkz.fetchFilesInDirectory(dir);
