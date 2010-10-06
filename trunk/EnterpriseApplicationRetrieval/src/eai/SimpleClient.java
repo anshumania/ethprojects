@@ -161,7 +161,7 @@ public class SimpleClient
 				// get Customer set to be viewed
 				if (action.equals("V"))
 				{
-					while (!customer_set.equals("All")
+					while (!customer_set.equals("A")
 						&& !customer_set.equals("Z")
 						&& !customer_set.equals("B")
 						&& !customer_set.equals("exit")
@@ -283,6 +283,19 @@ public class SimpleClient
 
 					if (zipcode.equals("restart"))
 						continue;
+
+                                        while (country.equals(""))
+					{
+						System.out.print("Country: ");
+						country = userIn.readLine();
+					}
+
+					if (country.equals("exit"))
+						break;
+
+					if (country.equals("restart"))
+						continue;
+
 				}
 
 				tokenSeq = location + "|" + action;
@@ -315,7 +328,18 @@ public class SimpleClient
 				}
 
 				socketOut.println(tokenSeq);
-				System.out.println(socketIn.readLine() + "\n");
+                                String response = socketIn.readLine();
+                                
+                                try {
+                                    int numResponseLines = Integer.valueOf(response).intValue();
+                                    for(int z=0; z < numResponseLines; z++) {
+                                        System.out.println(socketIn.readLine());
+                                    }
+                                    System.out.println("");
+                                } catch (NumberFormatException ex) {
+                                    System.out.println(response);
+                                }
+                                
 			}
 
 			userIn.close();

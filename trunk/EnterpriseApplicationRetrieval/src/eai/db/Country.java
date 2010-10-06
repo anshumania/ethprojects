@@ -8,7 +8,7 @@ import java.sql.SQLException;
  *
  * @author Tim Church
  */
-public class Country {
+public class Country {// implements DAOInterface {
     private int countryId;
     private String countryName;
 
@@ -17,12 +17,16 @@ public class Country {
         this.countryName = name;
     }
 
-    public String getTableName() {
+    public static String getTableName() {
         return "country";
     }
 
-    public PreparedStatement getInsertStatement(Connection con) throws SQLException {
-        return con.prepareStatement("INSERT INTO " + this.getTableName() + " VALUES (?)");
+    public static PreparedStatement getInsertStatement(Connection con) throws SQLException {
+        return con.prepareStatement("INSERT INTO " + getTableName() + "(country_name) VALUES (?)");
+    }
+
+    public static PreparedStatement getViewStatement(Connection con) throws SQLException {
+        return con.prepareStatement("SELECT * FROM " + getTableName() + " WHERE country_name = ?");
     }
 
     @Override
