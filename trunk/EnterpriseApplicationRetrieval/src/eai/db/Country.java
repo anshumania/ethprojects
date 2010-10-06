@@ -8,7 +8,7 @@ import java.sql.SQLException;
  *
  * @author Tim Church
  */
-public class Country {// implements DAOInterface {
+public class Country {
     private int countryId;
     private String countryName;
 
@@ -27,6 +27,10 @@ public class Country {// implements DAOInterface {
 
     public static PreparedStatement getViewStatement(Connection con) throws SQLException {
         return con.prepareStatement("SELECT * FROM " + getTableName() + " WHERE country_name = ?");
+    }
+
+    public static PreparedStatement getDeleteStatement(Connection con) throws SQLException {
+        return con.prepareStatement("Delete FROM " + getTableName() + " WHERE country_name = ?");
     }
 
     @Override

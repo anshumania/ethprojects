@@ -8,7 +8,7 @@ import java.sql.SQLException;
  *
  * @author Tim Church
  */
-public class Address {// implements DAOInterface {
+public class Address {
     private int addressId;
     private int customerId;
     private String street;

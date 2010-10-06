@@ -9,7 +9,7 @@ import java.util.Date;
  *
  * @author Tim Church
  */
-public class Customer {// implements DAOInterface {
+public class Customer {
     private int customerId;
     private String username;
     private String password;
