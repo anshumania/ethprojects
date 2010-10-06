@@ -95,6 +95,7 @@ public class Middleware {
             this.clientSocket = this.serverSocket.accept();
             this.socketOut = new PrintWriter(this.clientSocket.getOutputStream(), true);
             this.socketIn = new BufferedReader( new InputStreamReader( this.clientSocket.getInputStream() ));
+            System.out.println("Middleware server is running");
 
             String request;
             ArrayList<String> response = new ArrayList<String>();
@@ -184,7 +185,10 @@ public class Middleware {
             }/* TODO - else throw error */
         } catch(SQLException ex) {
             Logger.getLogger(Middleware.class.getName()).log(Level.SEVERE, null, ex);
-            response.add("AN ERROR HAS OCCURRED");
+            String errors[] = ex.getMessage().split("[\n]");
+            for(String error : errors) {
+                response.add(error);
+            }
         }
 
         return response;
@@ -245,7 +249,10 @@ public class Middleware {
             }
         }*/
 
+        final String databases[] = {"ZURICH", "BERN"};
+        int count = 0;
         for(PreparedStatement statement : statements) {
+            response.add("FROM " + databases[count] + ":");
             ResultSet rs =  statement.executeQuery();
             while (rs.next()) {
                 //if(table.equalsIgnoreCase("C")) {
@@ -258,6 +265,7 @@ public class Middleware {
                 }*/
             }
             rs.close();
+            count++;
         }
 
         return response;
@@ -267,18 +275,19 @@ public class Middleware {
         PreparedStatement statement = null;
         if(table.equalsIgnoreCase("C")) {
             //'C' == CUSTOMER TABLE
-            statement = Customer.getInsertStatement(this.connections.get(location));
+            statement = Customer.getUpdateStatement(this.connections.get(location));
             statement.setString(1, paramList[1]);
             statement.setString(2, paramList[2]);
             statement.setString(3, paramList[3]);
             statement.setString(4, paramList[4]);
-            statement.setString(5, paramList[0]);
+            statement.setString(5, paramList[5]);
+            statement.setInt(6, Integer.valueOf(paramList[0]).intValue());
         } else if(table.equalsIgnoreCase("A")) {
             //'A' == ADDRESS TABLE
             //First need to check Country already exists in Country table
             int countryId = findCountryId(location, paramList[4]);
 
-            statement = Address.getInsertStatement(this.connections.get(location));
+            statement = Address.getUpdateStatement(this.connections.get(location));
             statement.setInt(1, Integer.valueOf(paramList[1]).intValue());
             statement.setString(2, paramList[2]);
             statement.setString(3, paramList[3]);
