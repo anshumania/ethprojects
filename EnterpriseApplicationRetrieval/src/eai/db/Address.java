@@ -35,8 +35,8 @@ public class Address {
         return con.prepareStatement("INSERT INTO " + getTableName() + "(customer_id, street, city, zip_code, country_id) VALUES (?,?,?,?,?)");
     }
 
-    public static PreparedStatement getViewStatement(Connection con) throws SQLException {
-        return con.prepareStatement("SELECT a.address_id, a.customer_id, a.street, a.city, a.zip_code, c.country_name FROM " + getTableName() + " as a, " + Country.getTableName() + " as c WHERE a.country_id = c.country_id");
+    public static PreparedStatement getViewStatement(Connection con, int customerID) throws SQLException {
+        return con.prepareStatement("SELECT a.address_id, a.customer_id, a.street, a.city, a.zip_code, c.country_name FROM " + getTableName() + " as a, " + Country.getTableName() + " as c WHERE a.country_id = c.country_id AND a.customer_id = '" + customerID + "'");
     }
 
     public static PreparedStatement getUpdateStatement(Connection con) throws SQLException {
