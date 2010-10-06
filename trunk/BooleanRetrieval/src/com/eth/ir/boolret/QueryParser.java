@@ -126,7 +126,7 @@ public class QueryParser {
             {
                 docSet.add(pln.getDocId());
             }
-            if(!result.containsKey(pl.getPostingList()))
+            if(!result.containsKey(pl.getPostingList().size()))
             {
             ArrayList<Set<String>> temp = new ArrayList<Set<String>>();
             temp.add(docSet);
@@ -172,7 +172,7 @@ public class QueryParser {
 
         //System.out.println("Result = " + partialSet);
     
-        System.out.println("The Execution Time fastest nanoseconds = " + executionTime);
+        System.out.println("The Execution Time slowest nanoseconds = " + executionTime);
 
 
         NavigableMap<Integer,ArrayList<Set<String>>> reverse = result.descendingMap();
@@ -198,7 +198,7 @@ public class QueryParser {
 
        executionTime = System.nanoTime() - currentTime;
 
-       System.out.println("Execution Time slowest in nanoseconds = " + executionTime);
+       System.out.println("Execution Time fastest in nanoseconds = " + executionTime);
 
 
 
@@ -415,6 +415,7 @@ public class QueryParser {
             doORQuery(q);
         } else if(operator.equalsIgnoreCase(Query.NotOperator)) {
             doNOTQuery(q);
+            collectNOTStatistics(q);
         } else {
             //TODO - throw InvalidQueryOperatorException
         }
