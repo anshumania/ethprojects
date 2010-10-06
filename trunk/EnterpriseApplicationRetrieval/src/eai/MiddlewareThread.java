@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -151,7 +152,29 @@ public class MiddlewareThread extends Thread {
             while (rs.next()) {
                 //if(table.equalsIgnoreCase("C")) {
                 Customer customer = new Customer(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6), rs.getDate(7));
-                response.add(customer.toString());
+
+				// fetch addresses of individual customer
+				String db = "";
+
+				if (location.equals("Z") || (location.equals("A")&&count == 0))
+					db = "Z";
+				else
+					db = "B";
+
+				ResultSet addr = Address.getViewStatement(
+					this.connections.get(db), rs.getInt(1)
+				).executeQuery();
+
+				String addresses = "";
+
+				while (addr.next())
+				{
+					addresses += (" | AddressID: " + addr.getInt(1) + ", "
+						+ addr.getString(3) + ", " + addr.getString(4) + ", "
+						+ addr.getString(5) + ", " + addr.getString(6));
+				}
+
+                response.add(customer.toString() + addresses);
                 /*} else if(table.equalsIgnoreCase("A")) {
                 //'A' == ADDRESS TABLE
                 Address address = new Address(rs.getInt(1), rs.getInt(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6));
