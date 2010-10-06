@@ -107,6 +107,104 @@ public class QueryParser {
         System.out.println("The Execution Time in nanoseconds = " + executionTime);
     }
 
+
+    public void collectNOTStatistics(Query query)
+    {
+        String terms[] = query.getTerms();
+        TreeMap<String,PostingList> solutionSpace = new TreeMap<String,PostingList>();
+        //HashMap<String,Set<String>> result = new HashMap<String,Set<String>>();
+        TreeMap<Integer,ArrayList<Set<String>>> result = new TreeMap<Integer,ArrayList<Set<String>>>();
+        // PostingList -> LinkedList of PostingListNodes [ docId, freq]
+        long currentTime = System.nanoTime();
+        for(String term : terms)
+        {
+            //System.out.println("termsss=" + term);
+            PostingList pl = index.get(term);
+            solutionSpace.put(term, pl);
+            Set<String> docSet = new LinkedHashSet<String>();
+            for(PostingListNode pln : pl.getPostingList())
+            {
+                docSet.add(pln.getDocId());
+            }
+            if(!result.containsKey(pl.getPostingList()))
+            {
+            ArrayList<Set<String>> temp = new ArrayList<Set<String>>();
+            temp.add(docSet);
+            result.put(pl.getPostingList().size(),temp);
+            }
+            else
+            {
+                ArrayList<Set<String>> temp = result.get(pl.getPostingList().size());
+                temp.add(docSet);
+                result.put(pl.getPostingList().size(), temp);
+
+            }
+
+        }
+
+
+
+        //System.out.println(" result = " + result);
+        Set<String> partialSet = new HashSet<String>();
+        boolean first = true;
+        for(Map.Entry<Integer,ArrayList<Set<String>>> iterator : result.entrySet())
+        //for(Set<String> iterator : result)
+        {
+
+
+
+
+               for(Set<String> loopSet : iterator.getValue())
+               {
+                   if(first)
+                   {
+                       partialSet = loopSet;
+                       first = false;
+                   }
+                    else
+                    partialSet.removeAll(loopSet);
+               }
+
+
+           
+        }
+        long executionTime = System.nanoTime() - currentTime;
+
+        //System.out.println("Result = " + partialSet);
+    
+        System.out.println("The Execution Time fastest nanoseconds = " + executionTime);
+
+
+        NavigableMap<Integer,ArrayList<Set<String>>> reverse = result.descendingMap();
+       // System.out.println("reverse=" + reverse);
+        currentTime = System.nanoTime();
+        first = true;
+        for(Map.Entry<Integer,ArrayList<Set<String>>> iterator : reverse.entrySet())
+        {
+
+
+               for(Set<String> loopSet : iterator.getValue())
+               {
+                   if(first)
+                   {
+                       partialSet = loopSet;
+                       first = false;
+                   }
+                    else
+                    partialSet.removeAll(loopSet);
+               }
+
+        }
+
+       executionTime = System.nanoTime() - currentTime;
+
+       System.out.println("Execution Time slowest in nanoseconds = " + executionTime);
+
+
+
+    }
+
+
     public void collectStatistics(Query query)
     {
         
