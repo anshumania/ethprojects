@@ -78,7 +78,7 @@ public class MiddlewareThread extends Thread {
                 response.add(Integer.toString(numUpdatedRows) + " row(s) updated");
             } else if (operation.equals("D")) {
                 //'D' == DELETE
-                int numDeletedRows = doDeleteQuery(location, table, Integer.valueOf(functionParams[0]).intValue());
+                int numDeletedRows = doDeleteQuery(location, table, functionParams);
                 response.add(Integer.toString(numDeletedRows) + " row(s) deleted");
             }/* TODO - else throw error */
         } catch (SQLException ex) {
@@ -153,26 +153,25 @@ public class MiddlewareThread extends Thread {
                 //if(table.equalsIgnoreCase("C")) {
                 Customer customer = new Customer(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6), rs.getDate(7));
 
-				// fetch addresses of individual customer
-				String db = "";
+                // fetch addresses of individual customer
+                String db = "";
 
-				if (location.equals("Z") || (location.equals("A")&&count == 0))
-					db = "Z";
-				else
-					db = "B";
+                if (location.equals("Z") || (location.equals("A") && count == 0)) {
+                    db = "Z";
+                } else {
+                    db = "B";
+                }
 
-				ResultSet addr = Address.getViewStatement(
-					this.connections.get(db), rs.getInt(1)
-				).executeQuery();
+                PreparedStatement pstmt = Address.getViewStatement(this.connections.get(db));
+                pstmt.setInt(1, rs.getInt(1));
+                ResultSet addr = pstmt.executeQuery();
 
-				String addresses = "";
-
-				while (addr.next())
-				{
-					addresses += (" | AddressID: " + addr.getInt(1) + ", "
-						+ addr.getString(3) + ", " + addr.getString(4) + ", "
-						+ addr.getString(5) + ", " + addr.getString(6));
-				}
+                String addresses = "";
+                while (addr.next()) {
+                    addresses += (" | AddressID: " + addr.getInt(1) + ", "
+                            + addr.getString(3) + ", " + addr.getString(4) + ", "
+                            + addr.getString(5) + ", " + addr.getString(6));
+                }
 
                 response.add(customer.toString() + addresses);
                 /*} else if(table.equalsIgnoreCase("A")) {
@@ -215,16 +214,17 @@ public class MiddlewareThread extends Thread {
         return statement.executeUpdate();
     }
 
-    private int doDeleteQuery(String location, String table, int id) throws SQLException {
+    private int doDeleteQuery(String location, String table, String[] paramList) throws SQLException {
         PreparedStatement statement = null;
         if (table.equalsIgnoreCase("C")) {
             //'C' == CUSTOMER TABLE
             statement = Customer.getDeleteStatement(this.connections.get(location));
-            statement.setInt(1, id);
+            statement.setInt(1, Integer.valueOf(paramList[0]).intValue());
         } else if (table.equalsIgnoreCase("A")) {
             //'A' == ADDRESS TABLE
             statement = Address.getDeleteStatement(this.connections.get(location));
-            statement.setInt(1, id);
+            statement.setInt(1, Integer.valueOf(paramList[0]).intValue());
+            statement.setInt(2, Integer.valueOf(paramList[1]).intValue());
         }
         return statement.executeUpdate();
     }
