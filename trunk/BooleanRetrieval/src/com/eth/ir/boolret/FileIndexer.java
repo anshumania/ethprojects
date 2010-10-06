@@ -242,10 +242,10 @@ public class FileIndexer {
     }
 
     public static void main(String args[]) {
-        //String dir = "F://ETH//Projects//InformationRetrieval//ethprojects//BooleanRetrieval//Docs";
-        //String indexFile = "F://ETH//Projects//InformationRetrieval//ethprojects//BooleanRetrieval//index";
-        String dir = "C://Users//ghff//Documents//ETH//Fall 2010//Information Retrieval//Dataset//Docs";
-        String indexFile = "C://Users//ghff//Documents//ETH//Fall 2010//Information Retrieval//Dataset//index";
+        String dir = "F://ETH//Projects//InformationRetrieval//ethprojects//BooleanRetrieval//Docs";
+        String indexFile = "F://ETH//Projects//InformationRetrieval//ethprojects//BooleanRetrieval//index";
+        //String dir = "C://Users//ghff//Documents//ETH//Fall 2010//Information Retrieval//Dataset//Docs";
+        //String indexFile = "C://Users//ghff//Documents//ETH//Fall 2010//Information Retrieval//Dataset//index";
         FileIndexer tkz = new FileIndexer();
         tkz.fetchFilesInDirectory(dir);  //tokenize
         //tkz.printIndex();
