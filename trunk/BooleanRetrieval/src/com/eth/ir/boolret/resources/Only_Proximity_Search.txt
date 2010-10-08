@@ -1,0 +1,31 @@
+Proximity Search with window size = 10
+
+Q1: THERE HAS BEEN
+doc122
+doc253
+doc343
+
+Q2: ONE OF THE BEST
+doc186
+doc294
+
+Q3: POLITICAL PARTY
+doc148
+doc159
+doc253
+doc377
+doc39
+doc6
+doc88
+
+Q4: THE NEW REGIME
+doc115  
+doc121
+doc370
+doc370
+doc70
+doc70
+
+Q5: DELEGATES MEETING
+doc156
+doc47

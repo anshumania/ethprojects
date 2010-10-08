@@ -26,13 +26,13 @@ import java.util.logging.Logger;
 public class QueryParser {
 
 
-    //retrieve the index.
-    // parse through the index creating treemap of frequecny and dictionary.
-
-    
+    // the directory with all the queries
+    final static String QUERY_DIR = "resources/Queries";
+    // the index file
+    final static String INDEX_FILE = "resources/Docs/index";
 
     TreeMap<String,PostingList> index = new TreeMap<String,PostingList>();
-    HashMap<Integer,String> docIndex = new HashMap<Integer,String>();
+    
 
     public void doORQuery(Query query)
     {
@@ -111,16 +111,21 @@ public class QueryParser {
     public void collectNOTStatistics(Query query)
     {
         String terms[] = query.getTerms();
-        TreeMap<String,PostingList> solutionSpace = new TreeMap<String,PostingList>();
+       
         //HashMap<String,Set<String>> result = new HashMap<String,Set<String>>();
         TreeMap<Integer,ArrayList<Set<String>>> result = new TreeMap<Integer,ArrayList<Set<String>>>();
         // PostingList -> LinkedList of PostingListNodes [ docId, freq]
+        //require this for the "not x and y"
+        Set<String> reverseOfNot = new LinkedHashSet<String>();
+
+       
+
         long currentTime = System.nanoTime();
         for(String term : terms)
         {
             //System.out.println("termsss=" + term);
             PostingList pl = index.get(term);
-            solutionSpace.put(term, pl);
+            
             Set<String> docSet = new LinkedHashSet<String>();
             for(PostingListNode pln : pl.getPostingList())
             {
@@ -144,7 +149,7 @@ public class QueryParser {
 
 
 
-        //System.out.println(" result = " + result);
+        
         Set<String> partialSet = new HashSet<String>();
         boolean first = true;
         for(Map.Entry<Integer,ArrayList<Set<String>>> iterator : result.entrySet())
@@ -168,9 +173,12 @@ public class QueryParser {
 
            
         }
+
+
         long executionTime = System.nanoTime() - currentTime;
 
-        //System.out.println("Result = " + partialSet);
+        
+        
     
         System.out.println("The Execution Time slowest nanoseconds = " + executionTime);
 
@@ -191,7 +199,12 @@ public class QueryParser {
                        first = false;
                    }
                     else
-                    partialSet.removeAll(loopSet);
+                   {
+                    Set<String> temp = loopSet;
+                    temp.removeAll(partialSet);
+                    partialSet.clear();
+                    partialSet.addAll(temp);
+                   }
                }
 
         }
@@ -347,7 +360,7 @@ public class QueryParser {
             istream = new FileInputStream(indexFile);
             p = new ObjectInputStream(istream);
         } catch (Exception e) {
-            System.out.println("Can't open output file.");
+            Logger.getLogger(QueryParser.class.getName()).log(Level.SEVERE, "Can't open output file",indexFile);
             e.printStackTrace();
         }
         try {
@@ -365,9 +378,10 @@ public class QueryParser {
              */
 
             p.close();
-            System.out.println("Inverted index read from file ==> " + indexFile);
+            Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Inverted index read from file",indexFile);
+            
         } catch (Exception e) {
-            System.out.println("Can't write output file.");
+            Logger.getLogger(QueryParser.class.getName()).log(Level.SEVERE, "Inverted index read from file",indexFile);
             e.printStackTrace();
         }
     }
@@ -465,30 +479,10 @@ public class QueryParser {
 
     public static void main(String args[]) {
         QueryParser x = new QueryParser();
-        String indexFile = "F://ETH//Projects//InformationRetrieval//ethprojects//BooleanRetrieval//index";
-        //String indexFile = "C://Users//ghff//Documents//ETH//Fall 2010//Information Retrieval//Dataset//index";
-        String queryDir = "F://ETH//Projects//InformationRetrieval//ethprojects//BooleanRetrieval//Queries";
-        //String queryDir = "C://Users//ghff//Documents//ETH//Fall 2010//Information Retrieval//Dataset//Queries";
-
         //Load index from file
-        x.readIndex(indexFile);
-        //x.readDocIndex(docIndexFile);
-        x.executeAllQueriesInDirectory(queryDir);
-
-        /*
-        String testQuery = "INDIAN and COMMUNIST and CHINESE";
-        String testQuery2 = "BORDER and ISRAEL and SYRIA" ;
-        String testQuery3 = "NUCLEAR and WEAPONS and DEVELOPMENT";
-        //x.doAndQuery(testQuery4);
-
-        String testQuery5 = "MOSCOW or SUPPORT or AUTONOMY";
-        String testQuery6 = "COUNTRY or NEW or JOIN or UNITED or NATIONS";
-        //x.doORQuery(testQuery6);
-
-        String testQuery7 = "PROVISIONS not TREATY";
-        String testQuery8 = "PREMIER not KHRUSHCHEV";
-        x.doNOTQuery(testQuery8);
-        */
+        x.readIndex(QueryParser.class.getResource(INDEX_FILE).getFile());
+        // Execute all the queries in the directory
+        x.executeAllQueriesInDirectory(QueryParser.class.getResource(QUERY_DIR).getFile());
     }
 
 }

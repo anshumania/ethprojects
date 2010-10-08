@@ -20,71 +20,89 @@ import java.util.logging.Logger;
  */
 public class FileIndexer {
 
+    // the inverted index with a dictionary of terms<String> and posting lists <PostingList>
     TreeMap<String, PostingList> index;
-    HashMap<Integer, String> docIndex;
+    final static String DOCS_DIR = "resources/Docs";
+    final static String INDEX_FILE = "index";
+    final static String COMMA = ",";
+    final static String EMPTY = "";
 
     FileIndexer() {
         index = new TreeMap<String, PostingList>();
-        docIndex = new HashMap<Integer, String>();
     }
 
-    public PostingList createNewPostingList() {
-        return new PostingList();
-    }
-
+//    public PostingList createNewPostingList() {
+//        return new PostingList();
+//    }
     public void addToDictionary(String docId, String key) {
-//        System.out.println("Adding---" + key);
-        if (!index.containsKey(key.trim())) {
-            //create a new PostingList pl
-            //create a new PostingListNode pln
-            // set docid to pln
-            // increment frequency of pln
-            // add pln to pl
-            // add pl to index
 
-            PostingList pl = new PostingList();
-            PostingListNode pln = new PostingListNode(docId, new Integer(1));
-            pl.getPostingList().add(pln);
-            pl.setNumPostings(new Integer(1));
-            index.put(key.trim(), pl);
-        } else {
-            // fetch the postinglist pl
-            // retrieve the postinglistnode pln for given docid
-            // increment frequency of pln
-            // System.out.println(" key = " + key + " docId " + docId);
-            PostingList pl = index.get(key);
-            // this terms is in the same docId. increment it for this docId only
-            if (docId.equals(pl.getPostingList().getLast().getDocId())) {
-                PostingListNode pln = pl.getPostingList().getLast();
-                pln.setFrequencyInDoc(pln.getFrequencyInDoc() + 1);
-                index.put(key.trim(), pl);
-            } // this term is for a new docId
-            // create a new pln and append it
-            // initiate the frequency for this docId
-            else {
+        //the key is not a stopword
+        
+        if (!StopWords.isStopWord(key.trim())) {
+             // the index does not contain this term
+            if (!index.containsKey(key.trim())) {
+                //create a new PostingList pl
+                //create a new PostingListNode pln
+                // set docid to pln
+                // increment frequency of pln
+                // add pln to pl
+                // add pl to index
+
+                PostingList pl = new PostingList();
                 PostingListNode pln = new PostingListNode(docId, new Integer(1));
                 pl.getPostingList().add(pln);
-                pl.setNumPostings(pl.getNumPostings()+1);
+                pl.setNumPostings(new Integer(1));
                 index.put(key.trim(), pl);
+            } // the index contains this term
+            else {
+                // fetch the postinglist pl
+                // retrieve the postinglistnode pln for given docid
+                // increment frequency of pln
+
+                PostingList pl = index.get(key);
+                // this term is in the same docId. increment it for this docId only
+                // for future use - storing the frequency of the word within that document
+                if (docId.equals(pl.getPostingList().getLast().getDocId())) {
+                    PostingListNode pln = pl.getPostingList().getLast();
+                    pln.setFrequencyInDoc(pln.getFrequencyInDoc() + 1);
+                    index.put(key.trim(), pl);
+                } // this term is for a new docId
+                // create a new pln and append it
+                // initiate the frequency for this docId
+                else {
+                    PostingListNode pln = new PostingListNode(docId, new Integer(1));
+                    pl.getPostingList().add(pln);
+                    pl.setNumPostings(pl.getNumPostings() + 1);
+                    index.put(key.trim(), pl);
+                }
             }
         }
+ 
+ 
+     
     }
 
-    public void tokenizeFile(String docId, File file) {
-        //System.out.println("Tokeninzing --- " + docId);
+    /**
+     * This method utilizes the StreamTokenizer class
+     * to isolate words.
+     * Characters in the ASCII set 33-47 and 58-64
+     * are deemed ordinary.
+     *
+     * @param file - the file to be tokenized
+     */
+    public void tokenizeFile(File file) {
+
+        String docId = file.getName();
         FileReader reader = null;
         BufferedReader in = null;
         try {
             reader = new FileReader(file);
             in = new BufferedReader(reader);
             StreamTokenizer st = new StreamTokenizer(in);
-
+            // get rid of the '\' ';' and so on ..
             st.ordinaryChars(33, 47);
             st.ordinaryChars(58, 64);
-//            st.ordinaryChar('\'');
-//            st.ordinaryChar('"');
-//            st.ordinaryChar('/');
-//            st.ordinaryChar(';');
+
 
             int next = st.nextToken();
 
@@ -101,15 +119,10 @@ public class FileIndexer {
                         // StreamTokenizer sometimes reads in words with ','s together.
                         // this is to split it up exactly as we want it.
                         String stoken = st.sval;
-                        /*
-                        if (stoken.contains("border".toUpperCase())) {
-                            System.out.println("FOUND1------------");
-                        }
-                        */
-                        if (stoken.contains(",")) {
-                            String xtokens[] = stoken.split(",");
+                        if (stoken.contains(COMMA)) {
+                            String xtokens[] = stoken.split(COMMA);
                             for (String xtoken : xtokens) {
-                                if (!xtoken.trim().equals("")) {
+                                if (!xtoken.trim().equals(EMPTY)) {
                                     addToDictionary(docId, xtoken.trim());
                                 }
                             }
@@ -138,18 +151,26 @@ public class FileIndexer {
         }
     }
 
-    //TODO - possibly rename to tokenizeAllFilesInDirectory(String dir)
-    public void fetchFilesInDirectory(String dir) {
+    /**
+     * Retrieves the documents in the specified resource directory
+     * and tokenizes the documents
+     *
+     * @param dir - the resource directory with all the documents
+     */
+    public void tokenizeAllFilesInDirectory(String dir) {
+
         File directory = new File(dir);
         File[] files = directory.listFiles();
-        //   Integer docId = 0;
-        for (File file : files) {
 
-            //System.out.println("Indexing " + file.getName() + " docId " + docId);
-            //     docIndex.put(docId, file.getName());
-            if(!file.isHidden())
-            tokenizeFile(file.getName(), file);
-            //   docId++;
+        for (File file : files) {
+            if (!file.isHidden()) // hack for getting rid of svn files
+            {
+                if(!file.getName().contains(INDEX_FILE))
+                    tokenizeFile(file);
+                else
+                    file.delete();
+                
+            }
         }
     }
 
@@ -164,8 +185,9 @@ public class FileIndexer {
             System.out.println("key = " + key + " PostingList =" + value.getPostingList().toString());
         }
     }
+
     /**
-     * Prints the following stats about the index:
+     * Prints the following statistics about the index:
      *   - Size
      *   - Number of matches
      *   - Length of longest posting list
@@ -181,19 +203,19 @@ public class FileIndexer {
         Integer postingListSize = 0;
         Integer numTerms = this.index.size();
 
-        for(Map.Entry<String, PostingList> entry : this.index.entrySet()) {
+        for (Map.Entry<String, PostingList> entry : this.index.entrySet()) {
             //System.out.println(entry.getKey() + " : " + entry.getValue().getFrequency());
             //postingListSize = entry.getValue().getFrequency();
             postingListSize = entry.getValue().getPostingList().size();
             numMatches += postingListSize;
-            
-            if(postingListSize > longestPostingList) {
+
+            if (postingListSize > longestPostingList) {
                 longestPostingList = postingListSize;
                 longestPostingListTerm = entry.getKey();
             }
-            if(postingListSize == shortestPostingList) {
+            if (postingListSize == shortestPostingList) {
                 shortestPostingListTerms.add(entry.getKey());
-            } else if(postingListSize < shortestPostingList) {
+            } else if (postingListSize < shortestPostingList) {
                 shortestPostingList = postingListSize;
                 shortestPostingListTerms.clear();
                 shortestPostingListTerms.add(entry.getKey());
@@ -208,49 +230,54 @@ public class FileIndexer {
         System.out.println("Number of 1s in matrix = " + numMatches);
         System.out.println("Longest Posting List = " + longestPostingList + " ['" + longestPostingListTerm + "']");
         System.out.println("Shortest Posting List = " + shortestPostingList + " [Occurs " + shortestPostingListTerms.size() + " times]");
-/*        for(String term : shortestPostingListTerms) {
-            System.out.print("'" + term + "'");
+        /*        for(String term : shortestPostingListTerms) {
+        System.out.print("'" + term + "'");
         }
         System.out.println("]");*/
     }
 
     // serialize the index
-    public void serializeToFile(String outputFile, int i) {
+    public void serializeToFile(String outputFile) {
+
         FileOutputStream ostream = null;
         ObjectOutputStream p = null;
         try {
             ostream = new FileOutputStream(outputFile);
             p = new ObjectOutputStream(ostream);
         } catch (Exception e) {
-            System.out.println("Can't open output file.");
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.SEVERE, "Cannot open output file", outputFile);
             e.printStackTrace();
         }
         try {
-            if (i == 1) {
-                p.writeObject(this.index);
-            }
-            if (i == 2) {
-                p.writeObject(this.docIndex);
-            }
+            //write the index to the file
+            p.writeObject(this.index);
             p.flush();
             p.close();
-            System.out.println("Inverted index written to file ==> " + outputFile);
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO, "Inverted index written to file", outputFile);
         } catch (Exception e) {
-            System.out.println("Can't write output file.");
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.SEVERE, "Cannot write to output file", outputFile);
             e.printStackTrace();
         }
     }
 
+    public void deleteIndex()
+    {
+        String fileName = FileIndexer.class.getResource(DOCS_DIR).getFile() + "/" + INDEX_FILE;
+
+    }
     public static void main(String args[]) {
-        String dir = "F://ETH//Projects//InformationRetrieval//ethprojects//BooleanRetrieval//Docs";
-        String indexFile = "F://ETH//Projects//InformationRetrieval//ethprojects//BooleanRetrieval//index";
-        //String dir = "C://Users//ghff//Documents//ETH//Fall 2010//Information Retrieval//Dataset//Docs";
-        //String indexFile = "C://Users//ghff//Documents//ETH//Fall 2010//Information Retrieval//Dataset//index";
+
         FileIndexer tkz = new FileIndexer();
-        tkz.fetchFilesInDirectory(dir);  //tokenize
-        //tkz.printIndex();
+        // initiate stopWords
+        StopWords.readStopWordsFile(StopWords.STOPWORDFILE);
+        
+        // read all the documents in the director and tokenize
+        tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(DOCS_DIR).getFile());
+        // print the statistics
         tkz.printIndexStats();
-        tkz.serializeToFile(indexFile, 1);
-        //  tkz.serializeToFile(dirIndexFile, 2);
+        // serialize the index
+        tkz.serializeToFile(FileIndexer.class.getResource(DOCS_DIR).getFile() + "/" + INDEX_FILE);
+        tkz.printIndex();
+
     }
 }
