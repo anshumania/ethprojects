@@ -27,6 +27,8 @@ public class FileIndexer {
     final static String COMMA = ",";
     final static String EMPTY = "";
 
+    boolean useStopWords = false;
+
     FileIndexer() {
         index = new TreeMap<String, PostingList>();
     }
@@ -34,11 +36,24 @@ public class FileIndexer {
 //    public PostingList createNewPostingList() {
 //        return new PostingList();
 //    }
+
+    public void checkStopWordsandAddToDictionary(String docId, String key)
+    {
+        //the key is not a stopword
+
+        if(useStopWords)
+        {
+            if(!StopWords.isStopWord(key.trim()))
+                addToDictionary(docId, key);
+        }
+        else
+            addToDictionary(docId, key);
+    }
+
     public void addToDictionary(String docId, String key) {
 
-        //the key is not a stopword
-        
-        if (!StopWords.isStopWord(key.trim())) {
+
+
              // the index does not contain this term
             if (!index.containsKey(key.trim())) {
                 //create a new PostingList pl
@@ -76,10 +91,6 @@ public class FileIndexer {
                     index.put(key.trim(), pl);
                 }
             }
-        }
- 
- 
-     
     }
 
     /**
@@ -112,7 +123,7 @@ public class FileIndexer {
                     case StreamTokenizer.TT_NUMBER:
 //                        System.out.println("nextn = " + st.nval);
                         Double val = st.nval;
-                        addToDictionary(docId, val.toString().trim());
+                        checkStopWordsandAddToDictionary(docId, val.toString().trim());
                         break;
 
                     case StreamTokenizer.TT_WORD:
@@ -123,12 +134,12 @@ public class FileIndexer {
                             String xtokens[] = stoken.split(COMMA);
                             for (String xtoken : xtokens) {
                                 if (!xtoken.trim().equals(EMPTY)) {
-                                    addToDictionary(docId, xtoken.trim());
+                                    checkStopWordsandAddToDictionary(docId, xtoken.trim());
                                 }
                             }
                         } else {
                             // It is without a ',' and works for us
-                            addToDictionary(docId, stoken.trim());
+                            checkStopWordsandAddToDictionary(docId, stoken.trim());
                         }
                         break;
                     default:
@@ -164,13 +175,7 @@ public class FileIndexer {
 
         for (File file : files) {
             if (!file.isHidden()) // hack for getting rid of svn files
-            {
-                if(!file.getName().contains(INDEX_FILE))
-                    tokenizeFile(file);
-                else
-                    file.delete();
-                
-            }
+               tokenizeFile(file);
         }
     }
 
@@ -193,7 +198,7 @@ public class FileIndexer {
      *   - Length of longest posting list
      *   - Length of shortest posting list
      */
-    public void printIndexStats() {
+    public void printIndexStats(String phase) {
         Integer indexSize = this.index.size();  //TODO - is this the right measure of size?  or # terms/# documents?
         Integer numMatches = 0;
         String longestPostingListTerm = "";
@@ -224,7 +229,7 @@ public class FileIndexer {
 
 
         System.out.println("---------------------");
-        System.out.println("INDEX STATISTICS");
+        System.out.println("INDEX STATISTICS [" + phase + "]");
         System.out.println("---------------------");
         System.out.println("Size of index = " + indexSize + " terms");
         System.out.println("Number of 1s in matrix = " + numMatches);
@@ -260,24 +265,57 @@ public class FileIndexer {
         }
     }
 
-    public void deleteIndex()
+    public static void deleteIndex(String index)
     {
-        String fileName = FileIndexer.class.getResource(DOCS_DIR).getFile() + "/" + INDEX_FILE;
+        boolean success = new File(index).delete();
+        if(success)
+        Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO,"Deleted previous index",index);
 
     }
-    public static void main(String args[]) {
 
+    public static void phase1()
+    {
         FileIndexer tkz = new FileIndexer();
-        // initiate stopWords
-        StopWords.readStopWordsFile(StopWords.STOPWORDFILE);
-        
+        //delete the previous index if any
+        FileIndexer.deleteIndex(FileIndexer.class.getResource(DOCS_DIR).getFile() + "/" + INDEX_FILE);
         // read all the documents in the director and tokenize
         tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(DOCS_DIR).getFile());
         // print the statistics
-        tkz.printIndexStats();
+        tkz.printIndexStats("phase1");
         // serialize the index
         tkz.serializeToFile(FileIndexer.class.getResource(DOCS_DIR).getFile() + "/" + INDEX_FILE);
-        tkz.printIndex();
+        
+    }
+
+    public static void phase2_StopWords()
+    {
+        FileIndexer tkz = new FileIndexer();
+        tkz.useStopWords = true;
+
+        //delete previous stopword index if any
+        FileIndexer.deleteIndex(FileIndexer.class.getResource(DOCS_DIR).getFile() + "/" + StopWords.STOPWORDINDEX);
+        // initiate stopWords
+        StopWords.readStopWordsFile(StopWords.STOPWORDFILE);
+
+        // read all the documents in the director and tokenize
+        tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(DOCS_DIR).getFile());
+        // print the statistics
+        tkz.printIndexStats("phase2_StopWords");
+        // serialize the index
+        tkz.serializeToFile(FileIndexer.class.getResource(DOCS_DIR).getFile() + "/" + StopWords.STOPWORDINDEX);
+        
+    }
+    public static void phase2_Stemming()
+    {
+        
+    }
+
+    public static void main(String args[]) {
+
+     FileIndexer.phase1();
+     FileIndexer.phase2_StopWords();
+     FileIndexer.phase2_Stemming();
+        
 
     }
 }

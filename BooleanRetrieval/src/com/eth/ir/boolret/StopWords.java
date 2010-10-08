@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 public class StopWords {
 
     final static String STOPWORDFILE = "resources/English_Stopwords.txt";
+    final static String STOPWORDINDEX = "index_sw";
     private static Set<String> stopWords;
 
     public static Set<String> getStopWords() {
