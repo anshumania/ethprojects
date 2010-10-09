@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.StreamTokenizer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,78 +18,22 @@ import java.util.logging.Logger;
  */
 public class FileIndexer {
 
+
+    private Dictionary currentDictionary;
+
+    public Dictionary getCurrentDictionary() {
+        return currentDictionary;
+    }
+
+    public void setCurrentDictionary(Dictionary currentDictionary) {
+        this.currentDictionary = currentDictionary;
+    }
     // the inverted index with a dictionary of terms<String> and posting lists <PostingList>
-    TreeMap<String, PostingList> index;
-    final static String DOCS_DIR = "resources/Docs";
-    final static String INDEX_FILE = "index";
-    final static String COMMA = ",";
-    final static String EMPTY = "";
 
-    boolean useStopWords = false;
+    
+ 
 
-    FileIndexer() {
-        index = new TreeMap<String, PostingList>();
-    }
-
-//    public PostingList createNewPostingList() {
-//        return new PostingList();
-//    }
-
-    public void checkStopWordsandAddToDictionary(String docId, String key)
-    {
-        //the key is not a stopword
-
-        if(useStopWords)
-        {
-            if(!StopWords.isStopWord(key.trim()))
-                addToDictionary(docId, key);
-        }
-        else
-            addToDictionary(docId, key);
-    }
-
-    public void addToDictionary(String docId, String key) {
-
-
-
-             // the index does not contain this term
-            if (!index.containsKey(key.trim())) {
-                //create a new PostingList pl
-                //create a new PostingListNode pln
-                // set docid to pln
-                // increment frequency of pln
-                // add pln to pl
-                // add pl to index
-
-                PostingList pl = new PostingList();
-                PostingListNode pln = new PostingListNode(docId, new Integer(1));
-                pl.getPostingList().add(pln);
-                pl.setNumPostings(new Integer(1));
-                index.put(key.trim(), pl);
-            } // the index contains this term
-            else {
-                // fetch the postinglist pl
-                // retrieve the postinglistnode pln for given docid
-                // increment frequency of pln
-
-                PostingList pl = index.get(key);
-                // this term is in the same docId. increment it for this docId only
-                // for future use - storing the frequency of the word within that document
-                if (docId.equals(pl.getPostingList().getLast().getDocId())) {
-                    PostingListNode pln = pl.getPostingList().getLast();
-                    pln.setFrequencyInDoc(pln.getFrequencyInDoc() + 1);
-                    index.put(key.trim(), pl);
-                } // this term is for a new docId
-                // create a new pln and append it
-                // initiate the frequency for this docId
-                else {
-                    PostingListNode pln = new PostingListNode(docId, new Integer(1));
-                    pl.getPostingList().add(pln);
-                    pl.setNumPostings(pl.getNumPostings() + 1);
-                    index.put(key.trim(), pl);
-                }
-            }
-    }
+    
 
     /**
      * This method utilizes the StreamTokenizer class
@@ -123,23 +65,26 @@ public class FileIndexer {
                     case StreamTokenizer.TT_NUMBER:
 //                        System.out.println("nextn = " + st.nval);
                         Double val = st.nval;
-                        checkStopWordsandAddToDictionary(docId, val.toString().trim());
+                        getCurrentDictionary().addToDictionary(docId, val.toString().trim());
+                        //checkStopWordsandAddToDictionary(docId, val.toString().trim());
                         break;
 
                     case StreamTokenizer.TT_WORD:
                         // StreamTokenizer sometimes reads in words with ','s together.
                         // this is to split it up exactly as we want it.
                         String stoken = st.sval;
-                        if (stoken.contains(COMMA)) {
-                            String xtokens[] = stoken.split(COMMA);
+                        if (stoken.contains(Bundle.COMMA)) {
+                            String xtokens[] = stoken.split(Bundle.COMMA);
                             for (String xtoken : xtokens) {
-                                if (!xtoken.trim().equals(EMPTY)) {
-                                    checkStopWordsandAddToDictionary(docId, xtoken.trim());
+                                if (!xtoken.trim().equals(Bundle.EMPTY)) {
+                                    getCurrentDictionary().addToDictionary(docId, xtoken.trim());
+                                    //checkStopWordsandAddToDictionary(docId, xtoken.trim());
                                 }
                             }
                         } else {
                             // It is without a ',' and works for us
-                            checkStopWordsandAddToDictionary(docId, stoken.trim());
+                            getCurrentDictionary().addToDictionary(docId, stoken.trim());
+                            //checkStopWordsandAddToDictionary(docId, stoken.trim());
                         }
                         break;
                     default:
@@ -174,7 +119,7 @@ public class FileIndexer {
         File[] files = directory.listFiles();
 
         for (File file : files) {
-            if (!file.isHidden()) // hack for getting rid of svn files
+            if (!file.isHidden() && !file.getName().contains(Bundle.INDEX_FILE)) // hack for getting rid of svn files
                tokenizeFile(file);
         }
     }
@@ -183,8 +128,8 @@ public class FileIndexer {
      * Prints the index to System.out
      */
     public void printIndex() {
-        System.out.println(" size of index " + index.size());
-        for (Map.Entry<String, PostingList> entry : index.entrySet()) {
+        System.out.println(" size of index " + getCurrentDictionary().getIndex().size());
+        for (Map.Entry<String, PostingList> entry : getCurrentDictionary().getIndex().entrySet()) {
             String key = entry.getKey();
             PostingList value = entry.getValue();
             System.out.println("key = " + key + " PostingList =" + value.getPostingList().toString());
@@ -199,16 +144,16 @@ public class FileIndexer {
      *   - Length of shortest posting list
      */
     public void printIndexStats(String phase) {
-        Integer indexSize = this.index.size();  //TODO - is this the right measure of size?  or # terms/# documents?
+        Integer indexSize = getCurrentDictionary().getIndex().size(); //this.index.size();  //TODO - is this the right measure of size?  or # terms/# documents?
         Integer numMatches = 0;
         String longestPostingListTerm = "";
         ArrayList<String> shortestPostingListTerms = new ArrayList<String>();
         Integer longestPostingList = 0;
         Integer shortestPostingList = Integer.MAX_VALUE;
         Integer postingListSize = 0;
-        Integer numTerms = this.index.size();
+        Integer numTerms = getCurrentDictionary().getIndex().size();//this.index.size();
 
-        for (Map.Entry<String, PostingList> entry : this.index.entrySet()) {
+        for (Map.Entry<String, PostingList> entry : getCurrentDictionary().getIndex().entrySet()) {
             //System.out.println(entry.getKey() + " : " + entry.getValue().getFrequency());
             //postingListSize = entry.getValue().getFrequency();
             postingListSize = entry.getValue().getPostingList().size();
@@ -255,7 +200,7 @@ public class FileIndexer {
         }
         try {
             //write the index to the file
-            p.writeObject(this.index);
+            p.writeObject(getCurrentDictionary().getIndex());
             p.flush();
             p.close();
             Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO, "Inverted index written to file", outputFile);
@@ -276,37 +221,59 @@ public class FileIndexer {
     public static void phase1()
     {
         FileIndexer tkz = new FileIndexer();
+
+        //create a new dictionary for this phase with its index file
+        Dictionary phase1Dictionary = new Dictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE);
+        // notify the fileIndex as to which dictionary its working on
+        tkz.setCurrentDictionary(phase1Dictionary);
         //delete the previous index if any
-        FileIndexer.deleteIndex(FileIndexer.class.getResource(DOCS_DIR).getFile() + "/" + INDEX_FILE);
+        FileIndexer.deleteIndex(tkz.getCurrentDictionary().getINDEX_FILE());
         // read all the documents in the director and tokenize
-        tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(DOCS_DIR).getFile());
+        tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile());
         // print the statistics
         tkz.printIndexStats("phase1");
         // serialize the index
-        tkz.serializeToFile(FileIndexer.class.getResource(DOCS_DIR).getFile() + "/" + INDEX_FILE);
-        
+        tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
+
     }
 
     public static void phase2_StopWords()
     {
         FileIndexer tkz = new FileIndexer();
-        tkz.useStopWords = true;
-
+        //create a new dictionary for this phase with its index file
+        Dictionary phase2_sw_Dictionary = new StopWordDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD);
+        // notify the fileIndex as to which dictionary its working on
+        tkz.setCurrentDictionary(phase2_sw_Dictionary);
         //delete previous stopword index if any
-        FileIndexer.deleteIndex(FileIndexer.class.getResource(DOCS_DIR).getFile() + "/" + StopWords.STOPWORDINDEX);
+        FileIndexer.deleteIndex(tkz.getCurrentDictionary().getINDEX_FILE());
         // initiate stopWords
         StopWords.readStopWordsFile(StopWords.STOPWORDFILE);
 
         // read all the documents in the director and tokenize
-        tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(DOCS_DIR).getFile());
+        tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile());
         // print the statistics
         tkz.printIndexStats("phase2_StopWords");
         // serialize the index
-        tkz.serializeToFile(FileIndexer.class.getResource(DOCS_DIR).getFile() + "/" + StopWords.STOPWORDINDEX);
-        
+        tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
+       // tkz.useStopWords = false;
+
+
     }
     public static void phase2_Stemming()
     {
+        FileIndexer tkz = new FileIndexer();
+        //create a new dictionary for this phase with its index file
+        Dictionary phase2_pStem_Dictionary = new PorterStemmerDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.PORTERSTEM);
+        // notify the fileIndex as to which dictionary its working on
+        tkz.setCurrentDictionary(phase2_pStem_Dictionary);
+        //delete previous stopword index if any
+        FileIndexer.deleteIndex(tkz.getCurrentDictionary().getINDEX_FILE());
+        // read all the documents in the director and tokenize
+        tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile());
+        // print the statistics
+        tkz.printIndexStats("phase3_Stemming");
+        // serialize the index
+        tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
         
     }
 
@@ -315,7 +282,7 @@ public class FileIndexer {
      FileIndexer.phase1();
      FileIndexer.phase2_StopWords();
      FileIndexer.phase2_Stemming();
-        
+
 
     }
 }
