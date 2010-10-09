@@ -26,10 +26,8 @@ import java.util.logging.Logger;
 public class QueryParser {
 
 
-    // the directory with all the queries
-    final static String QUERY_DIR = "resources/Queries";
-    // the index file
-    final static String INDEX_FILE = "resources/Docs/index";
+    
+    
 
     TreeMap<String,PostingList> index = new TreeMap<String,PostingList>();
     
@@ -41,13 +39,16 @@ public class QueryParser {
         HashSet<String> result = new HashSet<String>();
         // PostingList -> LinkedList of PostingListNodes [docId, freq]
         long currentTime = System.nanoTime();
-        for(String term : terms)
+        for(String term : terms )
         {
             PostingList pl = index.get(term);
-
+            if(pl!=null)
+            {
             for(PostingListNode pln : pl.getPostingList()) {
                 result.add(pln.getDocId());
             }
+            }
+            
         }
         long executionTime = System.nanoTime() - currentTime;
         //System.out.println("Result = " + result);
@@ -72,6 +73,8 @@ public class QueryParser {
         {
             //System.out.println("termsss=" + term);
             PostingList pl = index.get(term);
+            if(pl !=null)
+            {
             solutionSpace.put(term, pl);
             Set<String> docSet = new LinkedHashSet<String>();
             for(PostingListNode pln : pl.getPostingList())
@@ -79,7 +82,7 @@ public class QueryParser {
                 docSet.add(pln.getDocId());
             }
             result.add(docSet);
-
+            }
         }
 
 
@@ -124,8 +127,11 @@ public class QueryParser {
         for(String term : terms)
         {
             //System.out.println("termsss=" + term);
+
             PostingList pl = index.get(term);
             
+            if(pl!=null) // check for stopwords
+            {
             Set<String> docSet = new LinkedHashSet<String>();
             for(PostingListNode pln : pl.getPostingList())
             {
@@ -144,7 +150,7 @@ public class QueryParser {
                 result.put(pl.getPostingList().size(), temp);
 
             }
-
+            }
         }
 
 
@@ -231,6 +237,8 @@ public class QueryParser {
         for(String term : terms)
         {
             PostingList pl = index.get(term);
+            if(pl!=null)
+            {
             solutionSpace.put(term, pl);
             HashSet<String> docSet = new HashSet<String>();
             for(PostingListNode pln : pl.getPostingList()) {
@@ -247,6 +255,7 @@ public class QueryParser {
                 ArrayList<Set<String>> temp = new ArrayList<Set<String>>();
                 temp.add(docSet);
                 result.put(pl.getPostingList().size(), temp);
+            }
             }
         }
 
@@ -470,19 +479,46 @@ public class QueryParser {
         File directory = new File(dir);
         File[] files = directory.listFiles();
         for (File file : files) {
+            if(!file.isHidden()) // hack to escape svn files
+            {
             String query = loadQueryFromFile(file);
             System.out.println(file.getName() + ":" + query);
             executeQuery(query);
             System.out.println("");
+            }
         }
     }
 
-    public static void main(String args[]) {
+    public static void phase1()
+    {
         QueryParser x = new QueryParser();
         //Load index from file
-        x.readIndex(QueryParser.class.getResource(INDEX_FILE).getFile());
+        x.readIndex(QueryParser.class.getResource(Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
         // Execute all the queries in the directory
-        x.executeAllQueriesInDirectory(QueryParser.class.getResource(QUERY_DIR).getFile());
+        x.executeAllQueriesInDirectory(QueryParser.class.getResource(Bundle.QUERY_DIR).getFile());
+    }
+    public static void phase2_StopWords()
+    {
+        QueryParser x = new QueryParser();
+        //Load index from file
+        x.readIndex(QueryParser.class.getResource(Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD).getFile());
+        // Execute all the queries in the directory
+        x.executeAllQueriesInDirectory(QueryParser.class.getResource(Bundle.QUERY_DIR).getFile());
+    }
+    public static void phase2_Stemming()
+    {
+        QueryParser x = new QueryParser();
+        //Load index from file
+        x.readIndex(QueryParser.class.getResource(Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE+Bundle.PORTERSTEM).getFile());
+        // Execute all the queries in the directory
+        x.executeAllQueriesInDirectory(QueryParser.class.getResource(Bundle.QUERY_DIR).getFile());
+    }
+
+
+    public static void main(String args[]) {
+
+        QueryParser.phase1();
+       // QueryParser.phase2_StopWords();
     }
 
 }

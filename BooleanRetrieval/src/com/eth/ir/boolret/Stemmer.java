@@ -366,6 +366,9 @@ public class Stemmer
     * forcing lower case must be done outside the Stemmer class.
     * Usage: Stemmer file-name file-name ...
     */
+
+
+
    public static void main(String[] args)
    {
       char[] w = new char[501];
