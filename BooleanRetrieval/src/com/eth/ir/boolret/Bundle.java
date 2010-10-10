@@ -11,7 +11,7 @@ package com.eth.ir.boolret;
  */
 public final class Bundle {
     // the directory with all the documents
-    public final static String DOCS_DIR = "/resources/Docs";
+    public final static String DOCS_DIR = "resources/Docs";
     // the directory with all the queries
     public final static String QUERY_DIR = "resources/Queries";
     public final static String INDEX_FILE = "index";
