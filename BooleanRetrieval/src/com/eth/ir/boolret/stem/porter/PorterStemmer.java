@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package com.eth.ir.boolret;
+package com.eth.ir.boolret.stem.porter;
 
 import java.io.File;
 
@@ -425,14 +425,11 @@ public class PorterStemmer {
 
     public static void main(String args[])
     {
-      String dirName = "F:\\ETH\\Projects\\InformationRetrieval\\TIME\\Docs";
-      File dir = new File(dirName);
-      File[] files = dir.listFiles();
-       System.out.println("number of file s" + files.length);
-      for(File file : files)
-      {
-
-      }
+      String x = "provisional";
+        System.out.println(" x.endswih" + x.endsWith("s"));
+//      String y[] = x.split(" ");
+//      for(String z : y)
+        System.out.println("stemmed" + new PorterStemmer().stem(x));
 
     }
 } // end class

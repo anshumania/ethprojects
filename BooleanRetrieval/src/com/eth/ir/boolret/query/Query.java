@@ -1,6 +1,4 @@
-package com.eth.ir.boolret;
-
-import java.util.ArrayList;
+package com.eth.ir.boolret.query;
 
 /**
  * Simple Query class to store queries with a single operator
@@ -14,12 +12,18 @@ public class Query {
 
     String [] terms; //array of all terms in the query
     String operator; //Must be one of: 'AND', 'OR', 'NOT'
+    String queryString; // the original query string for this Query
+
+    public String getQueryString() {
+        return queryString;
+    }
 
     /**
      *
      * @param query A query containing a single operator (AND, OR, NOT)
      */
     Query(String query) {
+        this.queryString = query;
         parseQueryString(query);
     }
 

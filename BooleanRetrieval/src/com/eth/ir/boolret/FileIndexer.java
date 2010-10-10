@@ -1,5 +1,9 @@
 package com.eth.ir.boolret;
 
+import com.eth.ir.boolret.dictionary.Dictionary;
+import com.eth.ir.boolret.dictionary.PorterStemmerDictionary;
+import com.eth.ir.boolret.dictionary.StopWordDictionary;
+import com.eth.ir.boolret.dictionary.datastructure.PostingList;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -120,7 +124,10 @@ public class FileIndexer {
 
         for (File file : files) {
             if (!file.isHidden() && !file.getName().contains(Bundle.INDEX_FILE)) // hack for getting rid of svn files
+            {
+//              /  System.out.println("tokenizing " + file.getName());
                tokenizeFile(file);
+            }
         }
     }
 
@@ -153,6 +160,7 @@ public class FileIndexer {
         Integer postingListSize = 0;
         Integer numTerms = getCurrentDictionary().getIndex().size();//this.index.size();
 
+        
         for (Map.Entry<String, PostingList> entry : getCurrentDictionary().getIndex().entrySet()) {
             //System.out.println(entry.getKey() + " : " + entry.getValue().getFrequency());
             //postingListSize = entry.getValue().getFrequency();
@@ -195,17 +203,22 @@ public class FileIndexer {
             ostream = new FileOutputStream(outputFile);
             p = new ObjectOutputStream(ostream);
         } catch (Exception e) {
-            Logger.getLogger(FileIndexer.class.getName()).log(Level.SEVERE, "Cannot open output file", outputFile);
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.SEVERE, "Cannot open index file {0}", outputFile);
             e.printStackTrace();
         }
         try {
             //write the index to the file
-            p.writeObject(getCurrentDictionary().getIndex());
+            //this sucks
+//            if(getCurrentDictionary() instanceof PorterStemmerDictionary)
+//                p.writeObject(((PorterStemmerDictionary)getCurrentDictionary()).getStemmedIndex());
+//            else
+                p.writeObject(getCurrentDictionary().getIndex());
+
             p.flush();
             p.close();
-            Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO, "Inverted index written to file", outputFile);
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO, "Inverted index written to file {0}", outputFile);
         } catch (Exception e) {
-            Logger.getLogger(FileIndexer.class.getName()).log(Level.SEVERE, "Cannot write to output file", outputFile);
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.SEVERE, "Cannot write to index file {0}", outputFile);
             e.printStackTrace();
         }
     }
@@ -214,7 +227,7 @@ public class FileIndexer {
     {
         boolean success = new File(index).delete();
         if(success)
-        Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO,"Deleted previous index",index);
+        Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO,"Deleted previous index {0}",index);
 
     }
 
@@ -274,6 +287,9 @@ public class FileIndexer {
         tkz.printIndexStats("phase3_Stemming");
         // serialize the index
         tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
+        // serialize the index
+       // tkz.serializeToFile(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.STEMMEDMAP);
+
         
     }
 

@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package com.eth.ir.boolret;
+package com.eth.ir.boolret.dictionary;
 
+import com.eth.ir.boolret.stem.porter.Porter;
 import java.lang.String;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -20,20 +21,30 @@ public class PorterStemmerDictionary extends Dictionary{
     // to other words within the document 
     // so as to not 'stem' the query word during query parsing
     private TreeMap<String,Set<String>> stemmedIndex;
-    private PorterStemmer porterStemmer;
 
-    PorterStemmerDictionary(String indexFile)
+    public TreeMap<String, Set<String>> getStemmedIndex() {
+        return stemmedIndex;
+    }
+//    private PorterStemmer porterStemmer;
+    private Porter porterStemmer;
+
+    public PorterStemmerDictionary(String indexFile)
     {
         super(indexFile);
         this.stemmedIndex = new TreeMap<String,Set<String>>();
-        this.porterStemmer = new PorterStemmer();
+//        this.porterStemmer = new PorterStemmer();
+        this.porterStemmer = new Porter();
 
     }
+    
 
     @Override
    public void addToDictionary(String docId, String key)
     {
-           String stemmedKey = porterStemmer.stem(key);
+           //System.out.println("key="+key);
+           String stemmedKey = (key.trim().length() == 1 ) ? key : porterStemmer.stem(key.toLowerCase());
+           stemmedKey = stemmedKey.toUpperCase();
+           //System.out.println("stemmedKey=" + stemmedKey);
            super.addToDictionary(docId,stemmedKey);
 
            Set<String> temp;
@@ -44,6 +55,8 @@ public class PorterStemmerDictionary extends Dictionary{
 
            temp.add(key);
            stemmedIndex.put(stemmedKey, temp);
+
+           
 
     }
 }

@@ -11,12 +11,13 @@ package com.eth.ir.boolret;
  */
 public final class Bundle {
     // the directory with all the documents
-    final static String DOCS_DIR = "resources/Docs";
+    public final static String DOCS_DIR = "/resources/Docs";
     // the directory with all the queries
-    final static String QUERY_DIR = "resources/Queries";
-    final static String INDEX_FILE = "index";
-    final static String STOPWORD   = "_sw";
-    final static String PORTERSTEM = "_pStem";
-    final static String COMMA = ",";
-    final static String EMPTY = "";
+    public final static String QUERY_DIR = "resources/Queries";
+    public final static String INDEX_FILE = "index";
+    public final static String STOPWORD   = "_sw";
+    public final static String PORTERSTEM = "_pStem";
+    public final static String STEMMEDMAP = "stemmedMap";
+    public final static String COMMA = ",";
+    public final static String EMPTY = "";
 }

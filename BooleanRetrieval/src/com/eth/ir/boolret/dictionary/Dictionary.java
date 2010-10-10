@@ -3,8 +3,10 @@
  * and open the template in the editor.
  */
 
-package com.eth.ir.boolret;
+package com.eth.ir.boolret.dictionary;
 
+import com.eth.ir.boolret.dictionary.datastructure.PostingList;
+import com.eth.ir.boolret.dictionary.datastructure.PostingListNode;
 import java.util.TreeMap;
 
 /**
@@ -26,7 +28,7 @@ public class Dictionary {
     }
     
 
-    Dictionary(String indexFile)
+    public Dictionary(String indexFile)
     {
         this.INDEX_FILE = indexFile;
         this.index = new TreeMap<String,PostingList>();
