@@ -1,4 +1,4 @@
-package com.eth.ir.boolret;
+package com.eth.ir.boolret.dictionary.datastructure;
 
 import java.io.Serializable;
 import java.util.LinkedList;
@@ -17,7 +17,7 @@ public class PostingList implements Serializable{
         return postingList;
     }
 
-    PostingList() {
+    public PostingList() {
         postingList = new LinkedList<PostingListNode>();
         numPostings = 0;
     }

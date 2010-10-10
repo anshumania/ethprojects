@@ -1,4 +1,4 @@
-package com.eth.ir.boolret;
+package com.eth.ir.boolret.dictionary.datastructure;
 
 import java.io.Serializable;
 
@@ -11,7 +11,7 @@ public class PostingListNode implements Serializable {
     String docId;
     Integer frequencyInDoc;
 
-    PostingListNode(String docId, Integer freq) {
+    public PostingListNode(String docId, Integer freq) {
         this.docId = docId;
         this.frequencyInDoc = freq;
     }
