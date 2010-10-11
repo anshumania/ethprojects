@@ -1,6 +1,7 @@
 package com.eth.ir.boolret.dictionary.datastructure;
 
 import java.io.Serializable;
+import java.util.HashSet;
 
 /**
  *
@@ -8,12 +9,13 @@ import java.io.Serializable;
  */
 public class PostingListNode implements Serializable {
 
-    String docId;
-    Integer frequencyInDoc;
+    private String docId;
+    private HashSet<Integer> positions;
 
-    public PostingListNode(String docId, Integer freq) {
+    public PostingListNode(String docId, Integer position) {
         this.docId = docId;
-        this.frequencyInDoc = freq;
+        this.positions = new HashSet<Integer>();
+        this.positions.add(position);
     }
 
     public String getDocId() {
@@ -24,12 +26,20 @@ public class PostingListNode implements Serializable {
         this.docId = DocId;
     }
 
-    public Integer getFrequencyInDoc() {
-        return frequencyInDoc;
+    public HashSet<Integer> getPositions() {
+        return positions;
     }
 
-    public void setFrequencyInDoc(Integer frequencyInDoc) {
-        this.frequencyInDoc = frequencyInDoc;
+    public void setPositions(HashSet<Integer> positions) {
+        this.positions = positions;
+    }
+
+    public void addPosition(Integer position) {
+        this.positions.add(position);
+    }
+
+    public Integer getFrequencyInDoc() {
+        return this.positions.size();
     }
 
     public Boolean equals(PostingListNode node) {
@@ -38,6 +48,6 @@ public class PostingListNode implements Serializable {
 
     @Override
     public String toString() {
-        return "[docId=" + getDocId() + ", freq=" + getFrequencyInDoc() + "]";
+        return "[docId=" + getDocId() + ", positions=" + getPositions() + "]";
     }
 }

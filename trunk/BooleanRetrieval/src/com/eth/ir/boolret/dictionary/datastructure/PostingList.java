@@ -9,9 +9,8 @@ import java.util.LinkedList;
  */
 public class PostingList implements Serializable{
 
-    Integer numPostings;
-
-    LinkedList<PostingListNode> postingList;
+    private Integer numPostings;
+    private LinkedList<PostingListNode> postingList;
 
     public LinkedList<PostingListNode> getPostingList() {
         return postingList;
