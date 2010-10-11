@@ -2,6 +2,8 @@ package com.eth.ir.boolret.dictionary.datastructure;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  *
@@ -10,12 +12,17 @@ import java.util.HashSet;
 public class PostingListNode implements Serializable {
 
     private String docId;
-    private HashSet<Integer> positions;
+    private TreeSet<Integer> positions;
 
     public PostingListNode(String docId, Integer position) {
         this.docId = docId;
-        this.positions = new HashSet<Integer>();
+        this.positions = new TreeSet<Integer>();
         this.positions.add(position);
+    }
+
+    public PostingListNode(String docId) {
+        this.docId = docId;
+        this.positions = new TreeSet<Integer>();
     }
 
     public String getDocId() {
@@ -26,12 +33,12 @@ public class PostingListNode implements Serializable {
         this.docId = DocId;
     }
 
-    public HashSet<Integer> getPositions() {
+    public Set<Integer> getPositions() {
         return positions;
     }
 
-    public void setPositions(HashSet<Integer> positions) {
-        this.positions = positions;
+    public void setPositions(Set<Integer> positions) {
+        this.positions = new TreeSet<Integer>(positions);
     }
 
     public void addPosition(Integer position) {

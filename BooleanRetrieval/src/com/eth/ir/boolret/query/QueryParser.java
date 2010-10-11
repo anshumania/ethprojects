@@ -9,6 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,18 +66,28 @@ public class QueryParser {
         Query q = new Query(query);
         String operator = q.getOperator();
 
+        //if(operator == null && q.hasProximityTerms()) {
+        if (!q.getPhrases().isEmpty()) {
+            //TESTING - just does the first phrase for now
+            TreeSet<String> result = (TreeSet) getCurrentQueryDictionary().doPhraseQuery(q.getPhrases().get(0));
+            for (String id : result) {
+                System.out.println(id);
+            }
+        } else if (operator.equalsIgnoreCase(Query.AndOperator)) {
+            TreeSet<String> result = (TreeSet) getCurrentQueryDictionary().doANDQuery(q);
 
+            for (String id : result) {
+                System.out.println(id);
+            }
 
-        if (operator.equalsIgnoreCase(Query.AndOperator)) {
-            getCurrentQueryDictionary().doANDQuery(q);
             getCurrentQueryDictionary().collectANDStatistics(q);
-
 
         } else if (operator.equalsIgnoreCase(Query.OrOperator)) {
             getCurrentQueryDictionary().doORQuery(q);
+
         } else if (operator.equalsIgnoreCase(Query.NotOperator)) {
             getCurrentQueryDictionary().doNOTQuery(q);
-            getCurrentQueryDictionary().collectNOTStatistics(q);
+
         } else {
             //TODO - throw InvalidQueryOperatorException
         }
@@ -127,43 +138,54 @@ public class QueryParser {
         }
     }
 
-    public static void phase1() {
-        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO,"Phase 1 of Query Parsing");
+    public static void phraseTest() {
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Testing Phrase Query Parsing");
         QueryParser queryParser = new QueryParser();
         queryParser.setCurrentQueryDictionary(new QueryDictionary());
-        
+
         //Load index from file
-        queryParser.readIndex(QueryParser.class.getResource("../" +Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
+        queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
+        String query = "\"NUCLEAR STRIKE\"";
+        queryParser.executeQuery(query);
+    }
+
+    public static void phase1() {
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Phase 1 of Query Parsing");
+        QueryParser queryParser = new QueryParser();
+        queryParser.setCurrentQueryDictionary(new QueryDictionary());
+
+        //Load index from file
+        queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
         // Execute all the queries in the directory
-        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" +Bundle.QUERY_DIR).getFile());
+        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_DIR).getFile());
     }
 
     public static void phase2_StopWords() {
-        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO,"Phase 2 - StopWords of Query Parsing");
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Phase 2 - StopWords of Query Parsing");
         QueryParser queryParser = new QueryParser();
         queryParser.setCurrentQueryDictionary(new QueryDictionary());
 
         //Load index from file
-        queryParser.readIndex(QueryParser.class.getResource("../" +Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD).getFile());
+        queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD).getFile());
         // Execute all the queries in the directory
-        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" +Bundle.QUERY_DIR).getFile());
+        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_DIR).getFile());
     }
 
     public static void phase2_Stemming() {
-        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO,"Phase 2 - Stemming of Query Parsing");
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Phase 2 - Stemming of Query Parsing");
         QueryParser queryParser = new QueryParser();
         queryParser.setCurrentQueryDictionary(new StemmedQueryDictionary());
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.PORTERSTEM).getFile());
         // Execute all the queries in the directory
-        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" +Bundle.QUERY_DIR).getFile());
+        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_DIR).getFile());
     }
 
     public static void main(String args[]) {
 
-        QueryParser.phase1();
-        QueryParser.phase2_StopWords();
-        QueryParser.phase2_Stemming();
-
+        //QueryParser.phase1();
+        //QueryParser.phase2_StopWords();
+        //QueryParser.phase2_Stemming();
+        QueryParser.phraseTest();
     }
 }

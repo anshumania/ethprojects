@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.eth.ir.boolret.query;
 
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
@@ -10,10 +6,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,18 +32,96 @@ public class QueryDictionary {
 
     public void initiateTime() {
         currentTime = System.nanoTime();
-
     }
 
-    public void executionTime(String type,String query) {
-        Logger.getLogger(QueryDictionary.class.getName()).log(Level.INFO, " Query [ {0} ] {1} Execution Time {2}", new Object[]{query,type,(System.nanoTime() - currentTime)});
-
+    public void executionTime(String type, String query) {
+        Logger.getLogger(QueryDictionary.class.getName()).log(Level.INFO, " Query [ {0} ] {1} Execution Time {2}", new Object[]{query, type, (System.nanoTime() - currentTime)});
     }
-    
 
-    public void doANDQuery(Query query) {
+    public PostingList doProximityQuery(PostingList pl1, PostingList pl2, Integer proximityBefore, Integer proximityAfter) {
+        
+        PostingList resultPL = new PostingList();
+
+        //for each position in each document in pl1, check if there is a positional match with pl2
+        ListIterator pl2Iterator = pl2.getPostingList().listIterator();
+        for(PostingListNode pln : pl1.getPostingList()) {
+            PostingListNode pln2 = (PostingListNode) pl2Iterator.next(); //NOTE: this assumes both list are sorted in the same order (ie. pl1[0] == pl2[0])
+            Set<Integer> matchingPositions = new TreeSet<Integer>();
+            for(Integer position : pln.getPositions()) {
+                for(int nextPosition = position+proximityBefore; nextPosition <= position + proximityAfter; nextPosition++) {
+                    if(pln2.getPositions().contains(nextPosition)) {
+                        //we found a positional match
+                        matchingPositions.add(nextPosition);
+                    }
+                }
+            }
+
+            if(!matchingPositions.isEmpty()) {
+                PostingListNode newPLN = new PostingListNode(pln.getDocId());
+                newPLN.setPositions(matchingPositions);
+                resultPL.getPostingList().add(newPLN);
+            }
+        }
+
+        return resultPL;
+    }
+
+    /*
+    public Set<String> doProximityQuery(String term1, String term2, Integer distance) {
+        
+    }
+     */
+
+    public Set<String> doPhraseQuery(ArrayList<String> phraseTerms) {
+        Set<String> resultSet = new TreeSet<String>();
+        TreeMap<String, PostingList> miniIndex = new TreeMap<String, PostingList>();
+
+        //first do a normal AND query to find matches
+        Set<String> matches = doANDQuery(new Query(phraseTerms, Query.AndOperator));
+        if(matches.isEmpty()) {
+            //no matches at all, don't check positions
+            return resultSet;
+        }
+        
+        //for each term, build the posting list of only matches
+        for(String term : phraseTerms) {
+            PostingList pl = index.get(term);
+            //note: no stop word check needed since we have already done an AND
+            
+            for(String doc : matches) {
+                PostingList matchPostingList = new PostingList();
+                for (PostingListNode pln : pl.getPostingList()) {
+                    if(matches.contains(pln.getDocId())) {
+                        matchPostingList.getPostingList().add(pln);
+                    }
+                }
+                miniIndex.put(term, matchPostingList);
+            }
+        }
+
+        //check for proximity matches for each successive pair of terms
+        PostingList resultPL = null;
+        Boolean isFirst = true;
+        for(String term : phraseTerms) {
+            if(isFirst) {
+                resultPL = miniIndex.get(term);
+                isFirst = false;
+            } else {
+                resultPL = doProximityQuery(resultPL, miniIndex.get(term), 1, 1);
+            }
+        }
+
+        //put each matching document id into a set
+        for(PostingListNode pln : resultPL.getPostingList()) {
+            resultSet.add(pln.getDocId());
+        }
+
+        return resultSet;
+    }
+
+    public Set<String> doANDQuery(Query query) {
         // fetch the terms for this query
-        String terms[] = query.getTerms();
+        ArrayList<String> terms = query.getTerms();
 
         //TreeMap<String,PostingList> solutionSpace = new TreeMap<String,PostingList>();
         // A treeMap for all terms and their corresponding docIds
@@ -57,19 +133,17 @@ public class QueryDictionary {
         // for that term
         for (String term : terms) {
             PostingList pl = index.get(term);
-            if(pl != null) // Stop Words implementation
+            if (pl != null) // Stop Words implementation
             {
-            HashSet<String> docSet = new HashSet<String>();
-            for (PostingListNode pln : pl.getPostingList()) {
-                docSet.add(pln.getDocId());
-            }
-            result.put(term.trim(), docSet);
+                HashSet<String> docSet = new HashSet<String>();
+                for (PostingListNode pln : pl.getPostingList()) {
+                    docSet.add(pln.getDocId());
+                }
+                result.put(term.trim(), docSet);
             }
         }
 
-
-
-        Set<String> partialSet = new HashSet<String>();
+        Set<String> partialSet = new TreeSet<String>();
         boolean first = true;
         for (Map.Entry<String, Set<String>> iterator : result.entrySet()) {
             if (first) {
@@ -80,13 +154,16 @@ public class QueryDictionary {
             }
         }
 
+        return partialSet;
+        /*
         for (String id : partialSet) {
             System.out.println(id);
         }
+        */
     }
 
     public void doORQuery(Query query) {
-        String terms[] = query.getTerms();
+        ArrayList<String> terms = query.getTerms();
         // a hashSet to store the docIds
         HashSet<String> result = new HashSet<String>();
         // PostingList -> LinkedList of PostingListNodes [docId, freq]
@@ -102,21 +179,19 @@ public class QueryDictionary {
                     result.add(pln.getDocId()); // the OR operation
                 }
             }
-
         }
 
         for (String id : result) {
             System.out.println(id);
         }
 
-        executionTime("Average",query.getQueryString());
-
+        executionTime("Average", query.getQueryString());
     }
-
 
     public void doNOTQuery(Query query) {
         // Fetch the terms for this query
-        String terms[] = query.getTerms();
+        ArrayList<String> terms = query.getTerms();
+        
         // Maintain a list of Set<String> which will contain all the
         // docIds for a particular term. note we dont need the terms for the
         // not operation
@@ -126,60 +201,53 @@ public class QueryDictionary {
         // for each term in the query fetch the PostingList pl for that term
         // and then for each PostingListNode pln add all its docIds to a Set<String>
         // and add this to the result ( List<Set<String>> )
-        for(String term : terms)
-        {
-            
+        for (String term : terms) {
+
             PostingList pl = index.get(term);
-            if(pl !=null)   // this is the STOPWords implementation
+            if (pl != null) // this is the STOPWords implementation
             {
-            
-            Set<String> docSet = new LinkedHashSet<String>();
-            for(PostingListNode pln : pl.getPostingList())
-            {
-                docSet.add(pln.getDocId());
-            }
-            result.add(docSet);
+
+                Set<String> docSet = new LinkedHashSet<String>();
+                for (PostingListNode pln : pl.getPostingList()) {
+                    docSet.add(pln.getDocId());
+                }
+                result.add(docSet);
             }
         }
 
-
-
-        
         Set<String> partialSet = new HashSet<String>();
         boolean first = true;
-        for(Set<String> iterator : result)
-        {
-           if(first)
-           {
-               partialSet = iterator ;
-               first=false;
+        for (Set<String> iterator : result) {
+            if (first) {
+                partialSet = iterator;
+                first = false;
+            } else {
+                partialSet.removeAll(iterator); // The NOT Operation
             }
-           else
-               partialSet.removeAll(iterator); // The NOT Operation
         }
 
-        executionTime("Average",query.getQueryString());
+        executionTime("Average", query.getQueryString());
 
         //System.out.println("Result = " + partialSet);
-        for(String id : partialSet) {
+        for (String id : partialSet) {
             System.out.println(id);
         }
-        
+
     }
-/**
- * the objective of this function is to order the postingLists
- * by size and then perform the NOT operation on the terms ( ordered by postingLists size)
- * in both increasing and decreasing order.
- * @param query
- */
-    public void collectNOTStatistics(Query query)
-    {
-        String terms[] = query.getTerms();
+
+    /**
+     * the objective of this function is to order the postingLists
+     * by size and then perform the NOT operation on the terms ( ordered by postingLists size)
+     * in both increasing and decreasing order.
+     * @param query
+     */
+    public void collectNOTStatistics(Query query) {
+        ArrayList<String> terms = query.getTerms();
 
         // In order to achieve this we create a datastructure TreeMap
         // which has postingList size as key and an ArrayList of Set<docIds>
         // for terms with that postingList size
-        TreeMap<Integer,ArrayList<Set<String>>> result = new TreeMap<Integer,ArrayList<Set<String>>>();
+        TreeMap<Integer, ArrayList<Set<String>>> result = new TreeMap<Integer, ArrayList<Set<String>>>();
         // PostingList -> LinkedList of PostingListNodes [ docId, freq]
         //require this for the "not x and y"
 
@@ -190,28 +258,27 @@ public class QueryDictionary {
         // in pl add its docId to a Set<String>.
         // Finally add this entry of pln's size, ArrayList<Set<String>> to the TreeMap
 
-        for(String term : terms)
-        {
+        for (String term : terms) {
             //System.out.println("termsss=" + term);
 
             PostingList pl = index.get(term);
 
-            if(pl!=null) // check for stopwords
+            if (pl != null) // check for stopwords
             {
-            Set<String> docSet = new LinkedHashSet<String>();
-            for(PostingListNode pln : pl.getPostingList())
-            {
-                docSet.add(pln.getDocId());
-            }
-            ArrayList<Set<String>> temp;
-            // check if the result has an entry for this size
-            if(!result.containsKey(pl.getPostingList().size()))
-               temp = new ArrayList<Set<String>>();
-            else
-               temp = result.get(pl.getPostingList().size());
-                        
-            temp.add(docSet);
-            result.put(pl.getPostingList().size(),temp);
+                Set<String> docSet = new LinkedHashSet<String>();
+                for (PostingListNode pln : pl.getPostingList()) {
+                    docSet.add(pln.getDocId());
+                }
+                ArrayList<Set<String>> temp;
+                // check if the result has an entry for this size
+                if (!result.containsKey(pl.getPostingList().size())) {
+                    temp = new ArrayList<Set<String>>();
+                } else {
+                    temp = result.get(pl.getPostingList().size());
+                }
+
+                temp.add(docSet);
+                result.put(pl.getPostingList().size(), temp);
             }
         }
 
@@ -223,56 +290,46 @@ public class QueryDictionary {
 
         Set<String> partialSet = new HashSet<String>();
         boolean first = true;
-        for(Map.Entry<Integer,ArrayList<Set<String>>> iterator : result.entrySet())
-        {
-           for(Set<String> loopSet : iterator.getValue())
-               {
-                   if(first)
-                   {
-                       partialSet = loopSet;
-                       first = false;
-                   }
-                    else
-                        partialSet.removeAll(loopSet); // The NOT operation
-               }
+        for (Map.Entry<Integer, ArrayList<Set<String>>> iterator : result.entrySet()) {
+            for (Set<String> loopSet : iterator.getValue()) {
+                if (first) {
+                    partialSet = loopSet;
+                    first = false;
+                } else {
+                    partialSet.removeAll(loopSet); // The NOT operation
+                }
+            }
 
 
 
         }
 
-
-        executionTime("Slowest",query.getQueryString());
+        executionTime("Slowest", query.getQueryString());
 
         // now in decreasing order of the postinglist size
         // operation is now of the form  not Y and X
 
-        NavigableMap<Integer,ArrayList<Set<String>>> reverse = result.descendingMap();
-       
+        NavigableMap<Integer, ArrayList<Set<String>>> reverse = result.descendingMap();
+
         initiateTime();
         first = true;
-        for(Map.Entry<Integer,ArrayList<Set<String>>> iterator : reverse.entrySet())
-        {
+        for (Map.Entry<Integer, ArrayList<Set<String>>> iterator : reverse.entrySet()) {
 
-               for(Set<String> loopSet : iterator.getValue())
-               {
-                   if(first)
-                   {
-                       partialSet = loopSet;
-                       first = false;
-                   }
-                    else
-                   {
+            for (Set<String> loopSet : iterator.getValue()) {
+                if (first) {
+                    partialSet = loopSet;
+                    first = false;
+                } else {
                     Set<String> temp = loopSet;
                     temp.removeAll(partialSet); // not Y and X
                     partialSet.clear();
                     partialSet.addAll(temp);
-                   }
-               }
+                }
+            }
 
         }
 
-       executionTime("Fastest",query.getQueryString());
-
+        executionTime("Fastest", query.getQueryString());
     }
 
     /**
@@ -281,89 +338,75 @@ public class QueryDictionary {
      * in both increasing and decreasing order.
      * @param query
      */
+    public void collectANDStatistics(Query query) {
 
- public void collectANDStatistics(Query query)
-    {
+        ArrayList<String> terms = query.getTerms();
 
-        String terms[] = query.getTerms();
-       
         // In order to achieve this we create a datastructure TreeMap
         // which has postingList size as key and an ArrayList of Set<docIds>
         // for terms with that postingList size
-        TreeMap<Integer,ArrayList<Set<String>>> result = new TreeMap<Integer,ArrayList<Set<String>>>();
+        TreeMap<Integer, ArrayList<Set<String>>> result = new TreeMap<Integer, ArrayList<Set<String>>>();
 
         // PostingList -> LinkedList of PostingListNodes [ docId, freq]
 
 
-        for(String term : terms)
-        {
+        for (String term : terms) {
             PostingList pl = index.get(term);
-            if(pl!=null) // the STOP Words implementation
+            if (pl != null) // the STOP Words implementation
             {
-       
-            HashSet<String> docSet = new HashSet<String>();
-            for(PostingListNode pln : pl.getPostingList()) {
-                docSet.add(pln.getDocId());
-            }
-            ArrayList<Set<String>> temp;
-            if(result.containsKey(pl.getPostingList().size()))
-               temp = result.get(pl.getPostingList().size());
-            else
-               temp = new ArrayList<Set<String>>();
 
-            temp.add(docSet);
-            result.put(pl.getPostingList().size(), temp);
+                HashSet<String> docSet = new HashSet<String>();
+                for (PostingListNode pln : pl.getPostingList()) {
+                    docSet.add(pln.getDocId());
+                }
+                ArrayList<Set<String>> temp;
+                if (result.containsKey(pl.getPostingList().size())) {
+                    temp = result.get(pl.getPostingList().size());
+                } else {
+                    temp = new ArrayList<Set<String>>();
+                }
+
+                temp.add(docSet);
+                result.put(pl.getPostingList().size(), temp);
             }
         }
 
-
-
         initiateTime();
 
-        
         Set<String> firstSet = new HashSet<String>();
         boolean first = true;
-        for(Map.Entry<Integer,ArrayList<Set<String>>> iterator : result.entrySet())
-        {
+        for (Map.Entry<Integer, ArrayList<Set<String>>> iterator : result.entrySet()) {
 
-
-               for(Set<String> loopSet : iterator.getValue())
-               {
-                   if(first)
-                   {
-                       firstSet = loopSet;
-                       first = false;
-                   }
-                    else
+            for (Set<String> loopSet : iterator.getValue()) {
+                if (first) {
+                    firstSet = loopSet;
+                    first = false;
+                } else {
                     firstSet.retainAll(loopSet); // the AND operation
-               }
+                }
+            }
 
         }
-        executionTime("Fastest",query.getQueryString());
-        
-        NavigableMap<Integer,ArrayList<Set<String>>> reverse = result.descendingMap();
-       
+        executionTime("Fastest", query.getQueryString());
+
+        NavigableMap<Integer, ArrayList<Set<String>>> reverse = result.descendingMap();
+
         initiateTime();
         first = true;
-        for(Map.Entry<Integer,ArrayList<Set<String>>> iterator : reverse.entrySet())
-        {
+        for (Map.Entry<Integer, ArrayList<Set<String>>> iterator : reverse.entrySet()) {
 
 
-               for(Set<String> loopSet : iterator.getValue())
-               {
-                   if(first)
-                   {
-                       firstSet = loopSet;
-                       first = false;
-                   }
-                    else
+            for (Set<String> loopSet : iterator.getValue()) {
+                if (first) {
+                    firstSet = loopSet;
+                    first = false;
+                } else {
                     firstSet.retainAll(loopSet);  // the AND operation
-               }
+                }
+            }
 
         }
 
-       executionTime("Slowest",query.getQueryString());
-
+        executionTime("Slowest", query.getQueryString());
     }
-
 }

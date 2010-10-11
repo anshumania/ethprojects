@@ -31,6 +31,38 @@ public class FileIndexer {
         this.currentDictionary = currentDictionary;
     }
 
+    public static String normalizeString(String stoken) {
+        // StreamTokenizer sometimes reads in words with ','s together.
+        // this is to split it up exactly as we want it.
+        if (stoken.contains(Bundle.COMMA)) {
+            String xtokens[] = stoken.split(Bundle.COMMA);
+            for (String xtoken : xtokens) {
+                if (!xtoken.trim().equals(Bundle.EMPTY)) {
+                    return xtoken.trim();
+                }
+            }
+        }
+
+        // It is without a ',' and works for us
+        return stoken.trim();
+    }
+
+    public static String normalizeWord(StreamTokenizer st, int next) {
+        
+        switch (next) {
+
+            case StreamTokenizer.TT_NUMBER:
+                Double val = st.nval;
+                return val.toString().trim();
+
+            case StreamTokenizer.TT_WORD:
+                return normalizeString(st.sval);
+                
+            default:
+                break;
+        }
+        return "";
+    }
 
     /**
      * This method utilizes the StreamTokenizer class
@@ -57,34 +89,12 @@ public class FileIndexer {
             int position = 0;
             int next = st.nextToken();
             while (next != StreamTokenizer.TT_EOF) {
-                switch (next) {
-
-                    case StreamTokenizer.TT_NUMBER:
-                        Double val = st.nval;
-                        getCurrentDictionary().addToDictionary(docId, val.toString().trim(), position);
-                        position++;
-                        break;
-
-                    case StreamTokenizer.TT_WORD:
-                        // StreamTokenizer sometimes reads in words with ','s together.
-                        // this is to split it up exactly as we want it.
-                        String stoken = st.sval;
-                        if (stoken.contains(Bundle.COMMA)) {
-                            String xtokens[] = stoken.split(Bundle.COMMA);
-                            for (String xtoken : xtokens) {
-                                if (!xtoken.trim().equals(Bundle.EMPTY)) {
-                                    getCurrentDictionary().addToDictionary(docId, xtoken.trim(), position);
-                                }
-                            }
-                        } else {
-                            // It is without a ',' and works for us
-                            getCurrentDictionary().addToDictionary(docId, stoken.trim(), position);
-                        }
-                        position++;
-                        break;
-                    default:
-                        break;
+                String nextString = normalizeWord(st, next);
+                if(!nextString.isEmpty()) {
+                    getCurrentDictionary().addToDictionary(docId, nextString, position);
+                    position++;
                 }
+
                 //fetch the next token.
                 next = st.nextToken();
             }

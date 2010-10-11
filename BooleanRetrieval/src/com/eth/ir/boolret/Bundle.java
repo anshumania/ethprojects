@@ -20,4 +20,6 @@ public final class Bundle {
     public final static String STEMMEDMAP = "stemmedMap";
     public final static String COMMA = ",";
     public final static String EMPTY = "";
+    public final static int DOUBLE_QUOTE = 34;
+    public final static int BACKSLASH = 47;
 }
