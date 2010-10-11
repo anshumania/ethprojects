@@ -21,8 +21,6 @@ import java.util.logging.Logger;
  * @author ANSHUMAN
  */
 public class FileIndexer {
-
-
     private Dictionary currentDictionary;
 
     public Dictionary getCurrentDictionary() {
@@ -32,12 +30,7 @@ public class FileIndexer {
     public void setCurrentDictionary(Dictionary currentDictionary) {
         this.currentDictionary = currentDictionary;
     }
-    // the inverted index with a dictionary of terms<String> and posting lists <PostingList>
 
-    
- 
-
-    
 
     /**
      * This method utilizes the StreamTokenizer class
@@ -61,16 +54,15 @@ public class FileIndexer {
             st.ordinaryChars(58, 64);
 
 
+            int position = 0;
             int next = st.nextToken();
-
             while (next != StreamTokenizer.TT_EOF) {
                 switch (next) {
 
                     case StreamTokenizer.TT_NUMBER:
-//                        System.out.println("nextn = " + st.nval);
                         Double val = st.nval;
-                        getCurrentDictionary().addToDictionary(docId, val.toString().trim());
-                        //checkStopWordsandAddToDictionary(docId, val.toString().trim());
+                        getCurrentDictionary().addToDictionary(docId, val.toString().trim(), position);
+                        position++;
                         break;
 
                     case StreamTokenizer.TT_WORD:
@@ -81,15 +73,14 @@ public class FileIndexer {
                             String xtokens[] = stoken.split(Bundle.COMMA);
                             for (String xtoken : xtokens) {
                                 if (!xtoken.trim().equals(Bundle.EMPTY)) {
-                                    getCurrentDictionary().addToDictionary(docId, xtoken.trim());
-                                    //checkStopWordsandAddToDictionary(docId, xtoken.trim());
+                                    getCurrentDictionary().addToDictionary(docId, xtoken.trim(), position);
                                 }
                             }
                         } else {
                             // It is without a ',' and works for us
-                            getCurrentDictionary().addToDictionary(docId, stoken.trim());
-                            //checkStopWordsandAddToDictionary(docId, stoken.trim());
+                            getCurrentDictionary().addToDictionary(docId, stoken.trim(), position);
                         }
+                        position++;
                         break;
                     default:
                         break;
@@ -125,7 +116,6 @@ public class FileIndexer {
         for (File file : files) {
             if (!file.isHidden() && !file.getName().contains(Bundle.INDEX_FILE)) // hack for getting rid of svn files
             {
-//              /  System.out.println("tokenizing " + file.getName());
                tokenizeFile(file);
             }
         }
@@ -151,7 +141,6 @@ public class FileIndexer {
      *   - Length of shortest posting list
      */
     public void printIndexStats(String phase) {
-        Integer indexSize = getCurrentDictionary().getIndex().size(); //this.index.size();  //TODO - is this the right measure of size?  or # terms/# documents?
         Integer numMatches = 0;
         String longestPostingListTerm = "";
         ArrayList<String> shortestPostingListTerms = new ArrayList<String>();
@@ -159,6 +148,8 @@ public class FileIndexer {
         Integer shortestPostingList = Integer.MAX_VALUE;
         Integer postingListSize = 0;
         Integer numTerms = getCurrentDictionary().getIndex().size();//this.index.size();
+        Integer numDocs = 425;
+        Integer indexSize = numTerms * numDocs;
 
         
         for (Map.Entry<String, PostingList> entry : getCurrentDictionary().getIndex().entrySet()) {
@@ -184,14 +175,16 @@ public class FileIndexer {
         System.out.println("---------------------");
         System.out.println("INDEX STATISTICS [" + phase + "]");
         System.out.println("---------------------");
-        System.out.println("Size of index = " + indexSize + " terms");
+        System.out.println("Size of term-document matrix = " + indexSize + " (" + numTerms + " terms x " + numDocs + " documents)");
         System.out.println("Number of 1s in matrix = " + numMatches);
         System.out.println("Longest Posting List = " + longestPostingList + " ['" + longestPostingListTerm + "']");
         System.out.println("Shortest Posting List = " + shortestPostingList + " [Occurs " + shortestPostingListTerms.size() + " times]");
-        /*        for(String term : shortestPostingListTerms) {
-        System.out.print("'" + term + "'");
+        /*
+        for(String term : shortestPostingListTerms) {
+            System.out.print("'" + term + "'");
         }
-        System.out.println("]");*/
+        System.out.println("]");
+        */
     }
 
     // serialize the index
@@ -227,7 +220,7 @@ public class FileIndexer {
     {
         boolean success = new File(index).delete();
         if(success)
-        Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO,"Deleted previous index {0}",index);
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO,"Deleted previous index {0}",index);
 
     }
 
@@ -236,7 +229,8 @@ public class FileIndexer {
         FileIndexer tkz = new FileIndexer();
 
         //create a new dictionary for this phase with its index file
-        Dictionary phase1Dictionary = new Dictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE);
+        Dictionary phase1Dictionary = new Dictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() +
+                                                                                    "/" + Bundle.INDEX_FILE);
         // notify the fileIndex as to which dictionary its working on
         tkz.setCurrentDictionary(phase1Dictionary);
         //delete the previous index if any
@@ -290,7 +284,6 @@ public class FileIndexer {
         // serialize the index
        // tkz.serializeToFile(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.STEMMEDMAP);
 
-        
     }
 
     public static void main(String args[]) {
