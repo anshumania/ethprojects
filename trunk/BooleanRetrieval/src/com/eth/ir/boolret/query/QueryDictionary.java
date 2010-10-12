@@ -83,9 +83,14 @@ public class QueryDictionary {
         PostingList resultPL = new PostingList();
 
         //for each position in each document in pl1, check if there is a positional match with pl2
+        PostingListNode pln2;
         ListIterator pl2Iterator = pl2.getPostingList().listIterator();
         for(PostingListNode pln : pl1.getPostingList()) {
-            PostingListNode pln2 = (PostingListNode) pl2Iterator.next(); //NOTE: this assumes both list are sorted in the same order (ie. pl1[0] == pl2[0])
+            pln2 = (PostingListNode) pl2Iterator.next();
+            while(!pln2.getDocId().equals(pln.getDocId())) {
+                pln2 = (PostingListNode) pl2Iterator.next();
+            }
+
             Set<Integer> matchingPositions = new TreeSet<Integer>();
             for(Integer position : pln.getPositions()) {
                 for(int nextPosition = position+proximityBefore; nextPosition <= position + proximityAfter; nextPosition++) {
