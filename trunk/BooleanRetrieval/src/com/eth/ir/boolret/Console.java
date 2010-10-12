@@ -31,6 +31,7 @@ public class Console {
             while(true) {
                 String index = "";
                 String query = "";
+                String spellNum = "";
 
                 while (!index.equalsIgnoreCase("BASIC") && !index.equalsIgnoreCase("STOPWORD") && !index.equalsIgnoreCase("STEM")
                         && !index.equalsIgnoreCase("exit") && !index.equalsIgnoreCase("restart")) {
@@ -59,12 +60,25 @@ public class Console {
                     }
 
                     if (query.equals("exit")) { break; }
-                    if (query.equals("restart")) { continue; }
-                    queryParser.executeQuery(query);
+                    if (query.equals("restart")) { break; }
+                    if (query.equalsIgnoreCase("SPELL")) {
+                        spellNum = "";
+                        while (spellNum.isEmpty()) {
+                            System.out.print("How many spelling errors should we find?  ");
+                            spellNum = userIn.readLine();
+                        }
+
+                        if (spellNum.equals("exit")) { break; }
+                        if (spellNum.equals("restart")) { break; }
+                        
+                        queryParser.findSpellingErrors(Integer.parseInt(spellNum));
+                    } else {
+                        queryParser.executeQuery(query);
+                    }
                 }
 
-                if (query.equals("exit")) { break; }
-                if (query.equals("restart")) { continue; }
+                if (query.equals("exit") || spellNum.equals("exit")) { break; }
+                if (query.equals("restart") || spellNum.equals("restart")) { continue; }
 
             }            
 
