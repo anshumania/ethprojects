@@ -66,9 +66,15 @@ public class QueryParser {
         Query q = new Query(query);
         String operator = q.getOperator();
 
-        //if(operator == null && q.hasProximityTerms()) {
-        if (!q.getPhrases().isEmpty()) {
-            //TESTING - just does the first phrase for now
+        if(q.hasProximityQueries()) {
+            //NOTE: just does the first proximity search for now
+            ProximityQuery pq = q.getProximityQueries().get(0);
+            TreeSet<String> result = (TreeSet) getCurrentQueryDictionary().doProximityQuery(pq.getFirstTerm(), pq.getSecondTerm(), -pq.getDistance(), pq.getDistance());
+            for (String id : result) {
+                System.out.println(id);
+            }
+        } else if (q.hasPhrases()) {
+            //NOTE: just does the first phrase for now
             TreeSet<String> result = (TreeSet) getCurrentQueryDictionary().doPhraseQuery(q.getPhrases().get(0));
             for (String id : result) {
                 System.out.println(id);
@@ -138,6 +144,17 @@ public class QueryParser {
         }
     }
 
+    public static void proximityTest() {
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Testing Proximity Queries");
+        QueryParser queryParser = new QueryParser();
+        queryParser.setCurrentQueryDictionary(new QueryDictionary());
+
+        //Load index from file
+        queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
+        String query = "FORCE /2 NUCLEAR";
+        queryParser.executeQuery(query);
+    }
+
     public static void phraseTest() {
         Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Testing Phrase Query Parsing");
         QueryParser queryParser = new QueryParser();
@@ -186,6 +203,7 @@ public class QueryParser {
         //QueryParser.phase1();
         //QueryParser.phase2_StopWords();
         //QueryParser.phase2_Stemming();
-        QueryParser.phraseTest();
+        //QueryParser.phraseTest();
+        QueryParser.proximityTest();
     }
 }

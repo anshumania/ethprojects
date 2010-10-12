@@ -38,6 +38,46 @@ public class QueryDictionary {
         Logger.getLogger(QueryDictionary.class.getName()).log(Level.INFO, " Query [ {0} ] {1} Execution Time {2}", new Object[]{query, type, (System.nanoTime() - currentTime)});
     }
 
+    public Set<String> doProximityQuery(String term1, String term2, Integer proximityBefore, Integer proximityAfter) {
+        TreeMap<String, PostingList> miniIndex = new TreeMap<String, PostingList>();
+        Set<String> resultSet = new TreeSet<String>();
+
+        //first do a normal AND query to find matches
+        ArrayList<String> terms = new ArrayList<String>();
+        terms.add(term1);
+        terms.add(term2);
+        Set<String> matches = doANDQuery(new Query(terms, Query.AndOperator));
+        if(matches.isEmpty()) {
+            //no matches at all, don't check positions
+            return resultSet;
+        }
+        
+        //for each term, build the posting list of only matches
+        for(String term : terms) {
+            PostingList pl = index.get(term);
+            //note: no stop word check needed since we have already done an AND
+            
+            for(String doc : matches) {
+                PostingList matchPostingList = new PostingList();
+                for (PostingListNode pln : pl.getPostingList()) {
+                    if(matches.contains(pln.getDocId())) {
+                        matchPostingList.getPostingList().add(pln);
+                    }
+                }
+                miniIndex.put(term, matchPostingList);
+            }
+        }
+
+        PostingList resultPL =  doProximityQuery(miniIndex.get(term1), miniIndex.get(term2), proximityBefore, proximityAfter);
+        
+        //put each matching document id into a set
+        for(PostingListNode pln : resultPL.getPostingList()) {
+            resultSet.add(pln.getDocId());
+        }
+
+        return resultSet;
+    }
+
     public PostingList doProximityQuery(PostingList pl1, PostingList pl2, Integer proximityBefore, Integer proximityAfter) {
         
         PostingList resultPL = new PostingList();
