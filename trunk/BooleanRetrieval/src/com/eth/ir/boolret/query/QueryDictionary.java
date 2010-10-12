@@ -106,28 +106,22 @@ public class QueryDictionary {
         return resultPL;
     }
 
-    /*
-    public Set<String> doProximityQuery(String term1, String term2, Integer distance) {
-        
-    }
-     */
-
-    public Set<String> doPhraseQuery(ArrayList<String> phraseTerms) {
+    public Set<String> doProximityQuery(ArrayList<String> terms, Integer distance) {
         Set<String> resultSet = new TreeSet<String>();
         TreeMap<String, PostingList> miniIndex = new TreeMap<String, PostingList>();
 
         //first do a normal AND query to find matches
-        Set<String> matches = doANDQuery(new Query(phraseTerms, Query.AndOperator));
+        Set<String> matches = doANDQuery(new Query(terms, Query.AndOperator));
         if(matches.isEmpty()) {
             //no matches at all, don't check positions
             return resultSet;
         }
-        
+
         //for each term, build the posting list of only matches
-        for(String term : phraseTerms) {
+        for(String term : terms) {
             PostingList pl = index.get(term);
             //note: no stop word check needed since we have already done an AND
-            
+
             for(String doc : matches) {
                 PostingList matchPostingList = new PostingList();
                 for (PostingListNode pln : pl.getPostingList()) {
@@ -142,12 +136,12 @@ public class QueryDictionary {
         //check for proximity matches for each successive pair of terms
         PostingList resultPL = null;
         Boolean isFirst = true;
-        for(String term : phraseTerms) {
+        for(String term : terms) {
             if(isFirst) {
                 resultPL = miniIndex.get(term);
                 isFirst = false;
             } else {
-                resultPL = doProximityQuery(resultPL, miniIndex.get(term), 1, 1);
+                resultPL = doProximityQuery(resultPL, miniIndex.get(term), 0, distance);
             }
         }
 
@@ -157,6 +151,10 @@ public class QueryDictionary {
         }
 
         return resultSet;
+    }
+
+    public Set<String> doPhraseQuery(ArrayList<String> phraseTerms) {
+        return doProximityQuery(phraseTerms, 1);
     }
 
     public Set<String> doANDQuery(Query query) {
@@ -175,7 +173,7 @@ public class QueryDictionary {
             PostingList pl = index.get(term);
             if (pl != null) // Stop Words implementation
             {
-                HashSet<String> docSet = new HashSet<String>();
+                TreeSet<String> docSet = new TreeSet<String>();
                 for (PostingListNode pln : pl.getPostingList()) {
                     docSet.add(pln.getDocId());
                 }
@@ -202,10 +200,10 @@ public class QueryDictionary {
         */
     }
 
-    public void doORQuery(Query query) {
+    public Set<String> doORQuery(Query query) {
         ArrayList<String> terms = query.getTerms();
         // a hashSet to store the docIds
-        HashSet<String> result = new HashSet<String>();
+        TreeSet<String> result = new TreeSet<String>();
         // PostingList -> LinkedList of PostingListNodes [docId, freq]
         initiateTime();
 
@@ -220,15 +218,18 @@ public class QueryDictionary {
                 }
             }
         }
-
+        /*
         for (String id : result) {
             System.out.println(id);
         }
+        */
 
         executionTime("Average", query.getQueryString());
+
+        return result;
     }
 
-    public void doNOTQuery(Query query) {
+    public Set<String> doNOTQuery(Query query) {
         // Fetch the terms for this query
         ArrayList<String> terms = query.getTerms();
         
@@ -247,7 +248,7 @@ public class QueryDictionary {
             if (pl != null) // this is the STOPWords implementation
             {
 
-                Set<String> docSet = new LinkedHashSet<String>();
+                Set<String> docSet = new TreeSet<String>();
                 for (PostingListNode pln : pl.getPostingList()) {
                     docSet.add(pln.getDocId());
                 }
@@ -255,7 +256,7 @@ public class QueryDictionary {
             }
         }
 
-        Set<String> partialSet = new HashSet<String>();
+        Set<String> partialSet = new TreeSet<String>();
         boolean first = true;
         for (Set<String> iterator : result) {
             if (first) {
@@ -268,11 +269,13 @@ public class QueryDictionary {
 
         executionTime("Average", query.getQueryString());
 
+        /*
         //System.out.println("Result = " + partialSet);
         for (String id : partialSet) {
             System.out.println(id);
         }
-
+        */
+        return partialSet;
     }
 
     /**
