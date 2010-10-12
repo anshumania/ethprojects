@@ -5,10 +5,14 @@
 
 package com.eai.servlet;
 
-import com.eai.session.AssignmentSessionBeanLocal;
+import com.eai.entity.Address;
+import com.eai.entity.Customer;
+import com.eai.session.*;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.*;
 import javax.ejb.EJB;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -37,17 +41,19 @@ public class AssignmentServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
         try {
-            //TODO output your page here
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet AssignmentServlet</title>");  
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet AssignmentServlet at " + request.getContextPath () + "</h1>");
-            out.println("Number of Customers = " + assignSBLocal.fetchAllCustomers());
-            out.println("</body>");
-            out.println("</html>");
-            
+            List<Customer> customers = assignSBLocal.fetchAllCustomers();
+			ArrayList<List<Address>> addresses = new ArrayList<List<Address>>();
+
+			for (Customer c : customers)
+			{
+				List<Address> a = assignSBLocal.fetchAddressesByCustomerId(c);
+				addresses.add(a);
+			}
+
+			request.setAttribute("addresses", addresses);
+			request.setAttribute("customers", customers);
+			RequestDispatcher view = request.getRequestDispatcher("showCustomers.jsp");
+			view.forward(request, response);
         } finally { 
             out.close();
         }
