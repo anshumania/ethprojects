@@ -217,7 +217,6 @@ public class QueryParser {
 
     //Ugly brute force attempt at finding words in the index that are actually 2 words with a space
     public void findSpellingErrors(int numToFind) {
-        //ArrayList<String> found = new ArrayList<String>();
         int numFound = 0;
 
         TreeMap<String, PostingList> index = this.getCurrentQueryDictionary().getIndex();
@@ -237,8 +236,8 @@ public class QueryParser {
                             int substring2Count = index.get(substring2).getNumPostings();
                             //consider the substring a "more valid" word if it appears in the index more than the full word
                             if(substring2Count > wordCount) {
-                                System.out.println(word + " [" + substring1 + "][" + substring2 + "]");
-                                //found.add(word);
+                                System.out.println(word + "  [" + substring1 + "][" + substring2 + "]");
+                                
                                 numFound++;
                                 if(numToFind != 0 && numFound >= numToFind) {
                                     System.out.println(numFound + " spelling errors found.");
@@ -250,5 +249,6 @@ public class QueryParser {
                 }
             }
         }
+        System.out.println(numFound + " spelling errors found.");
     }
 }
