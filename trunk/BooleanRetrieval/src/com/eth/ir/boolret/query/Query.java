@@ -23,6 +23,7 @@ public class Query {
     //String [] terms; //array of all terms in the query
     private ArrayList<String> terms;
     private ArrayList<ArrayList<String>> phrases;
+    private ArrayList<ProximityQuery> proximityQueries;
 
     //TODO - proximity terms and distances
     private String operator; //Must be one of: 'AND', 'OR', 'NOT'
@@ -35,6 +36,7 @@ public class Query {
     public Query(String query) {
         this.terms = new ArrayList<String>();
         this.phrases = new ArrayList<ArrayList<String>>();
+        this.proximityQueries = new ArrayList<ProximityQuery>();
         this.queryString = query;
         parseQueryString(query);
     }
@@ -42,6 +44,8 @@ public class Query {
     public Query(ArrayList<String> terms, String operatorString) {
         this.terms = terms;
         this.operator = operatorString;
+        this.phrases = new ArrayList<ArrayList<String>>();
+        this.proximityQueries = new ArrayList<ProximityQuery>();
     }
 
     private Boolean isOperator(String s) {
@@ -62,21 +66,40 @@ public class Query {
             in = new BufferedReader(reader);
             StreamTokenizer st = new StreamTokenizer(in);
             // note:  different than when creating index because we want to allow " and / in searches now
-            st.ordinaryChars(34, 46);
+            st.ordinaryChars(34, 47);
             st.ordinaryChars(58, 64);
             st.quoteChar(Bundle.DOUBLE_QUOTE);
+            st.wordChars(47, 47);
+            st.wordChars(65, 90);
+            st.wordChars(97, 122);
 
+            Boolean isProximity = false;
+            Integer proximityDistance = 0;
+            String lastTerm = null, proximityFirstTerm = null;
             int next = st.nextToken();
             while (next != StreamTokenizer.TT_EOF) {
-                if(next == Bundle.DOUBLE_QUOTE) {
-                    //this is a phrase
+                if(isProximity) {
+                    //last token was a proximity distance, now read in second term
+                    String nextTerm = FileIndexer.normalizeString(st.sval);
+                    this.proximityQueries.add(new ProximityQuery(proximityFirstTerm, nextTerm, proximityDistance));
+                    isProximity = false;
+                    proximityFirstTerm = null;
+                    proximityDistance = 0;
+                    lastTerm = nextTerm;
+                } else if(next == Bundle.DOUBLE_QUOTE) {
+                    //this is a phrase, read in all at once
                     String phrase = st.sval;
                     this.phrases.add(new ArrayList<String>());
                     for(String word : phrase.split("[ ]")) {
                         String nextTerm = FileIndexer.normalizeString(word);
                         this.phrases.get(this.phrases.size()-1).add(nextTerm);
                     }
-                // else if(next == Bundle.BACKSLASH) {
+                } else if (next == StreamTokenizer.TT_WORD && st.sval.startsWith(Bundle.BACKSLASH)) {
+                    //this is a proximity search
+                    isProximity = true;
+                    proximityDistance = Integer.parseInt(st.sval.substring(1));
+                    proximityFirstTerm = lastTerm;
+                    this.terms.remove(lastTerm);
                 } else {
 
                     //don't add operators to list of terms
@@ -91,6 +114,8 @@ public class Query {
                         if(!nextTerm.isEmpty()) {
                             this.terms.add(nextTerm);
                         }
+
+                        lastTerm = nextTerm;
                     }
                 }
                 
@@ -133,5 +158,17 @@ public class Query {
 
     public ArrayList<ArrayList<String>> getPhrases() {
         return phrases;
+    }
+
+    public ArrayList<ProximityQuery> getProximityQueries() {
+        return proximityQueries;
+    }
+
+    public Boolean hasPhrases() {
+        return !this.getPhrases().isEmpty();
+    }
+
+    public Boolean hasProximityQueries() {
+        return !this.getProximityQueries().isEmpty();
     }
 }
