@@ -9,6 +9,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -211,5 +213,42 @@ public class QueryParser {
         //QueryParser.phase2_Stemming();
         QueryParser.phraseTest();
         QueryParser.proximityTest();
+    }
+
+    //Ugly brute force attempt at finding words in the index that are actually 2 words with a space
+    public void findSpellingErrors(int numToFind) {
+        //ArrayList<String> found = new ArrayList<String>();
+        int numFound = 0;
+
+        TreeMap<String, PostingList> index = this.getCurrentQueryDictionary().getIndex();
+        Set<String> dictionary = index.keySet();
+        //iterate over all the words in the dictionary
+        for(String word : dictionary) {
+            int wordCount = index.get(word).getNumPostings();
+            //iterate over all substrings, check each half to see if it is two valid words
+            for(int wordIndex=1; wordIndex < word.length(); wordIndex++) {
+                String substring1 = word.substring(0, wordIndex);
+                if(substring1.length() > 3 && dictionary.contains(substring1)) {
+                    int substring1Count = index.get(substring1).getNumPostings();
+                    //consider the substring a "more valid" word if it appears in the index more than the full word
+                    if(substring1Count > wordCount) {
+                        String substring2 = word.substring(wordIndex);
+                        if(substring2.length() > 3 && dictionary.contains(substring2)) {
+                            int substring2Count = index.get(substring2).getNumPostings();
+                            //consider the substring a "more valid" word if it appears in the index more than the full word
+                            if(substring2Count > wordCount) {
+                                System.out.println(word + " [" + substring1 + "][" + substring2 + "]");
+                                //found.add(word);
+                                numFound++;
+                                if(numToFind != 0 && numFound >= numToFind) {
+                                    System.out.println(numFound + " spelling errors found.");
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

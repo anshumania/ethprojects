@@ -26,6 +26,10 @@ public class QueryDictionary {
     // the universal index for all types of parsers
     protected TreeMap<String, PostingList> index = new TreeMap<String, PostingList>();
 
+    public TreeMap<String, PostingList> getIndex() {
+        return index;
+    }
+
     public void setIndex(TreeMap<String, PostingList> index) {
         this.index = index;
     }
