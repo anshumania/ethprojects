@@ -5,7 +5,9 @@
 
 package com.eai.session;
 
-import java.util.Collection;
+import com.eai.entity.Address;
+import com.eai.entity.Customer;
+import java.util.*;
 import javax.ejb.Local;
 
 /**
@@ -15,6 +17,7 @@ import javax.ejb.Local;
 @Local
 public interface AssignmentSessionBeanLocal {
 
-    public Collection fetchAllCustomers();
+    public List<Customer> fetchAllCustomers();
+	public List<Address> fetchAddressesByCustomerId(Customer customer);
     
 }

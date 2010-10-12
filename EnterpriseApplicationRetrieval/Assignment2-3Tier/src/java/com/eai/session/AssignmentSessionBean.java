@@ -5,10 +5,13 @@
 
 package com.eai.session;
 
-import java.util.Collection;
+import com.eai.entity.Address;
+import com.eai.entity.Customer;
+import java.util.*;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import javax.persistence.Query;
 
 /**
  *
@@ -17,14 +20,19 @@ import javax.persistence.PersistenceUnit;
 @Stateless
 public class AssignmentSessionBean implements AssignmentSessionBeanLocal {
 
-    @PersistenceUnit
+    @PersistenceUnit(unitName="ctx_eai_zurich")
     EntityManagerFactory entityManagerFactory;
-    
-    public Collection fetchAllCustomers() {
 
+	@Override
+    public List<Customer> fetchAllCustomers() {
         return entityManagerFactory.createEntityManager().createNamedQuery("Customer.findAll").getResultList();
+    }
 
-        //return null;
+	@Override
+    public List<Address> fetchAddressesByCustomerId(Customer customer) {
+        Query q = entityManagerFactory.createEntityManager().createNamedQuery("Address.findByCustomerId");
+		q.setParameter("customer", customer);
+		return q.getResultList();
     }
     
     // Add business logic below. (Right-click in editor and choose

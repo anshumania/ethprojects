@@ -14,6 +14,14 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <h1>Hello World!</h1>
+        <form method="post" action="AssignmentServlet">
+			<input type="hidden" name="action" value="view" />
+			<select name="city">
+				<option value="all">All</option>
+				<option value="zurich">Zurich</option>
+				<option value="bern">Bern</option>
+			</select>
+			<input type="submit" value="Show customers!" />
+		</form>
     </body>
 </html>

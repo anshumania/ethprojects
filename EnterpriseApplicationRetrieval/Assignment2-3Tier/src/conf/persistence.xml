@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-  <persistence-unit name="Assignment2-3TierPU" transaction-type="JTA">
-    <jta-data-source>postgres</jta-data-source>
+  <persistence-unit name="ctx_eai_bern" transaction-type="JTA">
+    <jta-data-source>eai_bern</jta-data-source>
+    <properties/>
+  </persistence-unit>
+  <persistence-unit name="ctx_eai_zurich" transaction-type="JTA">
+    <jta-data-source>eai_zurich</jta-data-source>
     <properties/>
   </persistence-unit>
 </persistence>
