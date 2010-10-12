@@ -22,8 +22,8 @@ public class Console {
         QueryParser queryParser = new QueryParser();
         HashMap<String, String> indexFilenames= new HashMap<String, String>();
         indexFilenames.put("BASIC", Bundle.INDEX_FILE);
-        indexFilenames.put("STOPWORD", Bundle.STOPWORD);
-        indexFilenames.put("STEM", Bundle.PORTERSTEM);
+        indexFilenames.put("STOPWORD", Bundle.INDEX_FILE + Bundle.STOPWORD);
+        indexFilenames.put("STEM", Bundle.INDEX_FILE + Bundle.PORTERSTEM);
         
         try {
             userIn = new BufferedReader(new InputStreamReader(System.in));
@@ -49,6 +49,7 @@ public class Console {
                 }
 
                 System.out.println("Loading index...");
+                String filename = indexFilenames.get(index.toUpperCase());
                 queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + indexFilenames.get(index.toUpperCase())).getFile());
                 System.out.println("Finished loading index.");
                 
