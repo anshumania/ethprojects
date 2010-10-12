@@ -19,15 +19,16 @@ public class Query {
     public static final String AndOperator = "AND";
     public static final String OrOperator = "OR";
     public static final String NotOperator = "NOT";
+    public static final String ProximityOperator = "PROXIMITY";
+    public static final String PhraseOperator = "PHRASE";
 
     //String [] terms; //array of all terms in the query
     private ArrayList<String> terms;
-    private ArrayList<ArrayList<String>> phrases;
-    private ArrayList<ProximityQuery> proximityQueries;
 
     //TODO - proximity terms and distances
-    private String operator; //Must be one of: 'AND', 'OR', 'NOT'
+    private String operator; //Must be one of: 'AND', 'OR', 'NOT', 'PROXIMITY'
     private String queryString; // the original query string for this Query
+    private Integer proximity = 0;
 
     /**
      *
@@ -35,8 +36,6 @@ public class Query {
      */
     public Query(String query) {
         this.terms = new ArrayList<String>();
-        this.phrases = new ArrayList<ArrayList<String>>();
-        this.proximityQueries = new ArrayList<ProximityQuery>();
         this.queryString = query;
         parseQueryString(query);
     }
@@ -44,8 +43,6 @@ public class Query {
     public Query(ArrayList<String> terms, String operatorString) {
         this.terms = terms;
         this.operator = operatorString;
-        this.phrases = new ArrayList<ArrayList<String>>();
-        this.proximityQueries = new ArrayList<ProximityQuery>();
     }
 
     private Boolean isOperator(String s) {
@@ -73,33 +70,22 @@ public class Query {
             st.wordChars(65, 90);
             st.wordChars(97, 122);
 
-            Boolean isProximity = false;
-            Integer proximityDistance = 0;
-            String lastTerm = null, proximityFirstTerm = null;
+
             int next = st.nextToken();
             while (next != StreamTokenizer.TT_EOF) {
-                if(isProximity) {
-                    //last token was a proximity distance, now read in second term
-                    String nextTerm = FileIndexer.normalizeString(st.sval);
-                    this.proximityQueries.add(new ProximityQuery(proximityFirstTerm, nextTerm, proximityDistance));
-                    isProximity = false;
-                    proximityFirstTerm = null;
-                    proximityDistance = 0;
-                    lastTerm = nextTerm;
-                } else if(next == Bundle.DOUBLE_QUOTE) {
+                if(next == Bundle.DOUBLE_QUOTE) {
                     //this is a phrase, read in all at once
+                    this.operator = Query.PhraseOperator;
                     String phrase = st.sval;
-                    this.phrases.add(new ArrayList<String>());
                     for(String word : phrase.split("[ ]")) {
                         String nextTerm = FileIndexer.normalizeString(word);
-                        this.phrases.get(this.phrases.size()-1).add(nextTerm);
+                        this.terms.add(nextTerm);
                     }
+                    break;
                 } else if (next == StreamTokenizer.TT_WORD && st.sval.startsWith(Bundle.BACKSLASH)) {
-                    //this is a proximity search
-                    isProximity = true;
-                    proximityDistance = Integer.parseInt(st.sval.substring(1));
-                    proximityFirstTerm = lastTerm;
-                    this.terms.remove(lastTerm);
+                    //this is a proximity search, store proximity distance
+                    this.proximity = Integer.parseInt(st.sval.substring(1));
+                    this.operator = Query.ProximityOperator;
                 } else {
 
                     //don't add operators to list of terms
@@ -115,7 +101,6 @@ public class Query {
                             this.terms.add(nextTerm);
                         }
 
-                        lastTerm = nextTerm;
                     }
                 }
                 
@@ -156,19 +141,8 @@ public class Query {
         return queryString;
     }
 
-    public ArrayList<ArrayList<String>> getPhrases() {
-        return phrases;
+    public Integer getProximity() {
+        return proximity;
     }
 
-    public ArrayList<ProximityQuery> getProximityQueries() {
-        return proximityQueries;
-    }
-
-    public Boolean hasPhrases() {
-        return !this.getPhrases().isEmpty();
-    }
-
-    public Boolean hasProximityQueries() {
-        return !this.getProximityQueries().isEmpty();
-    }
 }

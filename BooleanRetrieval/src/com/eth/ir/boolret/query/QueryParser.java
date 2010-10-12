@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -65,37 +66,38 @@ public class QueryParser {
         //System.out.println(query);
         Query q = new Query(query);
         String operator = q.getOperator();
+        TreeSet<String> result = null;
+        ArrayList<TreeSet<String>> phraseResults = new ArrayList<TreeSet<String>>();
 
-        if(q.hasProximityQueries()) {
-            //NOTE: just does the first proximity search for now
-            ProximityQuery pq = q.getProximityQueries().get(0);
-            TreeSet<String> result = (TreeSet) getCurrentQueryDictionary().doProximityQuery(pq.getFirstTerm(), pq.getSecondTerm(), -pq.getDistance(), pq.getDistance());
-            for (String id : result) {
-                System.out.println(id);
-            }
-        } else if (q.hasPhrases()) {
-            //NOTE: just does the first phrase for now
-            TreeSet<String> result = (TreeSet) getCurrentQueryDictionary().doPhraseQuery(q.getPhrases().get(0));
-            for (String id : result) {
-                System.out.println(id);
-            }
+        //first pre-process all the phrases
+        if (operator.equalsIgnoreCase(Query.PhraseOperator)) {
+            result = (TreeSet) getCurrentQueryDictionary().doPhraseQuery(q.getTerms());
+
+        } else if(operator.equalsIgnoreCase(Query.ProximityOperator)) {
+            result = (TreeSet) getCurrentQueryDictionary().doProximityQuery(q.getTerms(), q.getProximity());
+
         } else if (operator.equalsIgnoreCase(Query.AndOperator)) {
-            TreeSet<String> result = (TreeSet) getCurrentQueryDictionary().doANDQuery(q);
-
-            for (String id : result) {
-                System.out.println(id);
-            }
+            result = (TreeSet) getCurrentQueryDictionary().doANDQuery(q);
 
             getCurrentQueryDictionary().collectANDStatistics(q);
 
         } else if (operator.equalsIgnoreCase(Query.OrOperator)) {
-            getCurrentQueryDictionary().doORQuery(q);
+            result = (TreeSet) getCurrentQueryDictionary().doORQuery(q);
 
         } else if (operator.equalsIgnoreCase(Query.NotOperator)) {
-            getCurrentQueryDictionary().doNOTQuery(q);
+            result = (TreeSet) getCurrentQueryDictionary().doNOTQuery(q);
 
         } else {
             //TODO - throw InvalidQueryOperatorException
+        }
+
+        if(result.size() > 0) {
+            System.out.println(result.size() + " matches:");
+            for (String id : result) {
+                System.out.println(id);
+            }
+        } else {
+            System.out.println("No matches found.");
         }
     }
 
@@ -151,7 +153,7 @@ public class QueryParser {
 
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
-        String query = "FORCE /2 NUCLEAR";
+        String query = "/9 POLITICAL PARTY";
         queryParser.executeQuery(query);
     }
 
@@ -162,7 +164,7 @@ public class QueryParser {
 
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
-        String query = "\"NUCLEAR STRIKE\"";
+        String query = "\"POLITICAL PARTY\"";
         queryParser.executeQuery(query);
     }
 
@@ -203,7 +205,7 @@ public class QueryParser {
         //QueryParser.phase1();
         //QueryParser.phase2_StopWords();
         //QueryParser.phase2_Stemming();
-        //QueryParser.phraseTest();
+        QueryParser.phraseTest();
         QueryParser.proximityTest();
     }
 }

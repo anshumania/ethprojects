@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  *
@@ -82,7 +83,7 @@ public class StemmedQueryDictionary extends QueryDictionary {
          */
     }
 
-    public void doORQuery(Query query) {
+    public Set<String> doORQuery(Query query) {
         ArrayList<String> terms = query.getTerms();
         // a hashSet to store the docIds
         HashSet<String> result = new HashSet<String>();
@@ -107,15 +108,18 @@ public class StemmedQueryDictionary extends QueryDictionary {
 
         }
 
+        /*
         for (String id : result) {
             System.out.println(id);
         }
+        */
 
         executionTime("Average", query.getQueryString());
 
+        return result;
     }
 
-    public void doNOTQuery(Query query) {
+    public Set<String> doNOTQuery(Query query) {
         // Fetch the terms for this query
         ArrayList<String> terms = query.getTerms();
         // Maintain a list of Set<String> which will contain all the
@@ -145,10 +149,7 @@ public class StemmedQueryDictionary extends QueryDictionary {
             }
         }
 
-
-
-
-        Set<String> partialSet = new HashSet<String>();
+        Set<String> partialSet = new TreeSet<String>();
         boolean first = true;
         for (Set<String> iterator : result) {
             System.out.println("iterator" + iterator);
@@ -162,11 +163,13 @@ public class StemmedQueryDictionary extends QueryDictionary {
 
         executionTime("Average", query.getQueryString());
 
+        /*
         //System.out.println("Result = " + partialSet);
         for (String id : partialSet) {
             System.out.println(id);
         }
-
+        */
+        return partialSet;
     }
 
     /**
