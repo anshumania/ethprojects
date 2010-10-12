@@ -63,13 +63,17 @@ public class QueryParser {
      * @param query The query to execute.  May contain whitespace at front and/or back.
      */
     public void executeQuery(String query) {
-        //System.out.println(query);
+        System.out.println("[QUERY]  " + query);
         Query q = new Query(query);
         String operator = q.getOperator();
         TreeSet<String> result = null;
         ArrayList<TreeSet<String>> phraseResults = new ArrayList<TreeSet<String>>();
 
-        //first pre-process all the phrases
+        if(operator == null) {
+            System.out.println("Invalid Query");
+            return;
+        }
+
         if (operator.equalsIgnoreCase(Query.PhraseOperator)) {
             result = (TreeSet) getCurrentQueryDictionary().doPhraseQuery(q.getTerms());
 
@@ -153,7 +157,7 @@ public class QueryParser {
 
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
-        String query = "/9 POLITICAL PARTY";
+        String query = "/9 DELEGATES MEETING";
         queryParser.executeQuery(query);
     }
 
@@ -164,7 +168,7 @@ public class QueryParser {
 
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
-        String query = "\"POLITICAL PARTY\"";
+        String query = "\"DELEGATES MEETING\"";
         queryParser.executeQuery(query);
     }
 
