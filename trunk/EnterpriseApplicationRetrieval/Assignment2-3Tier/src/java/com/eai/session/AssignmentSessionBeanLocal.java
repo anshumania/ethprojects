@@ -16,5 +16,6 @@ import javax.ejb.Local;
 public interface AssignmentSessionBeanLocal {
 
     public Collection fetchAllCustomers(String cityName);
-    
+    public void updateCustomer(String cityName, int customerId, String username, String password, String firstname, String lastname, String email);
+
 }
