@@ -92,9 +92,18 @@ public class AssignmentServlet extends HttpServlet {
 				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
 				dispatcher.forward(request, response);
             }
-            if(tierAction.equals("deleteCustomers"))
+            if(tierAction.equals("deleteCustomer"))
             {
-                // do something
+				int customerId = Integer.parseInt(request.getParameter("customerid"));
+
+                assignSBLocal.deleteCustomer(cityName, customerId);
+				Collection customers = assignSBLocal.fetchAllCustomers(cityName);
+
+				request.setAttribute("customers", customers);
+				request.getSession().setAttribute("cityName", cityName);
+
+				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
+				dispatcher.forward(request, response);
             }
             if(tierAction.equals("addCustomer"))
             {

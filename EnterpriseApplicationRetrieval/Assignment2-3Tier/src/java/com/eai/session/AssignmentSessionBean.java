@@ -117,6 +117,26 @@ public class AssignmentSessionBean implements AssignmentSessionBeanLocal {
 		em.persist(c);
 	}
 
+	@Override
+	public void deleteCustomer(String cityName, int customerId)
+	{
+		EntityManager em = null;
+		if(cityName.equalsIgnoreCase("Zurich"))
+           em = entityManagerFZurich.createEntityManager();
+        else if(cityName.equalsIgnoreCase("Berne"))
+           em = entityManagerFBerne.createEntityManager();
+        else
+        {
+            /*throw unsupported city exception*/
+        }
+
+		Query q = em.createNamedQuery("Customer.findByCustomerId");
+		q.setParameter("customerId", customerId);
+		Customer c = (Customer)q.getResultList().get(0);
+
+		em.remove(c);
+	}
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
 
