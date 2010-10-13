@@ -1,10 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.eai.beans;
 
+import com.eai.entity.Address;
+import java.util.Collection;
 import java.util.Date;
 
 /**
@@ -12,6 +9,15 @@ import java.util.Date;
  * @author ANSHUMAN
  */
 public class CustomerBean {
+
+    private Integer customerId;
+    private String username;
+    private String password;
+    private String firstname;
+    private String lastname;
+    private String email;
+    private Date dateAdded;
+    private Collection<Address> addressCollection;
 
     public Integer getCustomerId() {
         return customerId;
@@ -68,21 +74,4 @@ public class CustomerBean {
     public void setUsername(String username) {
         this.username = username;
     }
-
-    private Integer customerId;
-    private String username;
-
-    private String password;
-
-    private String firstname;
-
-    private String lastname;
-
-    private String email;
-
-    private Date dateAdded;
-    
-    //private Collection<Address> addressCollection;
-
-
 }

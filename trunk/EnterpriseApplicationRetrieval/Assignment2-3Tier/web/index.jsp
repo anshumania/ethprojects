@@ -11,15 +11,15 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
+        <title>Choose Location | EAI Assignment #2</title>
     </head>
     <body>
         <h1>Assignment2 3 Tier Application</h1>
         <form action="AssignmentServlet"  method="GET">
             <input type="hidden" name="tierAction" value="viewCustomers"/>
             <select name="cityName">
-                <option value="zurich">Zurich</option>
-                <option value="berne">Berne</option>
+                <option value="Zurich">Zurich</option>
+                <option value="Berne">Berne</option>
             </select>
             <input type="submit" value="View Customers" />
         </form>

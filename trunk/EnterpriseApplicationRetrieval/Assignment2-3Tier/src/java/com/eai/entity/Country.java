@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.eai.entity;
 
 import java.io.Serializable;
@@ -11,10 +6,13 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 /**
@@ -26,11 +24,13 @@ import javax.persistence.Table;
 @NamedQueries({
     @NamedQuery(name = "Country.findAll", query = "SELECT c FROM Country c"),
     @NamedQuery(name = "Country.findByCountryId", query = "SELECT c FROM Country c WHERE c.countryId = :countryId"),
-    @NamedQuery(name = "Country.findByCountryName", query = "SELECT c FROM Country c WHERE c.countryName = :countryName")})
+    @NamedQuery(name = "Country.findByCountryName", query = "SELECT c FROM Country c WHERE c.countryName = :countryName"),
+    @NamedQuery(name = "Country.getLatestCountry", query = "SELECT c FROM Country c ORDER BY c.countryId DESC")})
 public class Country implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
+    //@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="country_country_id_seq")
     @Column(name = "country_id")
     private Integer countryId;
     @Basic(optional = false)
