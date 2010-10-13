@@ -10,6 +10,7 @@ import com.eai.entity.Address;
 import com.eai.entity.Customer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -86,6 +87,32 @@ public class AssignmentSessionBean implements AssignmentSessionBeanLocal {
 		c.setFirstname(firstname);
 		c.setLastname(lastname);
 		c.setEmail(email);
+
+		em.persist(c);
+	}
+
+	@Override
+	public void addCustomer(String cityName, int customerId, String username, String password, String firstname, String lastname, String email)
+	{
+		EntityManager em = null;
+		if(cityName.equalsIgnoreCase("Zurich"))
+           em = entityManagerFZurich.createEntityManager();
+        else if(cityName.equalsIgnoreCase("Berne"))
+           em = entityManagerFBerne.createEntityManager();
+        else
+        {
+            /*throw unsupported city exception*/
+        }
+
+		Customer c = new Customer();
+
+		c.setCustomerId(customerId);
+		c.setUsername(username);
+		c.setPassword(password);
+		c.setFirstname(firstname);
+		c.setLastname(lastname);
+		c.setEmail(email);
+		c.setDateAdded(new Date());
 
 		em.persist(c);
 	}
