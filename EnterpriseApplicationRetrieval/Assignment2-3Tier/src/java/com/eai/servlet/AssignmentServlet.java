@@ -96,13 +96,25 @@ public class AssignmentServlet extends HttpServlet {
             {
                 // do something
             }
-            if(tierAction.equals("addCustomers"))
+            if(tierAction.equals("addCustomer"))
             {
-                
+                String newUsername = request.getParameter("username");
+				String newPassword = request.getParameter("password");
+				String newFirstname = request.getParameter("firstname");
+				String newLastname = request.getParameter("lastname");
+				String newEmail = request.getParameter("email");
+				int customerId = Integer.parseInt(request.getParameter("customerid"));
+
+				assignSBLocal.addCustomer(cityName, customerId, newUsername, newPassword, newFirstname, newLastname, newEmail);
+				Collection customers = assignSBLocal.fetchAllCustomers(cityName);
+
+				request.setAttribute("customers", customers);
+				request.getSession().setAttribute("cityName", cityName);
+
+				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
+				dispatcher.forward(request, response);
             }
 
-
-            
         } finally { 
             out.close();
         }

@@ -25,9 +25,10 @@
                 <th>UserName</th>
 				<th>Password</th>
                 <th>Email</th>
-                <th>Update</th>
+                <th>&nbsp;</th>
             </tr>
-			<c:forEach items="${customers}" var="customer" varStatus="i">
+			<c:set var="i" value="1" />
+			<c:forEach items="${customers}" var="customer">
 				<tr>
 					<form method="post" action="AssignmentServlet">
 					<td>${customer.customerId}</td>
@@ -43,7 +44,22 @@
 					</td>
 					</form>
 				</tr>
+				<c:set var="i" value="${i+1}" />
 			</c:forEach>
+			<tr>
+				<form method="post" action="AssignmentServlet">
+				<td><input type="hidden" name="customerid" value="${i}" />${i}</td>
+				<td><input type="text" name="firstname" value="" /></td>
+				<td><input type="text" name="lastname" value="" /></td>
+				<td><input type="text" name="username" value="" /></td>
+				<td><input type="text" name="password" value="" /></td>
+				<td><input type="text" name="email" value="" /></td>
+				<td>
+					<input type="hidden" name="tierAction" value="addCustomer" />
+					<input type="submit" value="Add" />
+				</td>
+				</form>
+			</tr>
         </table>
 </body>
 </html>
