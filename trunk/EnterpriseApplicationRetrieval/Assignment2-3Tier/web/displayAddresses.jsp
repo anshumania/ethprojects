@@ -5,6 +5,7 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jstl/core_rt"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
    "http://www.w3.org/TR/html4/loose.dtd">
 
@@ -31,9 +32,9 @@
             <c:forEach items="${addresses}" var="address">
             <tr>
                 <form method="post" action="AssignmentServlet">
-                <td><${address.addressId}> - ${address}</td>
-                <td><input type="text" name="street" value="${address.getStreet}" /></td>
-                <td><input type="text" name="city" value="${address.getCity}" /></td>
+                <td>${address.addressId}</td>
+                <td><input type="text" name="street" value="${address.street}" /></td>
+                <td><input type="text" name="city" value="${address.city}" /></td>
                 <td><input type="text" name="zipcode" value="${address.zipCode}" /></td>
                 <td><input type="text" name="country" value="${address.country.countryName}" /></td>
                 <td>
