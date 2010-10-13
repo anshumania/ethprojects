@@ -74,7 +74,7 @@ public class AssignmentServlet extends HttpServlet {
 				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
 				dispatcher.forward(request, response);
             }
-            if(tierAction.equals("updateCustomers"))
+            if(tierAction !=null && tierAction.equals("updateCustomers"))
             {
                 String newUsername = request.getParameter("username");
 				String newPassword = request.getParameter("password");
@@ -92,7 +92,7 @@ public class AssignmentServlet extends HttpServlet {
 				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
 				dispatcher.forward(request, response);
             }
-            if(tierAction.equals("deleteCustomer"))
+            if(tierAction !=null && tierAction.equals("deleteCustomer"))
             {
 				int customerId = Integer.parseInt(request.getParameter("customerid"));
 
@@ -105,7 +105,7 @@ public class AssignmentServlet extends HttpServlet {
 				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
 				dispatcher.forward(request, response);
             }
-            if(tierAction.equals("addCustomer"))
+            if(tierAction !=null && tierAction.equals("addCustomer"))
             {
                 String newUsername = request.getParameter("username");
 				String newPassword = request.getParameter("password");
