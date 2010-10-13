@@ -15,6 +15,7 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import javax.persistence.Query;
 import javax.sql.DataSource;
 
 /**
@@ -30,13 +31,8 @@ public class AssignmentSessionBean implements AssignmentSessionBeanLocal {
     @PersistenceUnit(unitName="postgresBerne")
     EntityManagerFactory entityManagerFBerne;
 
-
-    
+	@Override
     public Collection fetchAllCustomers(String cityName) {
-        
-        // just a trial for updating data
-        //editCustomerInformation();
-       
         Collection<Customer> result = null;
 
         if(cityName.equalsIgnoreCase("Zurich"))
@@ -68,32 +64,33 @@ public class AssignmentSessionBean implements AssignmentSessionBeanLocal {
         return customers;
     }
 
-    /**
-     * a dummy test function to check for updates
-     */
-    public void editCustomerInformation()
-    {
-        Customer result = (Customer)entityManagerFBerne.createEntityManager().createNamedQuery("Customer.findByCustomerId").setParameter("customerId", 1).getResultList().get(0);
-        System.out.println("customer="+ result.getFirstname());
-        Collection<Address> addresses = result.getAddressCollection();
-        for(Address address : addresses)
+	@Override
+    public void updateCustomer(String cityName, int customerId, String username, String password, String firstname, String lastname, String email)
+	{
+		EntityManager em = null;
+		if(cityName.equalsIgnoreCase("Zurich"))
+           em = entityManagerFZurich.createEntityManager();
+        else if(cityName.equalsIgnoreCase("Berne"))
+           em = entityManagerFBerne.createEntityManager();
+        else
         {
-            System.out.println("address.getAddressId=" + address.getAddressId());
-            if(address.getAddressId() == 1)
-            {
-                int numb = entityManagerFBerne.createEntityManager().createNamedQuery("Address.updateStreet").setParameter("street", "result").setParameter("addressId", 1).executeUpdate();
-                System.out.println("data changed = " + numb);
-            }
+            /*throw unsupported city exception*/
         }
 
+		Query q = em.createNamedQuery("Customer.findByCustomerId");
+		q.setParameter("customerId", customerId);
+		Customer c = (Customer)q.getResultList().get(0);
 
-    }
+		c.setUsername(username);
+		c.setPassword(password);
+		c.setFirstname(firstname);
+		c.setLastname(lastname);
+		c.setEmail(email);
 
+		em.persist(c);
+	}
 
-    
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
 
-
- 
 }

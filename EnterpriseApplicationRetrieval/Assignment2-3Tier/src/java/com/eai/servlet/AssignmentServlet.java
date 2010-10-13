@@ -62,21 +62,35 @@ public class AssignmentServlet extends HttpServlet {
                 }
             }
 
-
             String tierAction = request.getParameter("tierAction");
-            if(null !=tierAction && tierAction.equals("viewCustomers"))
+            
+			if(tierAction != null && tierAction.equals("viewCustomers"))
             {
-            Collection customers = assignSBLocal.fetchAllCustomers(cityName);
-//
-            request.setAttribute("customers", customers);
-            request.getSession().setAttribute("cityName", cityName);
+				Collection customers = assignSBLocal.fetchAllCustomers(cityName);
 
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
-            dispatcher.forward(request, response);
+				request.setAttribute("customers", customers);
+				request.getSession().setAttribute("cityName", cityName);
+
+				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
+				dispatcher.forward(request, response);
             }
-            if(tierAction.equals(("updateCustomers")))
+            if(tierAction.equals("updateCustomers"))
             {
-                // do something
+                String newUsername = request.getParameter("username");
+				String newPassword = request.getParameter("password");
+				String newFirstname = request.getParameter("firstname");
+				String newLastname = request.getParameter("lastname");
+				String newEmail = request.getParameter("email");
+				int customerId = Integer.parseInt(request.getParameter("customerid"));
+
+				assignSBLocal.updateCustomer(cityName, customerId, newUsername, newPassword, newFirstname, newLastname, newEmail);
+				Collection customers = assignSBLocal.fetchAllCustomers(cityName);
+
+				request.setAttribute("customers", customers);
+				request.getSession().setAttribute("cityName", cityName);
+
+				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
+				dispatcher.forward(request, response);
             }
             if(tierAction.equals("deleteCustomers"))
             {
