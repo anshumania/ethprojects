@@ -43,8 +43,15 @@
 						<input type="submit" value="Update" />
 					</td>
 					</form>
+					<form method="post" action="AssignmentServlet">
+					<td>
+						<input type="hidden" name="customerid" value="${customer.customerId}" />
+						<input type="hidden" name="tierAction" value="deleteCustomer" />
+						<input type="submit" value="Delete" />
+					</td>
+					</form>
 				</tr>
-				<c:set var="i" value="${i+1}" />
+				<c:set var="i" value="${customer.customerId+1}" />
 			</c:forEach>
 			<tr>
 				<form method="post" action="AssignmentServlet">
