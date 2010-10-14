@@ -18,7 +18,7 @@ public interface AssignmentSessionBeanLocal {
 
     public void updateCustomer(String cityName, int customerId, String username, String password, String firstname, String lastname, String email);
 
-    public void addCustomer(String cityName, String username, String password, String firstname, String lastname, String email);
+    public void addCustomer(String cityName, int customerId, String username, String password, String firstname, String lastname, String email);
 
     public void deleteCustomer(String cityName, int customerId);
 
@@ -26,7 +26,7 @@ public interface AssignmentSessionBeanLocal {
 
     public void addAddress(String cityName, int addressId, int customerId, String street, String city, String zipCode, String countryName);
 
-    public void deleteAddress(String cityName, int addressId);
+    public void deleteAddress(String cityName, int addressId, int customerId);
 
     public void updateAddress(String cityName, int addressId, int customerId, String street, String city, String zipCode, String countryName);
 }

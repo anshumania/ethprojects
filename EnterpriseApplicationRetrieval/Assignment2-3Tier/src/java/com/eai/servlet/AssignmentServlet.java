@@ -106,7 +106,7 @@ public class AssignmentServlet extends HttpServlet {
                 String newEmail = request.getParameter("email");
                 int customerId = Integer.parseInt(request.getParameter("customerid"));
 
-                assignSBLocal.addCustomer(cityName, newUsername, newPassword, newFirstname, newLastname, newEmail);
+                assignSBLocal.addCustomer(cityName, customerId, newUsername, newPassword, newFirstname, newLastname, newEmail);
                 Collection customers = assignSBLocal.fetchAllCustomers(cityName);
 
                 request.setAttribute("customers", customers);
@@ -117,15 +117,12 @@ public class AssignmentServlet extends HttpServlet {
             } else if (tierAction != null && tierAction.equals("displayAddresses")) {
 
                 int customerId = Integer.parseInt(request.getParameter("customerid"));
-                Collection<Address> addresses = assignSBLocal.fetchAllAddressesForCustomer(cityName, customerId);
+                Collection addresses = assignSBLocal.fetchAllAddressesForCustomer(cityName, customerId);
 
-                for(Address a : addresses) {
-                    System.out.println("ADDRESS: " + a.toString());
-                }
-
+                request.setAttribute("addresses", addresses);
                 request.getSession().setAttribute("cityName", cityName);
                 request.getSession().setAttribute("customerId", customerId);
-                request.getSession().setAttribute("addresses", addresses);
+                
 
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayAddresses.jsp");
                 dispatcher.forward(request, response);
@@ -165,7 +162,7 @@ public class AssignmentServlet extends HttpServlet {
                 int addressId = Integer.parseInt(request.getParameter("addressid"));
                 int customerId = Integer.parseInt(request.getParameter("customerid"));
 
-                assignSBLocal.deleteAddress(cityName, addressId);
+                assignSBLocal.deleteAddress(cityName, addressId, customerId);
                 Collection addresses = assignSBLocal.fetchAllAddressesForCustomer(cityName, customerId);
                 request.getSession().setAttribute("cityName", cityName);
                 request.setAttribute("customerId", customerId);
