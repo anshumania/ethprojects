@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.eai.entity;
 
 import java.io.Serializable;
@@ -170,4 +165,7 @@ public class Customer implements Serializable {
         return "com.eai.entity.Customer[customerId=" + customerId + "]";
     }
 
+    public void removeAddress(Address a) {
+        this.getAddressCollection().remove(a);
+    }
 }
