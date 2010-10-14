@@ -1,6 +1,5 @@
 package com.eai.session;
 
-import com.eai.beans.AddressBean;
 import com.eai.beans.CustomerBean;
 import com.eai.entity.Address;
 import com.eai.entity.Country;
@@ -8,14 +7,12 @@ import com.eai.entity.Customer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceUnit;
 import javax.persistence.Query;
-import javax.sql.DataSource;
 
 /**
  *

@@ -20,6 +20,7 @@
             <select name="cityName">
                 <option value="Zurich">Zurich</option>
                 <option value="Berne">Berne</option>
+                <option value="All">All</option>
             </select>
             <input type="submit" value="View Customers" />
         </form>

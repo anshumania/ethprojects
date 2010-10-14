@@ -17,6 +17,13 @@
     <body>
         <h1>${cityName} Customers</h1>
 
+		<c:if test='${cityName == "All"}'>
+			<c:set var="changeCity" value="Zurich" />
+			<h2>Zurich Customers</h2>
+		</c:if>
+		<c:if test='${cityName != "All"}'>
+			<c:set var="changeCity" value="${cityName}" />
+		</c:if>
 
         <table border="0">
             <tr>
@@ -24,7 +31,7 @@
                 <th>FirstName</th>
                 <th>LastName</th>
                 <th>UserName</th>
-		<th>Password</th>
+				<th>Password</th>
                 <th>Email</th>
                 <th></th>
                 <th></th>
@@ -34,6 +41,79 @@
             <c:set var="i" value="1" />
             <c:forEach items="${customers}" var="customer">
             <tr>
+                <form method="post" action="AssignmentServlet">
+                <td>${customer.customerId}</td>
+                <td><input type="text" name="firstname" value="${customer.firstname}" /></td>
+                <td><input type="text" name="lastname" value="${customer.lastname}" /></td>
+                <td><input type="text" name="username" value="${customer.username}" /></td>
+                <td><input type="text" name="password" value="${customer.password}" /></td>
+                <td><input type="text" name="email" value="${customer.email}" /></td>
+                <td>
+                    <input type="hidden" name="customerid" value="${customer.customerId}" />
+                    <input type="hidden" name="tierAction" value="updateCustomers" />
+					<input type="hidden" name="changeCity" value="${changeCity}" />
+                    <input type="submit" value="Update" />
+                </td>
+                </form>
+                <form method="post" action="AssignmentServlet">
+                <td>
+                    <input type="hidden" name="customerid" value="${customer.customerId}" />
+                    <input type="hidden" name="tierAction" value="deleteCustomer" />
+					<input type="hidden" name="changeCity" value="${changeCity}" />
+                    <input type="submit" value="Delete" />
+                </td>
+                </form>
+                <form method="get" action="AssignmentServlet">
+                <td>
+                    <input type="hidden" name="customerid" value="${customer.customerId}" />
+                    <input type="hidden" name="tierAction" value="displayAddresses" />
+					<input type="hidden" name="changeCity" value="${changeCity}" />
+                    <input type="submit" value="View Addresses" />
+                </td>
+                </form>
+            </tr>
+            <c:set var="i" value="${customer.customerId+1}" />
+            </c:forEach>
+
+            <tr>
+                <form method="post" action="AssignmentServlet">
+                <td><input type="hidden" name="customerid" value="${i}" /></td>
+                <td><input type="text" name="firstname" value="" /></td>
+                <td><input type="text" name="lastname" value="" /></td>
+                <td><input type="text" name="username" value="" /></td>
+                <td><input type="text" name="password" value="" /></td>
+                <td><input type="text" name="email" value="" /></td>
+                <td>
+                    <input type="hidden" name="tierAction" value="addCustomer" />
+					<input type="hidden" name="changeCity" value="${changeCity}" />
+                    <input type="submit" value="Add" />
+                </td>
+                </form>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+
+		<c:if test='${cityName == "All"}'>
+			<c:set var="changeCity" value="Berne" />
+			<h2>Berne Customers</h2>
+
+			<table border="0">
+				<tr>
+					<th>CustomerId</th>
+					<th>FirstName</th>
+					<th>LastName</th>
+					<th>UserName</th>
+					<th>Password</th>
+					<th>Email</th>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+
+				<c:set var="i" value="1" />
+				<c:forEach items="${customers2}" var="customer">
+				<tr>
                     <form method="post" action="AssignmentServlet">
                     <td>${customer.customerId}</td>
                     <td><input type="text" name="firstname" value="${customer.firstname}" /></td>
@@ -42,30 +122,33 @@
                     <td><input type="text" name="password" value="${customer.password}" /></td>
                     <td><input type="text" name="email" value="${customer.email}" /></td>
                     <td>
-                            <input type="hidden" name="customerid" value="${customer.customerId}" />
-                            <input type="hidden" name="tierAction" value="updateCustomers" />
-                            <input type="submit" value="Update" />
+                        <input type="hidden" name="customerid" value="${customer.customerId}" />
+                        <input type="hidden" name="tierAction" value="updateCustomers" />
+						<input type="hidden" name="changeCity" value="${changeCity}" />
+                        <input type="submit" value="Update" />
                     </td>
                     </form>
                     <form method="post" action="AssignmentServlet">
                     <td>
-                            <input type="hidden" name="customerid" value="${customer.customerId}" />
-                            <input type="hidden" name="tierAction" value="deleteCustomer" />
-                            <input type="submit" value="Delete" />
+                        <input type="hidden" name="customerid" value="${customer.customerId}" />
+                        <input type="hidden" name="tierAction" value="deleteCustomer" />
+						<input type="hidden" name="changeCity" value="${changeCity}" />
+                        <input type="submit" value="Delete" />
                     </td>
                     </form>
                     <form method="get" action="AssignmentServlet">
                     <td>
-                            <input type="hidden" name="customerid" value="${customer.customerId}" />
-                            <input type="hidden" name="tierAction" value="displayAddresses" />
-                            <input type="submit" value="View Addresses" />
+                        <input type="hidden" name="customerid" value="${customer.customerId}" />
+                        <input type="hidden" name="tierAction" value="displayAddresses" />
+						<input type="hidden" name="changeCity" value="${changeCity}" />
+                        <input type="submit" value="View Addresses" />
                     </td>
                     </form>
-            </tr>
-            <c:set var="i" value="${customer.customerId+1}" />
-            </c:forEach>
+				</tr>
+				<c:set var="i" value="${customer.customerId+1}" />
+				</c:forEach>
 
-            <tr>
+				<tr>
                     <form method="post" action="AssignmentServlet">
                     <td><input type="hidden" name="customerid" value="${i}" /></td>
                     <td><input type="text" name="firstname" value="" /></td>
@@ -74,13 +157,15 @@
                     <td><input type="text" name="password" value="" /></td>
                     <td><input type="text" name="email" value="" /></td>
                     <td>
-                            <input type="hidden" name="tierAction" value="addCustomer" />
-                            <input type="submit" value="Add" />
+                        <input type="hidden" name="tierAction" value="addCustomer" />
+						<input type="hidden" name="changeCity" value="${changeCity}" />
+                        <input type="submit" value="Add" />
                     </td>
                     </form>
                     <td></td>
                     <td></td>
-            </tr>
-        </table>
+				</tr>
+			</table>
+		</c:if>
 </body>
 </html>

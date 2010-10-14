@@ -23,7 +23,7 @@
                 <th>Street</th>
                 <th>City</th>
                 <th>Zip Code</th>
-		<th>Country</th>
+				<th>Country</th>
                 <th></th>
                 <th></th>
             </tr>
@@ -38,18 +38,20 @@
                 <td><input type="text" name="zipcode" value="${address.zipCode}" /></td>
                 <td><input type="text" name="country" value="${address.country.countryName}" /></td>
                 <td>
-                        <input type="hidden" name="addressid" value="${address.addressId}" />
-                        <input type="hidden" name="customerid" value="${customerId}" />
-                        <input type="hidden" name="tierAction" value="updateAddress" />
-                        <input type="submit" value="Update" />
+                    <input type="hidden" name="addressid" value="${address.addressId}" />
+                    <input type="hidden" name="customerid" value="${customerId}" />
+                    <input type="hidden" name="tierAction" value="updateAddress" />
+					<input type="hidden" name="changeCity" value="${changeCity}" />
+                    <input type="submit" value="Update" />
                 </td>
                 </form>
                 <form method="post" action="AssignmentServlet">
                 <td>
-                        <input type="hidden" name="addressid" value="${address.addressId}" />
-                        <input type="hidden" name="customerid" value="${customerId}" />
-                        <input type="hidden" name="tierAction" value="deleteAddress" />
-                        <input type="submit" value="Delete" />
+                    <input type="hidden" name="addressid" value="${address.addressId}" />
+                    <input type="hidden" name="customerid" value="${customerId}" />
+                    <input type="hidden" name="tierAction" value="deleteAddress" />
+					<input type="hidden" name="changeCity" value="${changeCity}" />
+                    <input type="submit" value="Delete" />
                 </td>
                 </form>
             </tr>
@@ -64,9 +66,10 @@
                 <td><input type="text" name="zipcode" value="${address.zipCode}" /></td>
                 <td><input type="text" name="country" value="${address.Country.countryName}" /></td>
                 <td>
-                        <input type="hidden" name="customerid" value="${customerId}" />
-                        <input type="hidden" name="tierAction" value="addAddress" />
-                        <input type="submit" value="Add" />
+                    <input type="hidden" name="customerid" value="${customerId}" />
+                    <input type="hidden" name="tierAction" value="addAddress" />
+					<input type="hidden" name="changeCity" value="${changeCity}" />
+                    <input type="submit" value="Add" />
                 </td>
                 <td></td>
                 </form>
@@ -74,9 +77,9 @@
             <tr>
                 <form method="post" action="AssignmentServlet">
                 <td>
-                        <input type="hidden" name="customerid" value="${customerId}" />
-                        <input type="hidden" name="tierAction" value="viewCustomers" />
-                        <input type="submit" value="Back To View Customers" />
+                    <input type="hidden" name="customerid" value="${customerId}" />
+                    <input type="hidden" name="tierAction" value="viewCustomers" />
+                    <input type="submit" value="Back To View Customers" />
                 </td>
                 </form>
                 <td></td>
