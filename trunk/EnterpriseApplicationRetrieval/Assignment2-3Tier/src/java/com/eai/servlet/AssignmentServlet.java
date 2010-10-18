@@ -4,14 +4,16 @@
  */
 package com.eai.servlet;
 
-import com.eai.entity.Address;
-import com.eai.entity.Customer;
 import com.eai.session.AssignmentSessionBeanLocal;
+import com.eai.session.AssignmentStatefulSessionBeanLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.naming.*;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -25,24 +27,33 @@ import javax.servlet.http.HttpServletResponse;
  */
 @WebServlet(name = "AssignmentServlet", urlPatterns = {"/AssignmentServlet"})
 public class AssignmentServlet extends HttpServlet {
+	AssignmentStatefulSessionBeanLocal assignmentStatefulSessionBean = lookupAssignmentStatefulSessionBeanLocal();
 
     @EJB
     private AssignmentSessionBeanLocal assignSBLocal;
 
-	protected void displayCustomers(String cityName, HttpServletRequest request)
-	{
+	protected void displayCustomers(String cityName, HttpServletRequest request) {
 		Collection customers = null, customers2 = null;
 
-		if (cityName.equals("All"))
-		{
+		if (cityName.equals("All")) {
 			customers = assignSBLocal.fetchAllCustomers("Zurich");
 			customers2 = assignSBLocal.fetchAllCustomers("Berne");
-		}
-		else
+		} else {
 			customers = assignSBLocal.fetchAllCustomers(cityName);
+		}
 
         request.setAttribute("customers", customers);
 		request.setAttribute("customers2", customers2);
+	}
+
+	private AssignmentStatefulSessionBeanLocal lookupAssignmentStatefulSessionBeanLocal() {
+		try {
+			Context c = new InitialContext();
+			return (AssignmentStatefulSessionBeanLocal) c.lookup("java:global/Assignment2-3Tier/AssignmentStatefulSessionBean!com.eai.session.AssignmentStatefulSessionBeanLocal");
+		} catch (NamingException ne) {
+			Logger.getLogger(getClass().getName()).log(Level.SEVERE, "exception caught", ne);
+			throw new RuntimeException(ne);
+		}
 	}
 
     /** 
@@ -57,19 +68,23 @@ public class AssignmentServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
         try {
+			// retrieving stateful session bean
+			AssignmentStatefulSessionBeanLocal statefulBean = this.lookupAssignmentStatefulSessionBeanLocal();
+
             // first time get it form the dropdown
             String cityName = request.getParameter("cityName");
 
             //for updates/deletes/adds the session is the only place
             // to fetch the values
             if (null == cityName) {
-                cityName = (String) request.getSession().getAttribute("cityName");
+                //cityName = (String) request.getSession().getAttribute("cityName");
+				cityName = statefulBean.getCityName();
             }
 
             System.out.println("requestProcess = " + request.getParameterMap());
             Map<String, String[]> paramMap = request.getParameterMap();
-            for (Map.Entry<String, String[]> iterator : paramMap.entrySet()) {
 
+            for (Map.Entry<String, String[]> iterator : paramMap.entrySet()) {
                 System.out.println("Key=" + iterator.getKey());
                 String[] vals = iterator.getValue();
                 for (String val : vals) {
@@ -77,7 +92,8 @@ public class AssignmentServlet extends HttpServlet {
                 }
             }
 
-			request.getSession().setAttribute("cityName", cityName);
+			//request.getSession().setAttribute("cityName", cityName);
+			statefulBean.setCityName(cityName);
 
             String tierAction = request.getParameter("tierAction");
 
@@ -182,7 +198,6 @@ public class AssignmentServlet extends HttpServlet {
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayAddresses.jsp");
                 dispatcher.forward(request, response);
             }
-
         } finally {
             out.close();
         }
@@ -225,4 +240,5 @@ public class AssignmentServlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+
 }
