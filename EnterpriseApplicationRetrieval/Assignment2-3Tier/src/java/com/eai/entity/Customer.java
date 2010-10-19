@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -23,7 +24,7 @@ import javax.persistence.TemporalType;
 @Entity
 @Table(name = "customer")
 @NamedQueries({
-    @NamedQuery(name = "Customer.findAll", query = "SELECT c FROM Customer c"),
+    @NamedQuery(name = "Customer.findAll", query = "SELECT c FROM Customer c ORDER BY c.customerId ASC"),
     @NamedQuery(name = "Customer.findByCustomerId", query = "SELECT c FROM Customer c WHERE c.customerId = :customerId"),
     @NamedQuery(name = "Customer.findByUsername", query = "SELECT c FROM Customer c WHERE c.username = :username"),
     @NamedQuery(name = "Customer.findByPassword", query = "SELECT c FROM Customer c WHERE c.password = :password"),
@@ -57,6 +58,7 @@ public class Customer implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date dateAdded;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer")
+    @OrderBy("addressId ASC")
     private Collection<Address> addressCollection;
 
     public Customer() {
