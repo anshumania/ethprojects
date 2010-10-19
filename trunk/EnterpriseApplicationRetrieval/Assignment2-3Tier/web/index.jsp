@@ -16,6 +16,13 @@
     <body>
         <h1>Assignment2 3 Tier Application</h1>
         <form action="AssignmentServlet"  method="GET">
+            <tr>
+            <select name="sessionBeanMode">
+                <option value="Stateful">Stateful</option>
+                <option value="Stateless">Stateless</option>
+            </select>
+            </tr>
+
             <input type="hidden" name="tierAction" value="viewCustomers"/>
             <select name="cityName">
                 <option value="Zurich">Zurich</option>
