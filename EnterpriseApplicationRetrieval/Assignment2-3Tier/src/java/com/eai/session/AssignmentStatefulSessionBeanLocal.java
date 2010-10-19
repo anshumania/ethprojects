@@ -17,21 +17,27 @@ public interface AssignmentStatefulSessionBeanLocal {
 
     public Collection fetchAllCustomers();
 
+	public Collection[] fetchAllCustomersFromBothCities();
+
     public String getCityName();
 
     public void setCityName(String cityName);
 
+	public String getChangeCityName();
+
+    public void setChangeCityName(String changeCityName);
+
     public void updateCustomer(CustomerBean customerBean);
 
-    public void addCustomer(String cityName, CustomerBean customerBean);
+    public void addCustomer(CustomerBean customerBean);
 
     public void deleteCustomer(int customerId);
 
     public Collection fetchAllAddressesForCustomer(int customerId);
 
-    public void addAddress(String cityName, int addressId, int customerId, String street, String city, String zipCode, String countryName);
+    public void addAddress(int addressId, int customerId, String street, String city, String zipCode, String countryName);
 
-    public void deleteAddress(String cityName, int addressId, int customerId);
+    public void deleteAddress(int addressId, int customerId);
 
-    public void updateAddress(String cityName, int addressId, int customerId, String street, String city, String zipCode, String countryName);
+    public void updateAddress(int addressId, int customerId, String street, String city, String zipCode, String countryName);
 }

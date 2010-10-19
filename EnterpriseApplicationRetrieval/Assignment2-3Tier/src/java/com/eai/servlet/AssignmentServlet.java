@@ -28,11 +28,10 @@ import javax.servlet.http.HttpServletResponse;
  */
 @WebServlet(name = "AssignmentServlet", urlPatterns = {"/AssignmentServlet"})
 public class AssignmentServlet extends HttpServlet {
-    AssignmentStatefulSessionBeanLocal assignStateSBLocal;
-
     
     @EJB
     private AssignmentSessionBeanLocal assignSBLocal;
+	AssignmentStatefulSessionBeanLocal assignStateSBLocal;
     private String previousMode;
 
     public String getPreviousMode() {
@@ -43,9 +42,7 @@ public class AssignmentServlet extends HttpServlet {
         this.previousMode = previousMode;
     }
 
-    
-
-    protected void displayCustomers(String cityName, HttpServletRequest request) {
+    protected void displayCustomersStateless(String cityName, HttpServletRequest request) {
         Collection customers = null, customers2 = null;
 
         if (cityName.equals("All")) {
@@ -53,6 +50,22 @@ public class AssignmentServlet extends HttpServlet {
             customers2 = assignSBLocal.fetchAllCustomers("Berne");
         } else {
             customers = assignSBLocal.fetchAllCustomers(cityName);
+        }
+
+        request.setAttribute("customers", customers);
+        request.setAttribute("customers2", customers2);
+    }
+
+	protected void displayCustomersStateful(String cityName, HttpServletRequest request) {
+		Collection[] customersBoth;
+        Collection customers = null, customers2 = null;
+
+        if (cityName.equals("All")) {
+            customersBoth = assignStateSBLocal.fetchAllCustomersFromBothCities();
+            customers = customersBoth[0];
+			customers2 = customersBoth[1];
+        } else {
+            customers = assignStateSBLocal.fetchAllCustomers();
         }
 
         request.setAttribute("customers", customers);
@@ -71,7 +84,6 @@ public class AssignmentServlet extends HttpServlet {
         // response.setContentType("text/html;charset=UTF-8");
 
         // first get the mode of operation
-
         String sessionBeanMode = request.getParameter("sessionBeanMode");
 
         // in cases when its a new request
@@ -84,10 +96,9 @@ public class AssignmentServlet extends HttpServlet {
                 if (sessionBeanMode.equalsIgnoreCase("Stateless")) {
                     processStatelessRequest(request, response);
                 }
-
             }
-        } // fetch the previous mode as continuation of a previous request
-        else {
+        } else {
+			// fetch the previous mode as continuation of a previous request
             if (null != getPreviousMode()) {
                 if (getPreviousMode().equalsIgnoreCase("Stateful")) {
                     assignStateSBLocal= lookupAssignmentStatefulSessionBeanLocal();
@@ -102,30 +113,34 @@ public class AssignmentServlet extends HttpServlet {
     }
 
     /**
-    Processes stateful session requests
+	 * Processes stateful session requests
      */
     protected void processStatefulRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
-        try {
 
+		try {
             // first time get it form the dropdown
             String cityName = request.getParameter("cityName");
 
-
-
-            // if its stateful set its city -since the first time u get it from the request
+            // if its stateful set its city -- since the first time u get it from the request
             if (null != cityName) {
                 assignStateSBLocal.setCityName(cityName);
+				request.getSession().setAttribute("cityName", cityName);
             }
-            if (null == cityName) {
 
+            if (null == cityName) {
                 cityName = (String) request.getSession().getAttribute("cityName");
                 assignStateSBLocal.setCityName(cityName);
-
             }
 
+			// retrieve name of city to modify in case cityName=="All"
+			String changeCityName = request.getParameter("changeCity");
+
+			if (changeCityName != null) {
+				assignStateSBLocal.setChangeCityName(changeCityName);
+			}
 
             System.out.println("requestProcess = " + request.getParameterMap());
             Map<String, String[]> paramMap = request.getParameterMap();
@@ -138,34 +153,14 @@ public class AssignmentServlet extends HttpServlet {
                 }
             }
 
-            request.getSession().setAttribute("cityName", assignStateSBLocal.getCityName());
-
             String tierAction = request.getParameter("tierAction");
 
             if (tierAction != null && tierAction.equals("viewCustomers")) {
-
-
-                Collection customers = null, customers2 = null;
-                if (cityName.equals("All")) {
-                    // just a hack
-                    assignStateSBLocal.setCityName("Zurich");
-                    customers = assignStateSBLocal.fetchAllCustomers();
-                    assignStateSBLocal.setCityName("Berne");
-                    customers2 = assignStateSBLocal.fetchAllCustomers();
-                } else {
-                    customers = assignStateSBLocal.fetchAllCustomers();
-                }
-
-                request.setAttribute("customers", customers);
-                request.setAttribute("customers2", customers2);
+                displayCustomersStateful(cityName, request);
                 
-
-
-
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
                 dispatcher.forward(request, response);
             } else if (tierAction != null && tierAction.equals("updateCustomers")) {
-                String changeCity = request.getParameter("changeCity");
                 String newUsername = request.getParameter("username");
                 String newPassword = request.getParameter("password");
                 String newFirstname = request.getParameter("firstname");
@@ -182,21 +177,19 @@ public class AssignmentServlet extends HttpServlet {
                 customerBean.setPassword(newPassword);
 
                 assignStateSBLocal.updateCustomer(customerBean);
-                displayCustomers(cityName, request);
+                displayCustomersStateful(cityName, request);
 
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
                 dispatcher.forward(request, response);
             } else if (tierAction != null && tierAction.equals("deleteCustomer")) {
-                //String changeCity = request.getParameter("changeCity");
                 int customerId = Integer.parseInt(request.getParameter("customerid"));
 
                 assignStateSBLocal.deleteCustomer(customerId);
-                displayCustomers(cityName, request);
+                displayCustomersStateful(cityName, request);
 
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
                 dispatcher.forward(request, response);
             } else if (tierAction != null && tierAction.equals("addCustomer")) {
-                String changeCity = request.getParameter("changeCity");
                 String newUsername = request.getParameter("username");
                 String newPassword = request.getParameter("password");
                 String newFirstname = request.getParameter("firstname");
@@ -212,42 +205,22 @@ public class AssignmentServlet extends HttpServlet {
                 customerBean.setUsername(newUsername);
                 customerBean.setPassword(newPassword);
 
-                //
-                assignStateSBLocal.setCityName(changeCity);
-                assignStateSBLocal.addCustomer(changeCity, customerBean);
-                // displayCustomers(cityName, request);
-
-
-                Collection customers = null, customers2 = null;
-                if (cityName.equals("All")) {
-                    // just a hack
-                    assignStateSBLocal.setCityName("Zurich");
-                    customers = assignStateSBLocal.fetchAllCustomers();
-                    assignStateSBLocal.setCityName("Berne");
-                    customers2 = assignStateSBLocal.fetchAllCustomers();
-                } else {
-                    customers = assignStateSBLocal.fetchAllCustomers();
-                }
-
-                request.setAttribute("customers", customers);
-                request.setAttribute("customers2", customers2);
-
+                assignStateSBLocal.addCustomer(customerBean);
+                displayCustomersStateful(cityName, request);
 
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
                 dispatcher.forward(request, response);
             } else if (tierAction != null && tierAction.equals("displayAddresses")) {
-                String changeCity = request.getParameter("changeCity");
                 int customerId = Integer.parseInt(request.getParameter("customerid"));
-                Collection addresses = assignSBLocal.fetchAllAddressesForCustomer(changeCity, customerId);
+                Collection addresses = assignStateSBLocal.fetchAllAddressesForCustomer(customerId);
 
-                request.setAttribute("changeCity", changeCity);
+                request.setAttribute("changeCity", assignStateSBLocal.getChangeCityName());
                 request.setAttribute("addresses", addresses);
                 request.getSession().setAttribute("customerId", customerId);
 
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayAddresses.jsp");
                 dispatcher.forward(request, response);
             } else if (tierAction != null && tierAction.equals("addAddress")) {
-                String changeCity = request.getParameter("changeCity");
                 int addressId = Integer.parseInt(request.getParameter("addressid"));
                 int customerId = Integer.parseInt(request.getParameter("customerid"));
                 String newStreet = request.getParameter("street");
@@ -255,16 +228,15 @@ public class AssignmentServlet extends HttpServlet {
                 String newZipCode = request.getParameter("zipcode");
                 String newCountry = request.getParameter("country");
 
-                assignSBLocal.addAddress(changeCity, addressId, customerId, newStreet, newCity, newZipCode, newCountry);
-                Collection addresses = assignSBLocal.fetchAllAddressesForCustomer(changeCity, customerId);
-                request.setAttribute("changeCity", changeCity);
+                assignStateSBLocal.addAddress(addressId, customerId, newStreet, newCity, newZipCode, newCountry);
+                Collection addresses = assignStateSBLocal.fetchAllAddressesForCustomer(customerId);
+                request.setAttribute("changeCity", assignStateSBLocal.getChangeCityName());
                 request.setAttribute("customerId", customerId);
                 request.setAttribute("addresses", addresses);
 
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayAddresses.jsp");
                 dispatcher.forward(request, response);
             } else if (tierAction != null && tierAction.equals("updateAddress")) {
-                String changeCity = request.getParameter("changeCity");
                 int addressId = Integer.parseInt(request.getParameter("addressid"));
                 int customerId = Integer.parseInt(request.getParameter("customerid"));
                 String newStreet = request.getParameter("street");
@@ -272,22 +244,21 @@ public class AssignmentServlet extends HttpServlet {
                 String newZipCode = request.getParameter("zipcode");
                 String newCountry = request.getParameter("country");
 
-                assignSBLocal.updateAddress(changeCity, addressId, customerId, newStreet, newCity, newZipCode, newCountry);
-                Collection addresses = assignSBLocal.fetchAllAddressesForCustomer(changeCity, customerId);
-                request.setAttribute("changeCity", changeCity);
+                assignStateSBLocal.updateAddress(addressId, customerId, newStreet, newCity, newZipCode, newCountry);
+                Collection addresses = assignStateSBLocal.fetchAllAddressesForCustomer(customerId);
+                request.setAttribute("changeCity", assignStateSBLocal.getChangeCityName());
                 request.setAttribute("customerId", customerId);
                 request.setAttribute("addresses", addresses);
 
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayAddresses.jsp");
                 dispatcher.forward(request, response);
             } else if (tierAction != null && tierAction.equals("deleteAddress")) {
-                String changeCity = request.getParameter("changeCity");
                 int addressId = Integer.parseInt(request.getParameter("addressid"));
                 int customerId = Integer.parseInt(request.getParameter("customerid"));
 
-                assignSBLocal.deleteAddress(changeCity, addressId, customerId);
-                Collection addresses = assignSBLocal.fetchAllAddressesForCustomer(changeCity, customerId);
-                request.setAttribute("changeCity", changeCity);
+                assignStateSBLocal.deleteAddress(addressId, customerId);
+                Collection addresses = assignStateSBLocal.fetchAllAddressesForCustomer(customerId);
+                request.setAttribute("changeCity", assignStateSBLocal.getChangeCityName());
                 request.setAttribute("customerId", customerId);
                 request.setAttribute("addresses", addresses);
 
@@ -306,19 +277,18 @@ public class AssignmentServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
-        try {
 
+        try {
             // first time get it form the dropdown
             String cityName = request.getParameter("cityName");
 
-            //for updates/deletes/adds the session is the only place
+            // for updates/deletes/adds the session is the only place
             // to fetch the values
-
             if (null == cityName) {
-
                 cityName = (String) request.getSession().getAttribute("cityName");
-
             }
+
+			request.getSession().setAttribute("cityName", cityName);
 
             System.out.println("requestProcess = " + request.getParameterMap());
             Map<String, String[]> paramMap = request.getParameterMap();
@@ -331,28 +301,10 @@ public class AssignmentServlet extends HttpServlet {
                 }
             }
 
-
-            request.getSession().setAttribute("cityName", cityName);
-
-
-
             String tierAction = request.getParameter("tierAction");
 
             if (tierAction != null && tierAction.equals("viewCustomers")) {
-
-
-                Collection customers = null, customers2 = null;
-                if (cityName.equals("All")) {
-                    customers = assignSBLocal.fetchAllCustomers("Zurich");
-                    customers2 = assignSBLocal.fetchAllCustomers("Berne");
-                } else {
-                    customers = assignSBLocal.fetchAllCustomers(cityName);
-                }
-
-                request.setAttribute("customers", customers);
-                request.setAttribute("customers2", customers2);
-
-
+                displayCustomersStateless(cityName, request);
 
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
                 dispatcher.forward(request, response);
@@ -366,7 +318,7 @@ public class AssignmentServlet extends HttpServlet {
                 int customerId = Integer.parseInt(request.getParameter("customerid"));
 
                 assignSBLocal.updateCustomer(changeCity, customerId, newUsername, newPassword, newFirstname, newLastname, newEmail);
-                displayCustomers(cityName, request);
+                displayCustomersStateless(cityName, request);
 
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
                 dispatcher.forward(request, response);
@@ -375,7 +327,7 @@ public class AssignmentServlet extends HttpServlet {
                 int customerId = Integer.parseInt(request.getParameter("customerid"));
 
                 assignSBLocal.deleteCustomer(changeCity, customerId);
-                displayCustomers(cityName, request);
+                displayCustomersStateless(cityName, request);
 
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
                 dispatcher.forward(request, response);
@@ -389,7 +341,7 @@ public class AssignmentServlet extends HttpServlet {
                 int customerId = Integer.parseInt(request.getParameter("customerid"));
 
                 assignSBLocal.addCustomer(changeCity, customerId, newUsername, newPassword, newFirstname, newLastname, newEmail);
-                displayCustomers(cityName, request);
+                displayCustomersStateless(cityName, request);
 
                 RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/displayCustomers.jsp");
                 dispatcher.forward(request, response);

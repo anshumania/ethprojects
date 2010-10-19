@@ -25,13 +25,13 @@ import javax.persistence.PersistenceUnit;
 @Stateful
 public class AssignmentStatefulSessionBean implements AssignmentStatefulSessionBeanLocal {
 
-    // Add business logic below. (Right-click in editor and choose
-    // "Insert Code > Add Business Method")
     @PersistenceUnit(unitName = "postgresZurich")
     EntityManagerFactory entityManagerFZurich;
     @PersistenceUnit(unitName = "postgresBerne")
     EntityManagerFactory entityManagerFBerne;
-    String cityName;
+
+	String cityName;
+	String changeCityName;
 
     @Override
     public String getCityName() {
@@ -41,6 +41,16 @@ public class AssignmentStatefulSessionBean implements AssignmentStatefulSessionB
     @Override
     public void setCityName(String cityName) {
         this.cityName = cityName;
+    }
+
+	@Override
+    public String getChangeCityName() {
+        return changeCityName;
+    }
+
+    @Override
+    public void setChangeCityName(String changeCityName) {
+        this.changeCityName = changeCityName;
     }
 
     @Override
@@ -74,12 +84,43 @@ public class AssignmentStatefulSessionBean implements AssignmentStatefulSessionB
         return customers;
     }
 
+	@Override
+    public Collection[] fetchAllCustomersFromBothCities() {
+        Collection[] result = new Collection[2];
+		Collection[] customers = new Collection[2];
+
+        result[0] = entityManagerFZurich.createEntityManager().createNamedQuery("Customer.findAll").getResultList();
+        result[1] = entityManagerFBerne.createEntityManager().createNamedQuery("Customer.findAll").getResultList();
+
+        for (int i=0; i<2; ++i) {
+			customers[i] = new ArrayList<CustomerBean>();
+
+			for (Object oIterator : result[i]) {
+				Customer iterator = (Customer)oIterator;
+
+				// populate the customer bean with the data
+				CustomerBean customer = new CustomerBean();
+				customer.setCustomerId(iterator.getCustomerId());
+				customer.setEmail(iterator.getEmail());
+				customer.setFirstname(iterator.getFirstname());
+				customer.setLastname(iterator.getLastname());
+				customer.setPassword(iterator.getPassword());
+				customer.setUsername(iterator.getUsername());
+				customer.setDateAdded(iterator.getDateAdded());
+
+				customers[i].add(customer);
+	        }
+		}
+
+        return customers;
+    }
+
     @Override
     public void updateCustomer(CustomerBean customerBean) {
         EntityManager em = null;
-        if (getCityName().equalsIgnoreCase("Zurich")) {
+        if (getChangeCityName().equalsIgnoreCase("Zurich")) {
             em = entityManagerFZurich.createEntityManager();
-        } else if (getCityName().equalsIgnoreCase("Berne")) {
+        } else if (getChangeCityName().equalsIgnoreCase("Berne")) {
             em = entityManagerFBerne.createEntityManager();
         } else {
             /*throw unsupported city exception*/
@@ -99,11 +140,11 @@ public class AssignmentStatefulSessionBean implements AssignmentStatefulSessionB
     }
 
     @Override
-    public void addCustomer(String cityName,CustomerBean customerBean) {
+    public void addCustomer(CustomerBean customerBean) {
         EntityManager em = null;
-        if (getCityName().equalsIgnoreCase("Zurich")) {
+        if (getChangeCityName().equalsIgnoreCase("Zurich")) {
             em = entityManagerFZurich.createEntityManager();
-        } else if (getCityName().equalsIgnoreCase("Berne")) {
+        } else if (getChangeCityName().equalsIgnoreCase("Berne")) {
             em = entityManagerFBerne.createEntityManager();
         } else {
             /*throw unsupported city exception*/
@@ -124,9 +165,9 @@ public class AssignmentStatefulSessionBean implements AssignmentStatefulSessionB
     @Override
     public void deleteCustomer(int customerId) {
         EntityManager em = null;
-        if (getCityName().equalsIgnoreCase("Zurich")) {
+        if (getChangeCityName().equalsIgnoreCase("Zurich")) {
             em = entityManagerFZurich.createEntityManager();
-        } else if (getCityName().equalsIgnoreCase("Berne")) {
+        } else if (getChangeCityName().equalsIgnoreCase("Berne")) {
             em = entityManagerFBerne.createEntityManager();
         } else {
             /*throw unsupported city exception*/
@@ -144,9 +185,9 @@ public class AssignmentStatefulSessionBean implements AssignmentStatefulSessionB
         Collection<Address> addressEntityCollection = null;
 
         EntityManager em = null;
-        if (getCityName().equalsIgnoreCase("Zurich")) {
+        if (getChangeCityName().equalsIgnoreCase("Zurich")) {
             em = entityManagerFZurich.createEntityManager();
-        } else if (getCityName().equalsIgnoreCase("Berne")) {
+        } else if (getChangeCityName().equalsIgnoreCase("Berne")) {
             em = entityManagerFBerne.createEntityManager();
         } else {
             /*throw unsupported city exception*/
@@ -159,11 +200,11 @@ public class AssignmentStatefulSessionBean implements AssignmentStatefulSessionB
     }
 
     @Override
-    public void addAddress(String cityName, int addressId, int customerId, String street, String city, String zipCode, String countryName) {
+    public void addAddress(int addressId, int customerId, String street, String city, String zipCode, String countryName) {
         EntityManager em = null;
-        if (cityName.equalsIgnoreCase("Zurich")) {
+        if (getChangeCityName().equalsIgnoreCase("Zurich")) {
             em = entityManagerFZurich.createEntityManager();
-        } else if (cityName.equalsIgnoreCase("Berne")) {
+        } else if (getChangeCityName().equalsIgnoreCase("Berne")) {
             em = entityManagerFBerne.createEntityManager();
         } else {
             /*throw unsupported city exception*/
@@ -177,7 +218,6 @@ public class AssignmentStatefulSessionBean implements AssignmentStatefulSessionB
             int maxCountryId = 0;
             try {
                 Country lastCountry = (Country) em.createNamedQuery("Country.getLatestCountry").getResultList().get(0);
-                ;
                 maxCountryId = lastCountry.getCountryId();
             } catch (NoResultException ex2) {
             }
@@ -202,11 +242,11 @@ public class AssignmentStatefulSessionBean implements AssignmentStatefulSessionB
     }
 
     @Override
-    public void deleteAddress(String cityName, int addressId, int customerId) {
+    public void deleteAddress(int addressId, int customerId) {
         EntityManager em = null;
-        if (cityName.equalsIgnoreCase("Zurich")) {
+        if (getChangeCityName().equalsIgnoreCase("Zurich")) {
             em = entityManagerFZurich.createEntityManager();
-        } else if (cityName.equalsIgnoreCase("Berne")) {
+        } else if (getChangeCityName().equalsIgnoreCase("Berne")) {
             em = entityManagerFBerne.createEntityManager();
         } else {
             /*throw unsupported city exception*/
@@ -220,11 +260,11 @@ public class AssignmentStatefulSessionBean implements AssignmentStatefulSessionB
     }
 
     @Override
-    public void updateAddress(String cityName, int addressId, int customerId, String street, String city, String zipCode, String countryName) {
+    public void updateAddress(int addressId, int customerId, String street, String city, String zipCode, String countryName) {
         EntityManager em = null;
-        if (cityName.equalsIgnoreCase("Zurich")) {
+        if (getChangeCityName().equalsIgnoreCase("Zurich")) {
             em = entityManagerFZurich.createEntityManager();
-        } else if (cityName.equalsIgnoreCase("Berne")) {
+        } else if (getChangeCityName().equalsIgnoreCase("Berne")) {
             em = entityManagerFBerne.createEntityManager();
         } else {
             /*throw unsupported city exception*/
