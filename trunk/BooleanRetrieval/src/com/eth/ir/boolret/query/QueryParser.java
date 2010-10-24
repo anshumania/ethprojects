@@ -76,7 +76,12 @@ public class QueryParser {
             return;
         }
 
-        if (operator.equalsIgnoreCase(Query.PhraseOperator)) {
+        if(operator.equalsIgnoreCase(Query.VectorOperator))
+        {
+            result = (TreeSet) getCurrentQueryDictionary().doVectorQuery(q.getTerms());
+        }
+
+        else if(operator.equalsIgnoreCase(Query.PhraseOperator)) {
             result = (TreeSet) getCurrentQueryDictionary().doPhraseQuery(q.getTerms());
 
         } else if(operator.equalsIgnoreCase(Query.ProximityOperator)) {
@@ -206,6 +211,18 @@ public class QueryParser {
         queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_DIR).getFile());
     }
 
+    public static void project2_vectorSpaceModel() {
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling");
+        QueryParser queryParser = new QueryParser();
+        queryParser.setCurrentQueryDictionary(new VectorSpaceModelQuery());
+        //Load index from file
+        queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
+        // Execute all the queries in the directory
+        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_DIR).getFile());
+    }
+
+
+
     public static void main(String args[]) {
 
         //QueryParser.phase1();
@@ -213,6 +230,7 @@ public class QueryParser {
         //QueryParser.phase2_Stemming();
         QueryParser.phraseTest();
         QueryParser.proximityTest();
+        QueryParser.project2_vectorSpaceModel();
     }
 
     //Ugly brute force attempt at finding words in the index that are actually 2 words with a space

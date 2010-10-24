@@ -21,6 +21,7 @@ public class Query {
     public static final String NotOperator = "NOT";
     public static final String ProximityOperator = "PROXIMITY";
     public static final String PhraseOperator = "PHRASE";
+    public static final String VectorOperator = "VECTOR";
 
     //String [] terms; //array of all terms in the query
     private ArrayList<String> terms;
@@ -39,6 +40,19 @@ public class Query {
         this.queryString = query;
         parseQueryString(query);
     }
+    /**
+     *
+     * @param query A query containing a vector space model
+     */
+    public Query(String query,boolean vector) {
+        this.terms = new ArrayList<String>();
+        this.queryString = query;
+        if(!vector)
+            parseQueryString(query);
+        else
+            createVectorSpaceModel(query);
+
+    }
 
     public Query(ArrayList<String> terms, String operatorString) {
         this.terms = terms;
@@ -50,9 +64,18 @@ public class Query {
         
         return s.equalsIgnoreCase(AndOperator) || s.equalsIgnoreCase(OrOperator) || s.equalsIgnoreCase(NotOperator);
     }
+  /*
+   * create a vector representation of the query
+   *
+   */
+    private void createVectorSpaceModel(String query)
+    {
+        parseQueryString(query);
+        this.operator = Query.VectorOperator;
+    }
 
     /**
-     *
+    
      * @param query A query containing a single operator (AND, OR, NOT)
      */
     private void parseQueryString(String query) {
