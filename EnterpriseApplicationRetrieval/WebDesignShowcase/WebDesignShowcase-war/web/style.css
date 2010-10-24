@@ -1,0 +1,28 @@
+/* 
+    Document   : style
+    Created on : Oct 24, 2010, 12:46:23 PM
+    Author     : Tim Church
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+body {font-size:12px; line-height: 20px; margin:0; padding:0; font-family:Lucida Sans,Tahoma,Sans Serif; color: #000000; background-color: #FFFFFF;}
+a  {color:#1b509e; text-decoration:none;}
+a:hover {text-decoration:underline;}
+a img {border:none;}
+ul {margin:0; padding:0;}
+
+#header {min-height:50px; padding:5px 0 0 30px; background-color:#DDD; border-bottom:2px solid #999;}
+#header .logo {font-size:2.2em;}
+#header a {color:#A02C2F;}
+#main {width:800px; margin:0 auto; padding:50px 0; text-align:center;}
+img.design {min-width:600px; min-height:300px; padding:8px; border:5px solid #CCC;}
+#main #comments {text-align:left; width:500px; margin:50px auto 0 auto;}
+#footer {text-align:center; background-color:#DDD; border-top:2px solid #999; padding-top:5px; padding-bottom:15px;}
+#footer ul {list-style-type:none;}
+
