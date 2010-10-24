@@ -3,11 +3,13 @@ package com.eth.ir.boolret.query;
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
 import com.eth.ir.boolret.dictionary.datastructure.PostingListNode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
@@ -172,10 +174,9 @@ public class QueryDictionary {
         // could be shifted to be done during creating itself
         // but for logistic reasons keeping it here
 
-        for(String term : phraseTerms)
+        Map<String, Double> scores = new HashMap<String, Double>();
 
-        //for(Map.Entry<String, PostingList> iterator : index.entrySet())
-        {
+        for(String term : phraseTerms) {
             PostingList pl = index.get(term);
 
             // the document frequency = dft
@@ -183,22 +184,35 @@ public class QueryDictionary {
             // damp the document frequency = log<10>(N/dft)
             Double docFrequencyDamped = Math.log10(425/docFrequency);
 
+            // the term frequency
+            Integer termFrequency = countFrequency(term, phraseTerms);
+            // damp the frequency
+            Double termFrequencyDamped = (1 + Math.log10(termFrequency));
+
+            //calculate the weighted tf-idf weight for the term
+            Double tfIdfWeight = docFrequencyDamped * termFrequencyDamped;
+
+
+            //calculate dot-product of query term weight and document term weight
             for(PostingListNode pln : pl.getPostingList())
             {
-                // the term frequency
-                Integer termFrequency = pln.getTermFrequencyInDoc();
-                // damp the frequency
-                Double termFrequencyDamped = (1 + Math.log10(termFrequency));
+                Double score = tfIdfWeight * pln.getTf_idf_weight();
+                if(scores.containsKey(pln.getDocId())) {
+                    scores.put(pln.getDocId(), score);
+                } else {
+                    scores.put(pln.getDocId(), scores.get(pln.getDocId()) + score);
+                }
 
-                //calculate the weighted tf-idf weight for the term
-                Double tfIdfWeight = docFrequencyDamped * termFrequencyDamped;
-                pln.setTf_idf_weight(tfIdfWeight);
-           }
+            }
         }
 
-       // protected TreeMap<String, PostingList> index;
-        return null;
+        //normalize for length
+        for(Entry<String, Double> entry : scores.entrySet()) {
+            entry.setValue(entry.getValue() / documentLengths.get(entry.getKey()));
+        }
 
+        //TODO - sort by score
+        
     }
     
 
@@ -496,5 +510,16 @@ public class QueryDictionary {
         }
 
         executionTime("Slowest", query.getQueryString());
+    }
+
+    //returns the number of times term occurs in phraseTerms
+    private Integer countFrequency(String term, ArrayList<String> allTerms) {
+        Integer count = 0;
+        for(String currentTerm : allTerms) {
+            if(term.equals(currentTerm)) {
+                count ++;
+            }
+        }
+        return count;
     }
 }

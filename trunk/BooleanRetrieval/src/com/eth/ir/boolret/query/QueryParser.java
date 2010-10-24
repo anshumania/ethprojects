@@ -74,14 +74,10 @@ public class QueryParser {
         if(operator == null) {
             System.out.println("Invalid Query");
             return;
-        }
-
-        if(operator.equalsIgnoreCase(Query.VectorOperator))
-        {
+        } else if(operator.equalsIgnoreCase(Query.VectorOperator)) {
             result = (TreeSet) getCurrentQueryDictionary().doVectorQuery(q.getTerms());
-        }
-
-        else if(operator.equalsIgnoreCase(Query.PhraseOperator)) {
+            
+        } else if(operator.equalsIgnoreCase(Query.PhraseOperator)) {
             result = (TreeSet) getCurrentQueryDictionary().doPhraseQuery(q.getTerms());
 
         } else if(operator.equalsIgnoreCase(Query.ProximityOperator)) {
@@ -98,8 +94,6 @@ public class QueryParser {
         } else if (operator.equalsIgnoreCase(Query.NotOperator)) {
             result = (TreeSet) getCurrentQueryDictionary().doNOTQuery(q);
 
-        } else {
-            //TODO - throw InvalidQueryOperatorException
         }
 
         if(result.size() > 0) {
@@ -214,7 +208,7 @@ public class QueryParser {
     public static void project2_vectorSpaceModel() {
         Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling");
         QueryParser queryParser = new QueryParser();
-        queryParser.setCurrentQueryDictionary(new VectorSpaceModelQuery());
+        queryParser.setCurrentQueryDictionary(new QueryDictionary());
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
         // Execute all the queries in the directory
