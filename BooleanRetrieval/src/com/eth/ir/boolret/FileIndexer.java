@@ -122,13 +122,20 @@ public class FileIndexer {
 
         File directory = new File(dir);
         File[] files = directory.listFiles();
+        int numberOfDocuments  = 0;
 
         for (File file : files) {
             if (!file.isHidden() && !file.getName().contains(Bundle.INDEX_FILE)) // hack for getting rid of svn files
             {
                tokenizeFile(file);
+               numberOfDocuments++;
             }
         }
+        
+        // set the number of Documents
+        getCurrentDictionary().setNUMBER_OF_DOCUMENTS(numberOfDocuments);
+
+
     }
 
     /**
@@ -295,12 +302,33 @@ public class FileIndexer {
        // tkz.serializeToFile(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.STEMMEDMAP);
 
     }
+   
+    public static void project2_phase1_vectorSpaceModel()
+    {
+        FileIndexer tkz = new FileIndexer();
+        //create a new dictionary for this phase with its index file
+        Dictionary project2Phase1Dictionary = new Dictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() +
+                                                                                    "/" + Bundle.INDEX_FILE);
+        // notify the fileIndex as to which dictionary its working on
+        tkz.setCurrentDictionary(project2Phase1Dictionary);
+        //delete the previous index if any
+        FileIndexer.deleteIndex(tkz.getCurrentDictionary().getINDEX_FILE());
+        // read all the documents in the director and tokenize
+        tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile());
+        // apply the vector space model on terms of the document
+        tkz.getCurrentDictionary().documentVectorSpaceModel();
 
+        // print the statistics
+        tkz.printIndexStats("Project2Phase1");
+        // serialize the index
+        tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
+    }
     public static void main(String args[]) {
 
-     FileIndexer.phase1();
-     FileIndexer.phase2_StopWords();
-     FileIndexer.phase2_Stemming();
+//     FileIndexer.phase1();
+//     FileIndexer.phase2_StopWords();
+//     FileIndexer.phase2_Stemming();
+       FileIndexer.project2_phase1_vectorSpaceModel();
 
 
     }

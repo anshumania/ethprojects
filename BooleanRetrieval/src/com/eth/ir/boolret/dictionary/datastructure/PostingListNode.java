@@ -14,6 +14,18 @@ public class PostingListNode implements Serializable {
     private String docId;
     private TreeSet<Integer> positions;
 
+    public Double getTf_idf_weight() {
+        return tf_idf_weight;
+    }
+
+    public void setTf_idf_weight(Double tf_idf_weight) {
+        this.tf_idf_weight = tf_idf_weight;
+    }
+
+    // tfidf weight
+    // = (1+log(tf<t,d>))*log(N/df<t>)
+    private Double tf_idf_weight;
+
     public PostingListNode(String docId, Integer position) {
         this.docId = docId;
         this.positions = new TreeSet<Integer>();
@@ -45,7 +57,7 @@ public class PostingListNode implements Serializable {
         this.positions.add(position);
     }
 
-    public Integer getFrequencyInDoc() {
+    public Integer getTermFrequencyInDoc() {
         return this.positions.size();
     }
 
