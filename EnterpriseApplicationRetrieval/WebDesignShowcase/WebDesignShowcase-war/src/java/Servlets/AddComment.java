@@ -2,6 +2,9 @@ package Servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Resource;
 import javax.jms.*;
 import javax.naming.*;
 import javax.servlet.ServletException;
@@ -14,6 +17,10 @@ import javax.servlet.http.HttpServletResponse;
  * @author Tim Church
  */
 public class AddComment extends HttpServlet {
+	@Resource(name = "Comments")
+	private Topic comments;
+	@Resource(name = "TopicConnectionFactory")
+	private ConnectionFactory topicConnectionFactory;
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -32,57 +39,12 @@ public class AddComment extends HttpServlet {
 		int designID = 1; // TODO: retrieve design ID associated with comment
 		String comment = request.getParameter("comment");
 
-		// vars for using JMS
-		final String TOPIC_NAME = "Comments";
-        Context jndiContext = null;
-        TopicConnectionFactory topicConnectionFactory = null;
-        TopicConnection topicConnection = null;
-        TopicSession topicSession = null;
-        Topic topic = null;
-        TopicPublisher topicPublisher = null;
-        TextMessage message = null;
-
         try {
-
-			// create JNDI InitialContext
-			try {
-				jndiContext = new InitialContext();
-			} catch (NamingException ne) {
-				ne.printStackTrace();
-			}
-
-			// look up connection factory & topic
-			try {
-				topicConnectionFactory = (TopicConnectionFactory)jndiContext.lookup("TopicConnectionFactory");
-				topic = (Topic) jndiContext.lookup(TOPIC_NAME);
-			} catch (NamingException ne) {
-				ne.printStackTrace();
-			}
-
-			// create connection, session, publisher & text msg
-			try {
-				topicConnection = topicConnectionFactory.createTopicConnection();
-				topicSession = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-				topicPublisher = topicSession.createPublisher(topic);
-				message = topicSession.createTextMessage();
-
-				message.setText(userID + " " + designID + " " + comment);
-				topicPublisher.publish(message);
-			} catch (JMSException jmse) {
-				jmse.printStackTrace();
-			} finally {
-				if (topicConnection != null) {
-					try {
-						topicConnection.close();
-					} catch (JMSException jmse) {
-						jmse.printStackTrace();
-					}
-				}
-			}
-
+			sendJMSMessageToComments(userID + " " + designID + " " + comment);
 			out.println("THIS WORKS!");
-
-        } finally { 
+        } catch (JMSException jmse) {
+			jmse.printStackTrace();
+		} finally {
             out.close();
         }
     } 
@@ -122,5 +84,34 @@ public class AddComment extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+
+	private Message createJMSMessageForcomments(Session session, String messageData) throws JMSException {
+		// TODO create and populate message to send
+		TextMessage tm = session.createTextMessage();
+		tm.setText(messageData);
+		return tm;
+	}
+
+	private void sendJMSMessageToComments(String messageData) throws JMSException {
+		Connection connection = null;
+		Session session = null;
+		try {
+			connection = topicConnectionFactory.createConnection();
+			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			MessageProducer messageProducer = session.createProducer(comments);
+			messageProducer.send(createJMSMessageForcomments(session, messageData));
+		} finally {
+			if (session != null) {
+				try {
+					session.close();
+				} catch (JMSException e) {
+					Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Cannot close session", e);
+				}
+			}
+			if (connection != null) {
+				connection.close();
+			}
+		}
+	}
 
 }
