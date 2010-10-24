@@ -6,7 +6,7 @@
     </servlet>
     <servlet>
         <servlet-name>showDesign</servlet-name>
-        <servlet-class>Servlets.showDesign</servlet-class>
+        <servlet-class>Servlets.ShowDesign</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AddComment</servlet-name>

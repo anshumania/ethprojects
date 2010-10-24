@@ -29,7 +29,7 @@
                     </ul>
 
                     <h3>Add a comment:</h3>
-                    <form action="addComment" method="post">
+                    <form action="AddComment" method="post">
                         <textarea name="comment" cols="60" rows="6"></textarea><br/>
                         <input type="submit" value="Submit Comment" />
                     </form>
