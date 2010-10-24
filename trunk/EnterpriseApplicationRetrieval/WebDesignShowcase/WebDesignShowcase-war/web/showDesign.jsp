@@ -15,25 +15,27 @@
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
-        <%@ include file="header.jspf" %>
-        <div id="main">
-            <h1><a href="">DESIGN TITLE</a></h1>
-            <p>by <a href="">USERNAME</a></p>
-            <img src="devcheatsheet.jpg" alt="DESIGN ALT TEXT" class="design" />
+        <div id="container">
+            <%@ include file="header.jspf" %>
+            <div id="main">
+                <h1><a href="">DESIGN TITLE</a></h1>
+                <p>by <a href="">USERNAME</a></p>
+                <img src="devcheatsheet.jpg" alt="DESIGN ALT TEXT" class="design" />
 
-            <div id="comments">
-                <h2>Comments:</h2>
-                <ul class="comments">
-                    <li class="comment">THIS IS A COMMENT</li>
-                </ul>
+                <div id="comments">
+                    <h2>Comments:</h2>
+                    <ul class="comments">
+                        <li class="comment">THIS IS A COMMENT</li>
+                    </ul>
 
-                <h3>Add a comment:</h3>
-                <form action="addComment" method="get">
-                    <textarea name="comment" cols="60" rows="6"></textarea><br/>
-                    <input type="submit" value="Submit Comment" />
-                </form>
+                    <h3>Add a comment:</h3>
+                    <form action="addComment" method="post">
+                        <textarea name="comment" cols="60" rows="6"></textarea><br/>
+                        <input type="submit" value="Submit Comment" />
+                    </form>
+                </div>
             </div>
+            <%@ include file="footer.jspf" %>
         </div>
-        <%@ include file="footer.jspf" %>
     </body>
 </html>
