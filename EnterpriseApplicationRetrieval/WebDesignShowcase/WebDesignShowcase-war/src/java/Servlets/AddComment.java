@@ -1,8 +1,9 @@
 package Servlets;
 
-
 import java.io.IOException;
 import java.io.PrintWriter;
+import javax.jms.*;
+import javax.naming.*;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -25,17 +26,62 @@ public class AddComment extends HttpServlet {
     throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
+
+		// comment information
+		int userID = 1; // TODO: retrieve user ID associated with comment
+		int designID = 1; // TODO: retrieve design ID associated with comment
+		String comment = request.getParameter("comment");
+
+		// vars for using JMS
+		final String TOPIC_NAME = "Comments";
+        Context jndiContext = null;
+        TopicConnectionFactory topicConnectionFactory = null;
+        TopicConnection topicConnection = null;
+        TopicSession topicSession = null;
+        Topic topic = null;
+        TopicPublisher topicPublisher = null;
+        TextMessage message = null;
+
         try {
-            /* TODO output your page here
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet AddComment</title>");  
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet AddComment at " + request.getContextPath () + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-            */
+
+			// create JNDI InitialContext
+			try {
+				jndiContext = new InitialContext();
+			} catch (NamingException ne) {
+				ne.printStackTrace();
+			}
+
+			// look up connection factory & topic
+			try {
+				topicConnectionFactory = (TopicConnectionFactory)jndiContext.lookup("TopicConnectionFactory");
+				topic = (Topic) jndiContext.lookup(TOPIC_NAME);
+			} catch (NamingException ne) {
+				ne.printStackTrace();
+			}
+
+			// create connection, session, publisher & text msg
+			try {
+				topicConnection = topicConnectionFactory.createTopicConnection();
+				topicSession = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+				topicPublisher = topicSession.createPublisher(topic);
+				message = topicSession.createTextMessage();
+
+				message.setText(userID + " " + designID + " " + comment);
+				topicPublisher.publish(message);
+			} catch (JMSException jmse) {
+				jmse.printStackTrace();
+			} finally {
+				if (topicConnection != null) {
+					try {
+						topicConnection.close();
+					} catch (JMSException jmse) {
+						jmse.printStackTrace();
+					}
+				}
+			}
+
+			out.println("THIS WORKS!");
+
         } finally { 
             out.close();
         }
