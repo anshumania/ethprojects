@@ -27,6 +27,7 @@ public class QueryDictionary {
     protected long currentTime;
     // the universal index for all types of parsers
     protected TreeMap<String, PostingList> index = new TreeMap<String, PostingList>();
+    protected HashMap<String, Integer> documentLengths = new HashMap<String, Integer>();
 
     public TreeMap<String, PostingList> getIndex() {
         return index;
@@ -34,6 +35,14 @@ public class QueryDictionary {
 
     public void setIndex(TreeMap<String, PostingList> index) {
         this.index = index;
+    }
+
+    public HashMap<String, Integer> getDocumentLengths() {
+        return documentLengths;
+    }
+
+    public void setDocumentLengths(HashMap<String, Integer> documentLengths) {
+        this.documentLengths = documentLengths;
     }
 
     public void initiateTime() {
@@ -208,11 +217,16 @@ public class QueryDictionary {
 
         //normalize for length
         for(Entry<String, Double> entry : scores.entrySet()) {
-            entry.setValue(entry.getValue() / documentLengths.get(entry.getKey()));
+            entry.setValue(entry.getValue() / getDocumentLengths().get(entry.getKey()));
         }
 
         //TODO - sort by score
+        //scores.
         
+        //save sorted keys into a set
+        LinkedHashSet<String> result = new LinkedHashSet<String>();
+        result.addAll(scores.keySet());
+        return result;
     }
     
 

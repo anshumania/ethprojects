@@ -2,6 +2,7 @@ package com.eth.ir.boolret.dictionary;
 
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
 import com.eth.ir.boolret.dictionary.datastructure.PostingListNode;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -16,6 +17,11 @@ public class Dictionary {
     protected String INDEX_FILE;
     // this is required for the inverted document frequency
     protected Integer NUMBER_OF_DOCUMENTS;
+    protected Map<String, Integer> documentLengths;
+
+    public Map<String, Integer> getDocumentLengths() {
+        return documentLengths;
+    }
 
     public Integer getNUMBER_OF_DOCUMENTS() {
         return NUMBER_OF_DOCUMENTS;
@@ -37,6 +43,7 @@ public class Dictionary {
     public Dictionary(String indexFile) {
         this.INDEX_FILE = indexFile;
         this.index = new TreeMap<String, PostingList>();
+        this.documentLengths = new HashMap<String, Integer>();
     }
 
     public void addToDictionary(String docId, String key, Integer position) {

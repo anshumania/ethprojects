@@ -99,6 +99,11 @@ public class FileIndexer {
                 next = st.nextToken();
             }
 
+            if(position != 0) {
+                position = position - 1;
+            }
+            getCurrentDictionary().getDocumentLengths().put(docId, position);
+
         } catch (IOException ex) {
             Logger.getLogger(FileIndexer.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -150,6 +155,10 @@ public class FileIndexer {
         }
     }
 
+    public void printIndexStats(String phase) {
+        printIndexStats(phase, getCurrentDictionary());
+    }
+
     /**
      * Prints the following statistics about the index:
      *   - Size
@@ -157,19 +166,19 @@ public class FileIndexer {
      *   - Length of longest posting list
      *   - Length of shortest posting list
      */
-    public void printIndexStats(String phase) {
+    public static void printIndexStats(String phase, Dictionary dict) {
         Integer numMatches = 0;
         String longestPostingListTerm = "";
         ArrayList<String> shortestPostingListTerms = new ArrayList<String>();
         Integer longestPostingList = 0;
         Integer shortestPostingList = Integer.MAX_VALUE;
         Integer postingListSize = 0;
-        Integer numTerms = getCurrentDictionary().getIndex().size();//this.index.size();
+        Integer numTerms = dict.getIndex().size();//this.index.size();
         Integer numDocs = 425;
         Integer indexSize = numTerms * numDocs;
 
         
-        for (Map.Entry<String, PostingList> entry : getCurrentDictionary().getIndex().entrySet()) {
+        for (Map.Entry<String, PostingList> entry : dict.getIndex().entrySet()) {
             //System.out.println(entry.getKey() + " : " + entry.getValue().getFrequency());
             //postingListSize = entry.getValue().getFrequency();
             postingListSize = entry.getValue().getPostingList().size();
