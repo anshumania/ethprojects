@@ -14,10 +14,12 @@ public final class Bundle {
     public final static String DOCS_DIR = "resources/Docs";
     // the directory with all the queries
     public final static String QUERY_DIR = "resources/Queries";
+    public final static String QUERY_2_DIR = "resources/Queries2";
     public final static String INDEX_FILE = "index";
     public final static String STOPWORD   = "_sw";
     public final static String PORTERSTEM = "_pStem";
     public final static String STEMMEDMAP = "stemmedMap";
+    public final static String DOCUMENT_LENGTHS_FILE = "doc_lengths";
     public final static String COMMA = ",";
     public final static String EMPTY = "";
     public final static int DOUBLE_QUOTE = 34;

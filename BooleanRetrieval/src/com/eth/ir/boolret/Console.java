@@ -74,7 +74,7 @@ public class Console {
                         
                         queryParser.findSpellingErrors(Integer.parseInt(spellNum));
                     } else {
-                        queryParser.executeQuery(query);
+                        queryParser.executeQuery(query, false);
                     }
                 }
 
