@@ -7,12 +7,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -87,6 +92,32 @@ public class QueryParser {
         }
     }
 
+
+    public Map<String, HashSet<String>> readRelevancyListsFile(String fileName) {
+        HashMap<String, HashSet<String>> relevancyLists = new HashMap<String, HashSet<String>>();
+        InputStream fileStream = QueryParser.class.getResourceAsStream(fileName);
+        BufferedReader br = new BufferedReader(new InputStreamReader(fileStream));
+        String relevancyList;
+        try {
+            while ((relevancyList = br.readLine()) != null) {
+                //stopWords.add(stopWord.trim());
+                String[] tokens = relevancyList.split("\\s+"); //split on whitespace
+                String key = "Q" + tokens[0];
+                HashSet<String> relevantDocs = new HashSet<String>();
+                for(int x=1; x < tokens.length; x++) {
+                    String docId = "doc" + tokens[x];
+                    relevantDocs.add(docId);
+                }
+                relevancyLists.put(key, relevantDocs);
+            }
+            Logger.getLogger(QueryParser.class.getName()).log(Level.INFO,"Relevancy Lists loaded");
+        } catch (IOException ex) {
+            Logger.getLogger(QueryParser.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return relevancyLists;
+    }
+
     /**
      *
      * @param query The query to execute.  May contain whitespace at front and/or back.
@@ -143,6 +174,22 @@ public class QueryParser {
         } else {
             System.out.println("No matches found.");
         }
+
+    }
+
+    public LinkedHashSet<String> executeVectorQuery(String query) {
+        Query q = new Query(query, true);
+        String operator = q.getOperator();
+        LinkedHashSet<String> result = null;
+
+        if(operator == null) {
+            System.out.println("Invalid Query");
+            return result;
+        } else if(operator.equalsIgnoreCase(Query.VectorOperator)) {
+            result = (LinkedHashSet) getCurrentQueryDictionary().doVectorQuery(q.getTerms());
+        }
+
+        return result;
     }
 
     /**
@@ -251,8 +298,11 @@ public class QueryParser {
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
         queryParser.readDocumentLengthsFile(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.DOCUMENT_LENGTHS_FILE).getFile());
+        Map<String, HashSet<String>> relevancyLists = queryParser.readRelevancyListsFile("../" + Bundle.RELEVANCY_LISTS_FILE);
+
         // Execute all the queries in the directory
-        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), true);
+        //queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), true);
+        queryParser.precisionRecallGraphForAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), relevancyLists);
     }
 
 
@@ -303,4 +353,51 @@ public class QueryParser {
         }
         System.out.println(numFound + " spelling errors found.");
     }
+
+    private void precisionRecallGraphForAllQueriesInDirectory(String dir, Map<String, HashSet<String>> relevancyLists) {
+        Boolean isVectorQuery = true;
+        File directory = new File(dir);
+        File[] files = directory.listFiles();
+        for (File file : files) {
+            if (!file.isHidden()) // hack to escape svn files
+            {
+                String queryId = file.getName();
+                String query = loadQueryFromFile(file);
+                //System.out.println(queryId + ":" + query);
+                LinkedHashSet<String> results = executeVectorQuery(query);
+
+                printPrecisionRecallTable(results, relevancyLists.get(queryId));
+            }
+        }
+    }
+
+    private void printPrecisionRecallTable(LinkedHashSet<String> queryResults, Set<String> relevancyList) {
+        Double totalRelevant = new Double(relevancyList.size());
+        Double numRelevantFound = new Double(0);
+        Double currentPosition = new Double(1); //start at 1 to avoid divide by 0 problems
+        ArrayList<Double> recall = new ArrayList<Double>();
+        ArrayList<Double> precision = new ArrayList<Double>();
+
+        for(String queryResult : queryResults) {
+            if(relevancyList.contains(queryResult)) {
+                numRelevantFound++;
+            }
+            Double currentRecall = new Double(numRelevantFound / totalRelevant);
+            Double currentPrecision = new Double(numRelevantFound / currentPosition);
+
+            recall.add(currentRecall);
+            precision.add(currentPrecision);
+
+            //for testing
+            System.out.println(queryResult + " | " + currentRecall + " | " + currentPrecision);
+
+            if(numRelevantFound.equals(totalRelevant)) {
+                break;
+            }
+            currentPosition++;
+        }
+        System.out.println("");
+    }
+
+
 }

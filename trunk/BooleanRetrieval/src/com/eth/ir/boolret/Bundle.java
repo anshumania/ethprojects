@@ -20,6 +20,7 @@ public final class Bundle {
     public final static String PORTERSTEM = "_pStem";
     public final static String STEMMEDMAP = "stemmedMap";
     public final static String DOCUMENT_LENGTHS_FILE = "doc_lengths";
+    public final static String RELEVANCY_LISTS_FILE = "resources/RelevancyLists.txt";
     public final static String COMMA = ",";
     public final static String EMPTY = "";
     public final static int DOUBLE_QUOTE = 34;
