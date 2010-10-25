@@ -15,7 +15,18 @@ public class PostingList implements Serializable{
     // the number of documents in the collection ( a constant N )
     // divided by the number termFrequency ( the number of documents
     // in which the term occurs)
-    private Integer inverseDocumentFrequency;
+    private Double inverseDocumentFrequency;
+
+    // for query Manipulation
+    private boolean hasQueryDocument = false;
+
+    public boolean isHasQueryDocument() {
+        return hasQueryDocument;
+    }
+
+    public void setHasQueryDocument(boolean hasQueryDocument) {
+        this.hasQueryDocument = hasQueryDocument;
+    }
 
 
     public LinkedList<PostingListNode> getPostingList() {
@@ -35,11 +46,11 @@ public class PostingList implements Serializable{
         this.numPostings = numPostings;
     }
 
-    public Integer getInverseDocumentFrequency() {
+    public Double getInverseDocumentFrequency() {
         return inverseDocumentFrequency;
     }
 
-    public void setInverseDocumentFrequency(Integer inverseDocumentFrequency) {
+    public void setInverseDocumentFrequency(Double inverseDocumentFrequency) {
         this.inverseDocumentFrequency = inverseDocumentFrequency;
     }
 

@@ -115,7 +115,7 @@ public class QueryParser {
         } catch (IOException ex) {
             Logger.getLogger(QueryParser.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return relevancyLists;
     }
 
@@ -135,7 +135,7 @@ public class QueryParser {
             return;
         } else if(operator.equalsIgnoreCase(Query.VectorOperator)) {
             result = (LinkedHashSet) getCurrentQueryDictionary().doVectorQuery(q.getTerms());
-            
+
         } else if(operator.equalsIgnoreCase(Query.PhraseOperator)) {
             result = (TreeSet) getCurrentQueryDictionary().doPhraseQuery(q.getTerms());
 
@@ -340,7 +340,7 @@ public class QueryParser {
                             //consider the substring a "more valid" word if it appears in the index more than the full word
                             if(substring2Count > wordCount) {
                                 System.out.println(word + "  [" + substring1 + "][" + substring2 + "]");
-                                
+
                                 numFound++;
                                 if(numToFind != 0 && numFound >= numToFind) {
                                     System.out.println(numFound + " spelling errors found.");
@@ -354,6 +354,38 @@ public class QueryParser {
         }
         System.out.println(numFound + " spelling errors found.");
     }
+
+
+    private void printPrecisionRecallTable(LinkedHashSet<String> queryResults, Set<String> relevancyList) {
+        Double totalRelevant = new Double(relevancyList.size());
+        Double numRelevantFound = new Double(0);
+        Double currentPosition = new Double(1); //start at 1 to avoid divide by 0 problems
+        ArrayList<Double> recall = new ArrayList<Double>();
+        ArrayList<Double> precision = new ArrayList<Double>();
+
+        for(String queryResult : queryResults) {
+            if(relevancyList.contains(queryResult)) {
+                numRelevantFound++;
+            }
+            Double currentRecall = new Double(numRelevantFound / totalRelevant);
+            Double currentPrecision = new Double(numRelevantFound / currentPosition);
+
+            recall.add(currentRecall);
+            precision.add(currentPrecision);
+
+            //for testing
+            System.out.println(queryResult + " | " + currentRecall + " | " + currentPrecision);
+
+            if(numRelevantFound.equals(totalRelevant)) {
+                break;
+            }
+            currentPosition++;
+        }
+        System.out.println("");
+    }
+
+
+
 
     private void precisionRecallGraphForAllQueriesInDirectory(String dir, Map<String, HashSet<String>> relevancyLists) {
         Boolean isVectorQuery = true;
@@ -434,6 +466,5 @@ public class QueryParser {
         Collections.reverse(interpolatedPrecisionRecallTable);
         return interpolatedPrecisionRecallTable;
     }
-
 
 }

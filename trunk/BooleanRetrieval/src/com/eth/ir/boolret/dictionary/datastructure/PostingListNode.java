@@ -67,6 +67,6 @@ public class PostingListNode implements Serializable {
 
     @Override
     public String toString() {
-        return "[docId=" + getDocId() + ", positions=" + getPositions() + "]";
+        return "[docId=" + getDocId() + ", positions=" + getPositions() + ", tdf-idfWeight=" + getTf_idf_weight() + "]";
     }
 }
