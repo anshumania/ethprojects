@@ -3,6 +3,7 @@ package com.eth.ir.boolret;
 import com.eth.ir.boolret.dictionary.Dictionary;
 import com.eth.ir.boolret.dictionary.PorterStemmerDictionary;
 import com.eth.ir.boolret.dictionary.StopWordDictionary;
+import com.eth.ir.boolret.dictionary.VectorDictionary;
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
 import java.io.BufferedReader;
 import java.io.File;
@@ -134,6 +135,7 @@ public class FileIndexer {
             {
                tokenizeFile(file);
                numberOfDocuments++;
+               
             }
         }
         
@@ -349,17 +351,17 @@ public class FileIndexer {
     {
         FileIndexer tkz = new FileIndexer();
         //create a new dictionary for this phase with its index file
-        Dictionary project2Phase1Dictionary = new Dictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() +
+        Dictionary vectorDictionary = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() +
                                                                                     "/" + Bundle.INDEX_FILE);
         // notify the fileIndex as to which dictionary its working on
-        tkz.setCurrentDictionary(project2Phase1Dictionary);
+        tkz.setCurrentDictionary(vectorDictionary);
         //delete the previous index if any
         FileIndexer.deleteIndex(tkz.getCurrentDictionary().getINDEX_FILE());
         FileIndexer.deleteFile(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.DOCUMENT_LENGTHS_FILE);
         // read all the documents in the director and tokenize
         tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile());
         // apply the vector space model on terms of the document
-        tkz.getCurrentDictionary().documentVectorSpaceModel();
+        tkz.getCurrentDictionary().createDocumentVectorSpaceModel();
 
         // print the statistics
         tkz.printIndexStats("Project2Phase1");

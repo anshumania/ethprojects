@@ -67,20 +67,20 @@ public class QueryDictionary {
         terms.add(term1);
         terms.add(term2);
         Set<String> matches = doANDQuery(new Query(terms, Query.AndOperator));
-        if(matches.isEmpty()) {
+        if (matches.isEmpty()) {
             //no matches at all, don't check positions
             return resultSet;
         }
-        
+
         //for each term, build the posting list of only matches
-        for(String term : terms) {
+        for (String term : terms) {
             PostingList pl = index.get(term);
             //note: no stop word check needed since we have already done an AND
-            
-            for(String doc : matches) {
+
+            for (String doc : matches) {
                 PostingList matchPostingList = new PostingList();
                 for (PostingListNode pln : pl.getPostingList()) {
-                    if(matches.contains(pln.getDocId())) {
+                    if (matches.contains(pln.getDocId())) {
                         matchPostingList.getPostingList().add(pln);
                     }
                 }
@@ -88,10 +88,10 @@ public class QueryDictionary {
             }
         }
 
-        PostingList resultPL =  doProximityQuery(miniIndex.get(term1), miniIndex.get(term2), proximityBefore, proximityAfter);
-        
+        PostingList resultPL = doProximityQuery(miniIndex.get(term1), miniIndex.get(term2), proximityBefore, proximityAfter);
+
         //put each matching document id into a set
-        for(PostingListNode pln : resultPL.getPostingList()) {
+        for (PostingListNode pln : resultPL.getPostingList()) {
             resultSet.add(pln.getDocId());
         }
 
@@ -99,29 +99,29 @@ public class QueryDictionary {
     }
 
     public PostingList doProximityQuery(PostingList pl1, PostingList pl2, Integer proximityBefore, Integer proximityAfter) {
-        
+
         PostingList resultPL = new PostingList();
 
         //for each position in each document in pl1, check if there is a positional match with pl2
         PostingListNode pln2;
         ListIterator pl2Iterator = pl2.getPostingList().listIterator();
-        for(PostingListNode pln : pl1.getPostingList()) {
+        for (PostingListNode pln : pl1.getPostingList()) {
             pln2 = (PostingListNode) pl2Iterator.next();
-            while(!pln2.getDocId().equals(pln.getDocId())) {
+            while (!pln2.getDocId().equals(pln.getDocId())) {
                 pln2 = (PostingListNode) pl2Iterator.next();
             }
 
             Set<Integer> matchingPositions = new TreeSet<Integer>();
-            for(Integer position : pln.getPositions()) {
-                for(int nextPosition = position+proximityBefore; nextPosition <= position + proximityAfter; nextPosition++) {
-                    if(pln2.getPositions().contains(nextPosition)) {
+            for (Integer position : pln.getPositions()) {
+                for (int nextPosition = position + proximityBefore; nextPosition <= position + proximityAfter; nextPosition++) {
+                    if (pln2.getPositions().contains(nextPosition)) {
                         //we found a positional match
                         matchingPositions.add(nextPosition);
                     }
                 }
             }
 
-            if(!matchingPositions.isEmpty()) {
+            if (!matchingPositions.isEmpty()) {
                 PostingListNode newPLN = new PostingListNode(pln.getDocId());
                 newPLN.setPositions(matchingPositions);
                 resultPL.getPostingList().add(newPLN);
@@ -137,20 +137,20 @@ public class QueryDictionary {
 
         //first do a normal AND query to find matches
         Set<String> matches = doANDQuery(new Query(terms, Query.AndOperator));
-        if(matches.isEmpty()) {
+        if (matches.isEmpty()) {
             //no matches at all, don't check positions
             return resultSet;
         }
 
         //for each term, build the posting list of only matches
-        for(String term : terms) {
+        for (String term : terms) {
             PostingList pl = index.get(term);
             //note: no stop word check needed since we have already done an AND
 
-            for(String doc : matches) {
+            for (String doc : matches) {
                 PostingList matchPostingList = new PostingList();
                 for (PostingListNode pln : pl.getPostingList()) {
-                    if(matches.contains(pln.getDocId())) {
+                    if (matches.contains(pln.getDocId())) {
                         matchPostingList.getPostingList().add(pln);
                     }
                 }
@@ -161,8 +161,8 @@ public class QueryDictionary {
         //check for proximity matches for each successive pair of terms
         PostingList resultPL = null;
         Boolean isFirst = true;
-        for(String term : terms) {
-            if(isFirst) {
+        for (String term : terms) {
+            if (isFirst) {
                 resultPL = miniIndex.get(term);
                 isFirst = false;
             } else {
@@ -171,7 +171,7 @@ public class QueryDictionary {
         }
 
         //put each matching document id into a set
-        for(PostingListNode pln : resultPL.getPostingList()) {
+        for (PostingListNode pln : resultPL.getPostingList()) {
             resultSet.add(pln.getDocId());
         }
 
@@ -182,68 +182,158 @@ public class QueryDictionary {
         return doProximityQuery(phraseTerms, 1);
     }
 
-    public Set<String> doVectorQuery(ArrayList<String> phraseTerms)
-    {
+    public Set<String> doVectorQuery(ArrayList<String> phraseTerms) {
+        // represent the query as a vector
         // for each term calculate its termFrequency
-        // could be shifted to be done during creating itself
-        // but for logistic reasons keeping it here
+        // fetch the inverseDocument frequency idf for that term
+        // create the tf-idf weight for that term in that document
 
-        Map<String, Double> scores = new HashMap<String, Double>();
 
-        for(String term : phraseTerms) {
+        for (String term : phraseTerms) {
             PostingList pl = index.get(term);
 
-            if(pl != null) {
+            if (pl != null) {
+                /*
                 // the document frequency = dft
                 Integer docFrequency = pl.getPostingList().size();
                 // damp the document frequency = log<10>(N/dft)
                 Double docFrequencyDamped = Math.log10(425/docFrequency);
+                 */
+                Double docFrequencyDamped = pl.getInverseDocumentFrequency();
 
                 // the term frequency
                 Integer termFrequency = countFrequency(term, phraseTerms);
                 // damp the frequency
                 Double termFrequencyDamped = (1 + Math.log10(termFrequency));
-
                 //calculate the weighted tf-idf weight for the term
                 Double tfIdfWeight = docFrequencyDamped * termFrequencyDamped;
 
+                if (!pl.isHasQueryDocument()) {
+                    // create  a new postingList for this "Query" Document
+                    PostingListNode pln = new PostingListNode("Query");
+                    pln.setTf_idf_weight(tfIdfWeight);
+                    pl.getPostingList().addLast(pln);
+                    pl.setHasQueryDocument(true);
+                } else {
+                    // no need to do this ; we may as well skip as it is set the first time
+                    pl.getPostingList().getLast().setTf_idf_weight(tfIdfWeight);
+                }
+
+
+
+
+
+
+
+
+
 
                 //calculate dot-product of query term weight and document term weight
-                for(PostingListNode pln : pl.getPostingList())
-                {
-                    Double score = tfIdfWeight * pln.getTf_idf_weight();
-                    if(scores.containsKey(pln.getDocId())) {
-                        Double newScore = score + scores.get(pln.getDocId());
-                        scores.put(pln.getDocId(),  newScore);
-                    } else {
-                        scores.put(pln.getDocId(), score);
-                    }
+//                for(PostingListNode pln : pl.getPostingList())
+//                {
+//                    Double score = tfIdfWeight * pln.getTf_idf_weight();
+//                    if(scores.containsKey(pln.getDocId())) {
+//                        Double newScore = score + scores.get(pln.getDocId());
+//                        scores.put(pln.getDocId(),  newScore);
+//                    } else {
+//                        scores.put(pln.getDocId(), score);
+//                    }
+//
+//                }
+            }
+        }
 
+
+//        System.out.println("index = " + index);
+        Map<String, Double> vectorLengthForAllDocuments = new HashMap<String, Double>();
+
+
+        // run through the entire index and calculate the vector length per document
+        for (Map.Entry<String, PostingList> iterator : index.entrySet()) {
+            PostingList pl = iterator.getValue();
+            
+            for (PostingListNode pln : pl.getPostingList()) {
+                String document = pln.getDocId();
+                if (vectorLengthForAllDocuments.containsKey(document)) {
+                    Double previousVL = vectorLengthForAllDocuments.get(document);
+                    Double newVL = Math.sqrt(previousVL * previousVL + pln.getTf_idf_weight() * pln.getTf_idf_weight());
+                    vectorLengthForAllDocuments.put(document, newVL);
+                } else {
+
+                    Double vectorLength = Math.sqrt(pln.getTf_idf_weight() * pln.getTf_idf_weight());
+                    vectorLengthForAllDocuments.put(document, vectorLength);
+                }
+
+            }
+        }
+
+    //    System.out.println("vectorLengthForAllDocuments = " + vectorLengthForAllDocuments);
+
+
+
+        // create a Map for all dot products for each document
+        Map<String, Double> dotProducts = new HashMap<String, Double>();
+
+        // next compute all dot products of type Query * Document(i)
+       for (Map.Entry<String, PostingList> iterator : index.entrySet()) {
+            // if the term has a document for query then calculate Q*D(i)
+            PostingList pl = iterator.getValue();
+            if (pl.isHasQueryDocument()) {
+                // fetch the query document
+                PostingListNode plq = pl.getPostingList().getLast();
+
+                for (PostingListNode pln : pl.getPostingList()) {
+                    // if its not the query doc
+                    if (!pln.getDocId().equals("Query")) {
+                        Double dotProducti = pln.getTf_idf_weight() * plq.getTf_idf_weight();
+                        if (dotProducts.containsKey(pln.getDocId())) {
+                            Double newDotProducti = dotProducts.get(pln.getDocId()) + dotProducti;
+                            dotProducts.put(pln.getDocId(), newDotProducti);
+                        } else {
+                            dotProducts.put(pln.getDocId(), dotProducti);
+                        }
+                    }
                 }
             }
         }
 
-        //normalize for length
-        for(Entry<String, Double> entry : scores.entrySet()) {
-            entry.setValue(entry.getValue() / getDocumentLengths().get(entry.getKey()));
+
+   //    System.out.println("dotProducts = " + dotProducts);
+
+       Map<String,Double> cosineScores = new HashMap<String,Double>();
+       Double vectorLengthForQuery = vectorLengthForAllDocuments.get("Query");
+//        System.out.println("vectorLengthForQuery = " + vectorLengthForQuery);
+
+        // next calculate the similarity scores
+        for(Map.Entry<String,Double> iterator : dotProducts.entrySet())
+        {
+            Double dotProduct = iterator.getValue();
+            String document = iterator.getKey();
+            Double vectorLengthForDoc = vectorLengthForAllDocuments.get(document);
+//            System.out.println("document=" + document + " vectorLengthForDoc " + vectorLengthForDoc );
+            Double cosineScore = dotProduct/(vectorLengthForQuery * vectorLengthForDoc);
+            cosineScores.put(document, cosineScore);
         }
 
-        //sort by score
-        Map<String, Double> sorted_scores = sortByValue(scores);
 
-        
+
+   //     System.out.println("cosineScores = " + cosineScores);
+        //sort by score
+        Map<String, Double> sorted_scores = sortByValue(cosineScores);
+//        System.out.println("sorted_scores=  " + sorted_scores);
+
         /* //for testing only
         for(Entry<String, Double> entry : sorted_scores.entrySet()) {
-            System.out.println(entry.getKey() + " => " + entry.getValue());
+        System.out.println(entry.getKey() + " => " + entry.getValue());
         }
-        */
+         */
 
         //save sorted keys into a set
         LinkedHashSet<String> result = new LinkedHashSet<String>();
         result.addAll(sorted_scores.keySet());
+//        System.out.println("result=" + result);
         return result;
     }
-    
 
     public Set<String> doANDQuery(Query query) {
         // fetch the terms for this query
@@ -283,9 +373,9 @@ public class QueryDictionary {
         return partialSet;
         /*
         for (String id : partialSet) {
-            System.out.println(id);
+        System.out.println(id);
         }
-        */
+         */
     }
 
     public Set<String> doORQuery(Query query) {
@@ -308,9 +398,9 @@ public class QueryDictionary {
         }
         /*
         for (String id : result) {
-            System.out.println(id);
+        System.out.println(id);
         }
-        */
+         */
 
         executionTime("Average", query.getQueryString());
 
@@ -320,7 +410,7 @@ public class QueryDictionary {
     public Set<String> doNOTQuery(Query query) {
         // Fetch the terms for this query
         ArrayList<String> terms = query.getTerms();
-        
+
         // Maintain a list of Set<String> which will contain all the
         // docIds for a particular term. note we dont need the terms for the
         // not operation
@@ -360,9 +450,9 @@ public class QueryDictionary {
         /*
         //System.out.println("Result = " + partialSet);
         for (String id : partialSet) {
-            System.out.println(id);
+        System.out.println(id);
         }
-        */
+         */
         return partialSet;
     }
 
@@ -541,12 +631,12 @@ public class QueryDictionary {
         executionTime("Slowest", query.getQueryString());
     }
 
-    //returns the number of times term occurs in phraseTerms
+    //returns the positions of term occurs in phraseTerms
     private Integer countFrequency(String term, ArrayList<String> allTerms) {
         Integer count = 0;
-        for(String currentTerm : allTerms) {
-            if(term.equals(currentTerm)) {
-                count ++;
+        for (String currentTerm : allTerms) {
+            if (term.equals(currentTerm)) {
+                count++;
             }
         }
         return count;
@@ -557,18 +647,17 @@ public class QueryDictionary {
     static Map sortByValue(Map map) {
         List list = new LinkedList(map.entrySet());
         Collections.sort(list, new Comparator() {
-             public int compare(Object o1, Object o2) {
-                  return ((Comparable) ((Map.Entry) (o2)).getValue())
-                 .compareTo(((Map.Entry) (o1)).getValue());
-             }
+
+            public int compare(Object o1, Object o2) {
+                return ((Comparable) ((Map.Entry) (o2)).getValue()).compareTo(((Map.Entry) (o1)).getValue());
+            }
         });
 
         Map result = new LinkedHashMap();
         for (Iterator it = list.iterator(); it.hasNext();) {
-            Map.Entry entry = (Map.Entry)it.next();
+            Map.Entry entry = (Map.Entry) it.next();
             result.put(entry.getKey(), entry.getValue());
         }
         return result;
     }
-
 }

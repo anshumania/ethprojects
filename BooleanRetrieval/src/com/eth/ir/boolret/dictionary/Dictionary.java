@@ -94,35 +94,10 @@ public class Dictionary {
      * @param key
      * @param position
      */
-    public void documentVectorSpaceModel() {
-
-        // for each term calculate its termFrequency
-        // could be shifted to be done during creating itself
-        // but for logistic reasons keeping it here
-
-        for(Map.Entry<String, PostingList> iterator : index.entrySet())
-        {
-            PostingList pl = iterator.getValue();
-
-            // the document frequency = dft
-            Integer docFrequency = pl.getPostingList().size();
-            // damp the document frequency = log<10>(N/dft)
-            Double docFrequencyDamped = Math.log10(getNUMBER_OF_DOCUMENTS()/docFrequency);
-
-            for(PostingListNode pln : pl.getPostingList())
-            {
-                // the term frequency
-                Integer termFrequency = pln.getTermFrequencyInDoc();
-                // damp the frequency
-                Double termFrequencyDamped = (1 + Math.log10(termFrequency));
-
-                //calculate the weighted tf-idf weight for the term
-                Double tfIdfWeight = docFrequencyDamped * termFrequencyDamped;
-                pln.setTf_idf_weight(tfIdfWeight);
-           }
-        }
-
-       // protected TreeMap<String, PostingList> index;
-
+    public void createDocumentVectorSpaceModel()
+    {
+        
     }
+
+       
 }
