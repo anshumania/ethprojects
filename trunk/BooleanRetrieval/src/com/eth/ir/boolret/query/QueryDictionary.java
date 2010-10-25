@@ -3,9 +3,14 @@ package com.eth.ir.boolret.query;
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
 import com.eth.ir.boolret.dictionary.datastructure.PostingListNode;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -188,30 +193,33 @@ public class QueryDictionary {
         for(String term : phraseTerms) {
             PostingList pl = index.get(term);
 
-            // the document frequency = dft
-            Integer docFrequency = pl.getPostingList().size();
-            // damp the document frequency = log<10>(N/dft)
-            Double docFrequencyDamped = Math.log10(425/docFrequency);
+            if(pl != null) {
+                // the document frequency = dft
+                Integer docFrequency = pl.getPostingList().size();
+                // damp the document frequency = log<10>(N/dft)
+                Double docFrequencyDamped = Math.log10(425/docFrequency);
 
-            // the term frequency
-            Integer termFrequency = countFrequency(term, phraseTerms);
-            // damp the frequency
-            Double termFrequencyDamped = (1 + Math.log10(termFrequency));
+                // the term frequency
+                Integer termFrequency = countFrequency(term, phraseTerms);
+                // damp the frequency
+                Double termFrequencyDamped = (1 + Math.log10(termFrequency));
 
-            //calculate the weighted tf-idf weight for the term
-            Double tfIdfWeight = docFrequencyDamped * termFrequencyDamped;
+                //calculate the weighted tf-idf weight for the term
+                Double tfIdfWeight = docFrequencyDamped * termFrequencyDamped;
 
 
-            //calculate dot-product of query term weight and document term weight
-            for(PostingListNode pln : pl.getPostingList())
-            {
-                Double score = tfIdfWeight * pln.getTf_idf_weight();
-                if(scores.containsKey(pln.getDocId())) {
-                    scores.put(pln.getDocId(), score);
-                } else {
-                    scores.put(pln.getDocId(), scores.get(pln.getDocId()) + score);
+                //calculate dot-product of query term weight and document term weight
+                for(PostingListNode pln : pl.getPostingList())
+                {
+                    Double score = tfIdfWeight * pln.getTf_idf_weight();
+                    if(scores.containsKey(pln.getDocId())) {
+                        Double newScore = score + scores.get(pln.getDocId());
+                        scores.put(pln.getDocId(),  newScore);
+                    } else {
+                        scores.put(pln.getDocId(), score);
+                    }
+
                 }
-
             }
         }
 
@@ -220,12 +228,19 @@ public class QueryDictionary {
             entry.setValue(entry.getValue() / getDocumentLengths().get(entry.getKey()));
         }
 
-        //TODO - sort by score
-        //scores.
+        //sort by score
+        Map<String, Double> sorted_scores = sortByValue(scores);
+
         
+        /* //for testing only
+        for(Entry<String, Double> entry : sorted_scores.entrySet()) {
+            System.out.println(entry.getKey() + " => " + entry.getValue());
+        }
+        */
+
         //save sorted keys into a set
         LinkedHashSet<String> result = new LinkedHashSet<String>();
-        result.addAll(scores.keySet());
+        result.addAll(sorted_scores.keySet());
         return result;
     }
     
@@ -536,4 +551,24 @@ public class QueryDictionary {
         }
         return count;
     }
+
+    //from: http://stackoverflow.com/questions/109383/how-to-sort-a-mapkey-value-on-the-values-in-java/3420912#3420912
+    //switched compare order to sort highest to lowest
+    static Map sortByValue(Map map) {
+        List list = new LinkedList(map.entrySet());
+        Collections.sort(list, new Comparator() {
+             public int compare(Object o1, Object o2) {
+                  return ((Comparable) ((Map.Entry) (o2)).getValue())
+                 .compareTo(((Map.Entry) (o1)).getValue());
+             }
+        });
+
+        Map result = new LinkedHashMap();
+        for (Iterator it = list.iterator(); it.hasNext();) {
+            Map.Entry entry = (Map.Entry)it.next();
+            result.put(entry.getKey(), entry.getValue());
+        }
+        return result;
+    }
+
 }

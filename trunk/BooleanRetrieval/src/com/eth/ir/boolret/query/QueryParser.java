@@ -9,7 +9,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -60,22 +62,47 @@ public class QueryParser {
         }
     }
 
+    public void readDocumentLengthsFile(String documentLengthsFile) {
+        FileInputStream istream = null;
+        ObjectInputStream p = null;
+        try {
+            istream = new FileInputStream(documentLengthsFile);
+            p = new ObjectInputStream(istream);
+        } catch (Exception e) {
+            Logger.getLogger(QueryParser.class.getName()).log(Level.SEVERE, "Can't open document lengths file {0}", documentLengthsFile);
+            e.printStackTrace();
+        }
+        try {
+            Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Reading document lengths {0}", documentLengthsFile);
+            Object x = p.readObject();
+            HashMap<String, Integer> documentLengths = (HashMap<String, Integer>) x;
+            getCurrentQueryDictionary().setDocumentLengths(documentLengths);
+
+            p.close();
+            Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Document lengths read from file {0}", documentLengthsFile);
+
+        } catch (Exception e) {
+            Logger.getLogger(QueryParser.class.getName()).log(Level.SEVERE, "Document lengths cannot be read from file {0}", documentLengthsFile);
+            e.printStackTrace();
+        }
+    }
+
     /**
      *
      * @param query The query to execute.  May contain whitespace at front and/or back.
      */
-    public void executeQuery(String query) {
+    public void executeQuery(String query, Boolean isVectorQuery) {
         System.out.println("[QUERY]  " + query);
-        Query q = new Query(query);
+        Query q = new Query(query, isVectorQuery);
         String operator = q.getOperator();
-        TreeSet<String> result = null;
+        Set<String> result = null;
         ArrayList<TreeSet<String>> phraseResults = new ArrayList<TreeSet<String>>();
 
         if(operator == null) {
             System.out.println("Invalid Query");
             return;
         } else if(operator.equalsIgnoreCase(Query.VectorOperator)) {
-            result = (TreeSet) getCurrentQueryDictionary().doVectorQuery(q.getTerms());
+            result = (LinkedHashSet) getCurrentQueryDictionary().doVectorQuery(q.getTerms());
             
         } else if(operator.equalsIgnoreCase(Query.PhraseOperator)) {
             result = (TreeSet) getCurrentQueryDictionary().doPhraseQuery(q.getTerms());
@@ -97,9 +124,21 @@ public class QueryParser {
         }
 
         if(result.size() > 0) {
-            System.out.println(result.size() + " matches:");
-            for (String id : result) {
-                System.out.println(id);
+            if(isVectorQuery) {
+                int count=0;
+                System.out.println("Top 20 results:");
+                for(String id : result) {
+                    if(count != 0) System.out.print(",");
+                    System.out.print(id);
+                    if(count >= 20) break;
+                    count++;
+                }
+                System.out.print("\n");
+            } else {
+                System.out.println(result.size() + " matches:");
+                for (String id : result) {
+                    System.out.println(id);
+                }
             }
         } else {
             System.out.println("No matches found.");
@@ -137,7 +176,7 @@ public class QueryParser {
         return query;
     }
 
-    public void executeAllQueriesInDirectory(String dir) {
+    public void executeAllQueriesInDirectory(String dir, Boolean isVectorQuery) {
         File directory = new File(dir);
         File[] files = directory.listFiles();
         for (File file : files) {
@@ -145,7 +184,7 @@ public class QueryParser {
             {
                 String query = loadQueryFromFile(file);
                 System.out.println(file.getName() + ":" + query);
-                executeQuery(query);
+                executeQuery(query, isVectorQuery);
                 System.out.println("");
             }
         }
@@ -159,7 +198,7 @@ public class QueryParser {
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
         String query = "/9 DELEGATES MEETING";
-        queryParser.executeQuery(query);
+        queryParser.executeQuery(query, false);
     }
 
     public static void phraseTest() {
@@ -170,7 +209,7 @@ public class QueryParser {
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
         String query = "\"DELEGATES MEETING\"";
-        queryParser.executeQuery(query);
+        queryParser.executeQuery(query, false);
     }
 
     public static void phase1() {
@@ -181,7 +220,7 @@ public class QueryParser {
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
         // Execute all the queries in the directory
-        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_DIR).getFile());
+        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_DIR).getFile(), false);
     }
 
     public static void phase2_StopWords() {
@@ -192,7 +231,7 @@ public class QueryParser {
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD).getFile());
         // Execute all the queries in the directory
-        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_DIR).getFile());
+        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_DIR).getFile(), false);
     }
 
     public static void phase2_Stemming() {
@@ -202,7 +241,7 @@ public class QueryParser {
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.PORTERSTEM).getFile());
         // Execute all the queries in the directory
-        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_DIR).getFile());
+        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_DIR).getFile(), false);
     }
 
     public static void project2_vectorSpaceModel() {
@@ -211,8 +250,9 @@ public class QueryParser {
         queryParser.setCurrentQueryDictionary(new QueryDictionary());
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
+        queryParser.readDocumentLengthsFile(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.DOCUMENT_LENGTHS_FILE).getFile());
         // Execute all the queries in the directory
-        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_DIR).getFile());
+        queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), true);
     }
 
 
@@ -222,8 +262,8 @@ public class QueryParser {
         //QueryParser.phase1();
         //QueryParser.phase2_StopWords();
         //QueryParser.phase2_Stemming();
-        QueryParser.phraseTest();
-        QueryParser.proximityTest();
+        //QueryParser.phraseTest();
+        //QueryParser.proximityTest();
         QueryParser.project2_vectorSpaceModel();
     }
 

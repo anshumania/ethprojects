@@ -242,6 +242,29 @@ public class FileIndexer {
         }
     }
 
+    public void serializeToFile(String outputFile, Object object) {
+
+        FileOutputStream ostream = null;
+        ObjectOutputStream p = null;
+        try {
+            ostream = new FileOutputStream(outputFile);
+            p = new ObjectOutputStream(ostream);
+        } catch (Exception e) {
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.SEVERE, "Cannot open file {0}", outputFile);
+            e.printStackTrace();
+        }
+        try {
+            //write the object to the file
+            p.writeObject(object);
+            p.flush();
+            p.close();
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO, "Object written to file {0}", outputFile);
+        } catch (Exception e) {
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.SEVERE, "Cannot write to file {0}", outputFile);
+            e.printStackTrace();
+        }
+    }
+
     public static void deleteIndex(String index)
     {
         boolean success = new File(index).delete();
@@ -249,6 +272,16 @@ public class FileIndexer {
             Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO,"Deleted previous index {0}",index);
 
     }
+    
+    public static void deleteFile(String filename)
+    {
+        boolean success = new File(filename).delete();
+        if(success)
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO,"Deleted file {0}", filename);
+
+    }
+
+
 
     public static void phase1()
     {
@@ -322,6 +355,7 @@ public class FileIndexer {
         tkz.setCurrentDictionary(project2Phase1Dictionary);
         //delete the previous index if any
         FileIndexer.deleteIndex(tkz.getCurrentDictionary().getINDEX_FILE());
+        FileIndexer.deleteFile(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.DOCUMENT_LENGTHS_FILE);
         // read all the documents in the director and tokenize
         tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile());
         // apply the vector space model on terms of the document
@@ -331,6 +365,7 @@ public class FileIndexer {
         tkz.printIndexStats("Project2Phase1");
         // serialize the index
         tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
+        tkz.serializeToFile(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.DOCUMENT_LENGTHS_FILE, tkz.getCurrentDictionary().getDocumentLengths());
     }
     public static void main(String args[]) {
 

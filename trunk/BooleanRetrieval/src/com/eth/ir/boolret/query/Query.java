@@ -44,7 +44,7 @@ public class Query {
      *
      * @param query A query containing a vector space model
      */
-    public Query(String query,boolean vector) {
+    public Query(String query, boolean vector) {
         this.terms = new ArrayList<String>();
         this.queryString = query;
         if(!vector)
