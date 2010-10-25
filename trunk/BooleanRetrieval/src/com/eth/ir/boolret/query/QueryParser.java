@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -358,20 +359,41 @@ public class QueryParser {
         Boolean isVectorQuery = true;
         File directory = new File(dir);
         File[] files = directory.listFiles();
+        ArrayList<ArrayList<Double>> results = new ArrayList<ArrayList<Double>>();
+        for(int z=0; z < 11; z++) {
+            results.add(new ArrayList<Double>());
+        }
+
         for (File file : files) {
             if (!file.isHidden()) // hack to escape svn files
             {
                 String queryId = file.getName();
                 String query = loadQueryFromFile(file);
                 //System.out.println(queryId + ":" + query);
-                LinkedHashSet<String> results = executeVectorQuery(query);
+                LinkedHashSet<String> queryResults = executeVectorQuery(query);
 
-                printPrecisionRecallTable(results, relevancyLists.get(queryId));
+                ArrayList<Double> iprt = getInterpolatedPrecisionRecallTable(queryResults, relevancyLists.get(queryId));
+                int index = 0;
+                for(Double d : iprt) {
+                    results.get(index).add(d);
+                    index++;
+                }
             }
         }
+
+        //take average of all interpolated precision/recall tables
+        for(ArrayList<Double> result : results) {
+            Double sum = new Double(0);
+            for(Double d : result) {
+                sum += d;
+            }
+            Double average = sum / new Double(result.size());
+            System.out.print(average + ",");
+        }
+        System.out.println("");
     }
 
-    private void printPrecisionRecallTable(LinkedHashSet<String> queryResults, Set<String> relevancyList) {
+    private ArrayList<Double> getInterpolatedPrecisionRecallTable(LinkedHashSet<String> queryResults, Set<String> relevancyList) {
         Double totalRelevant = new Double(relevancyList.size());
         Double numRelevantFound = new Double(0);
         Double currentPosition = new Double(1); //start at 1 to avoid divide by 0 problems
@@ -389,14 +411,28 @@ public class QueryParser {
             precision.add(currentPrecision);
 
             //for testing
-            System.out.println(queryResult + " | " + currentRecall + " | " + currentPrecision);
+            //System.out.println(queryResult + " | " + currentRecall + " | " + currentPrecision);
 
             if(numRelevantFound.equals(totalRelevant)) {
                 break;
             }
             currentPosition++;
         }
-        System.out.println("");
+        //System.out.println("");
+
+        //create interpolated precision/recall table
+        ArrayList<Double> interpolatedPrecisionRecallTable = new ArrayList<Double>();
+        int currentIndex = recall.size() - 1;
+        Double highestPrecision = new Double(0);
+        for(Double recallLevel = 1.0; recallLevel >= 0; recallLevel = recallLevel - 0.1) {
+            while(currentIndex >= 0 && recall.get(currentIndex) >= recallLevel) {
+                highestPrecision = precision.get(currentIndex);
+                currentIndex--;
+            }
+            interpolatedPrecisionRecallTable.add(highestPrecision);
+        }
+        Collections.reverse(interpolatedPrecisionRecallTable);
+        return interpolatedPrecisionRecallTable;
     }
 
 
