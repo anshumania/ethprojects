@@ -394,11 +394,35 @@ public class FileIndexer {
         tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
        // tkz.useStopWords = false;
     }
+
+    public static void project2_phase1_vectorSpaceModel_StemmedWords()
+    {
+        FileIndexer tkz = new FileIndexer();
+        //create a new dictionary for this phase with its index file
+        Dictionary vectorDictionaryStopWords = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.PORTERSTEM,false,true);
+        // notify the fileIndex as to which dictionary its working on
+        tkz.setCurrentDictionary(vectorDictionaryStopWords);
+        //delete previous stopword index if any
+        FileIndexer.deleteIndex(tkz.getCurrentDictionary().getINDEX_FILE());
+       
+        // read all the documents in the director and tokenize
+        tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile());
+        //set the mode for the current dictionary
+
+        // apply the vector space model on terms of the document
+        tkz.getCurrentDictionary().createDocumentVectorSpaceModel();
+        // print the statistics
+        tkz.printIndexStats("Project2Phase2_StemmedWords");
+        // serialize the index
+        tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
+       // tkz.useStopWords = false;
+    }
+
     public static void project2_phase1_vectorSpaceModel_StopAndStemmedWords()
     {
         FileIndexer tkz = new FileIndexer();
         //create a new dictionary for this phase with its index file
-        Dictionary vectorDictionaryStopWords = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.PORTERSTEM,true,true);
+        Dictionary vectorDictionaryStopWords = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD + Bundle.PORTERSTEM,true,true);
         // notify the fileIndex as to which dictionary its working on
         tkz.setCurrentDictionary(vectorDictionaryStopWords);
         //delete previous stopword index if any
@@ -424,8 +448,9 @@ public class FileIndexer {
 //     FileIndexer.phase1();
 //     FileIndexer.phase2_StopWords();
 //     FileIndexer.phase2_Stemming();
-//       FileIndexer.project2_phase1_vectorSpaceModel();
+       FileIndexer.project2_phase1_vectorSpaceModel();
         FileIndexer.project2_phase1_vectorSpaceModel_StopWords();
+        FileIndexer.project2_phase1_vectorSpaceModel_StemmedWords();
         FileIndexer.project2_phase1_vectorSpaceModel_StopAndStemmedWords();
 
 
