@@ -2,6 +2,7 @@ package com.eth.ir.boolret.query;
 
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
 import com.eth.ir.boolret.dictionary.datastructure.PostingListNode;
+import com.eth.ir.boolret.stem.porter.PorterStemmer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -33,6 +34,29 @@ public class QueryDictionary {
     // the universal index for all types of parsers
     protected TreeMap<String, PostingList> index = new TreeMap<String, PostingList>();
     protected HashMap<String, Integer> documentLengths = new HashMap<String, Integer>();
+    protected boolean stopWordMode;
+    protected boolean stemmedWordMode;
+
+    protected PorterStemmer porterStemmer = new PorterStemmer();
+
+    public boolean isStemmedWordMode() {
+        return stemmedWordMode;
+    }
+
+    public void setStemmedWordMode(boolean stemmedWordMode) {
+        this.stemmedWordMode = stemmedWordMode;
+    }
+
+    public boolean isStopWordMode() {
+        return stopWordMode;
+    }
+
+    public void setStopWordMode(boolean stopWordMode) {
+        this.stopWordMode = stopWordMode;
+    }
+
+   
+
 
     public TreeMap<String, PostingList> getIndex() {
         return index;
@@ -190,9 +214,23 @@ public class QueryDictionary {
 
 
         for (String term : phraseTerms) {
-            PostingList pl = index.get(term);
 
-            if (pl != null) {
+            PostingList pl = null;
+            String stTerm = term;
+
+             // NORMAL MODE = (!stopWordMode && !stemmedWordMode) || (stopWordMode && !stemmedWordMode))
+               pl = index.get(stTerm);
+
+//            PostingList pl = index.get(term);
+
+            if (pl != null) { // implicit STOP WORD check  ; if stemmedWordMode is set then stemming and stop word is done
+
+                if(stopWordMode && stemmedWordMode) // STEMMING
+                {
+                    stTerm = porterStemmer.stem(term.toLowerCase());
+                    stTerm = stTerm.toUpperCase();
+                }
+
                 /*
                 // the document frequency = dft
                 Integer docFrequency = pl.getPostingList().size();
@@ -202,7 +240,7 @@ public class QueryDictionary {
                 Double docFrequencyDamped = pl.getInverseDocumentFrequency();
 
                 // the term frequency
-                Integer termFrequency = countFrequency(term, phraseTerms);
+                Integer termFrequency = countFrequency(stTerm, phraseTerms);
                 // damp the frequency
                 Double termFrequencyDamped = (1 + Math.log10(termFrequency));
                 //calculate the weighted tf-idf weight for the term
@@ -251,7 +289,7 @@ public class QueryDictionary {
         // run through the entire index and calculate the vector length per document
         for (Map.Entry<String, PostingList> iterator : index.entrySet()) {
             PostingList pl = iterator.getValue();
-            
+
             for (PostingListNode pln : pl.getPostingList()) {
                 String document = pln.getDocId();
                 if (vectorLengthForAllDocuments.containsKey(document)) {
@@ -267,7 +305,7 @@ public class QueryDictionary {
             }
         }
 
-    //    System.out.println("vectorLengthForAllDocuments = " + vectorLengthForAllDocuments);
+        //    System.out.println("vectorLengthForAllDocuments = " + vectorLengthForAllDocuments);
 
 
 
@@ -275,7 +313,7 @@ public class QueryDictionary {
         Map<String, Double> dotProducts = new HashMap<String, Double>();
 
         // next compute all dot products of type Query * Document(i)
-       for (Map.Entry<String, PostingList> iterator : index.entrySet()) {
+        for (Map.Entry<String, PostingList> iterator : index.entrySet()) {
             // if the term has a document for query then calculate Q*D(i)
             PostingList pl = iterator.getValue();
             if (pl.isHasQueryDocument()) {
@@ -298,29 +336,28 @@ public class QueryDictionary {
         }
 
 
-   //    System.out.println("dotProducts = " + dotProducts);
+        //    System.out.println("dotProducts = " + dotProducts);
 
-       Map<String,Double> cosineScores = new HashMap<String,Double>();
-       Double vectorLengthForQuery = vectorLengthForAllDocuments.get("Query");
+        Map<String, Double> cosineScores = new HashMap<String, Double>();
+        Double vectorLengthForQuery = vectorLengthForAllDocuments.get("Query");
 //        System.out.println("vectorLengthForQuery = " + vectorLengthForQuery);
 
         // next calculate the similarity scores
-        for(Map.Entry<String,Double> iterator : dotProducts.entrySet())
-        {
+        for (Map.Entry<String, Double> iterator : dotProducts.entrySet()) {
             Double dotProduct = iterator.getValue();
             String document = iterator.getKey();
             Double vectorLengthForDoc = vectorLengthForAllDocuments.get(document);
 //            System.out.println("document=" + document + " vectorLengthForDoc " + vectorLengthForDoc );
-            Double cosineScore = dotProduct/(vectorLengthForQuery * vectorLengthForDoc);
+            Double cosineScore = dotProduct / (vectorLengthForQuery * vectorLengthForDoc);
             cosineScores.put(document, cosineScore);
         }
 
 
 
-   //     System.out.println("cosineScores = " + cosineScores);
+//             System.out.println("cosineScores = " + cosineScores);
         //sort by score
         Map<String, Double> sorted_scores = sortByValue(cosineScores);
-//        System.out.println("sorted_scores=  " + sorted_scores);
+  //      System.out.println("sorted_scores=  " + sorted_scores);
 
         /* //for testing only
         for(Entry<String, Double> entry : sorted_scores.entrySet()) {
@@ -331,7 +368,7 @@ public class QueryDictionary {
         //save sorted keys into a set
         LinkedHashSet<String> result = new LinkedHashSet<String>();
         result.addAll(sorted_scores.keySet());
-//        System.out.println("result=" + result);
+     //   System.out.println("result=" + result);
         return result;
     }
 

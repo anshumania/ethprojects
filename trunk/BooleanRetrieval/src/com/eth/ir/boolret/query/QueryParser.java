@@ -307,6 +307,39 @@ public class QueryParser {
         //queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), true);
         queryParser.precisionRecallGraphForAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), relevancyLists);
     }
+    public static void project2_vectorSpaceModel_StopWords() {
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling");
+        QueryParser queryParser = new QueryParser();
+        queryParser.setCurrentQueryDictionary(new QueryDictionary());
+        //stop words
+        queryParser.getCurrentQueryDictionary().setStopWordMode(true);
+        //Load index from file
+        queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD).getFile());
+        queryParser.readDocumentLengthsFile(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.DOCUMENT_LENGTHS_FILE).getFile());
+        Map<String, HashSet<String>> relevancyLists = queryParser.readRelevancyListsFile("../" + Bundle.RELEVANCY_LISTS_FILE);
+
+        // Execute all the queries in the directory
+        //queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), true);
+        queryParser.precisionRecallGraphForAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), relevancyLists);
+    }
+    public static void project2_vectorSpaceModel_StopStemmedWords() {
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling");
+        QueryParser queryParser = new QueryParser();
+        queryParser.setCurrentQueryDictionary(new QueryDictionary());
+        //stop words
+        queryParser.getCurrentQueryDictionary().setStopWordMode(true);
+        //stemmed words
+        queryParser.getCurrentQueryDictionary().setStemmedWordMode(true);
+
+        //Load index from file
+        queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.PORTERSTEM).getFile());
+        queryParser.readDocumentLengthsFile(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.DOCUMENT_LENGTHS_FILE).getFile());
+        Map<String, HashSet<String>> relevancyLists = queryParser.readRelevancyListsFile("../" + Bundle.RELEVANCY_LISTS_FILE);
+
+        // Execute all the queries in the directory
+        //queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), true);
+        queryParser.precisionRecallGraphForAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), relevancyLists);
+    }
 
 
 
@@ -317,7 +350,9 @@ public class QueryParser {
         //QueryParser.phase2_Stemming();
         //QueryParser.phraseTest();
         //QueryParser.proximityTest();
-        QueryParser.project2_vectorSpaceModel();
+//        QueryParser.project2_vectorSpaceModel();
+//        QueryParser.project2_vectorSpaceModel_StopWords();
+        QueryParser.project2_vectorSpaceModel_StopStemmedWords();
     }
 
     //Ugly brute force attempt at finding words in the index that are actually 2 words with a space
@@ -404,7 +439,7 @@ public class QueryParser {
             {
                 String queryId = file.getName();
                 String query = loadQueryFromFile(file);
-                //System.out.println(queryId + ":" + query);
+                System.out.println(queryId + ":" + query);
                 LinkedHashSet<String> queryResults = executeVectorQuery(query);
 
                 Map<Double, Double> iprt = getInterpolatedPrecisionRecallTable(queryResults, relevancyLists.get(queryId));
@@ -417,6 +452,7 @@ public class QueryParser {
         //take average of all interpolated precision/recall tables
         for(Entry<Double, ArrayList<Double>> result : results.entrySet()) {
             Double sum = new Double(0);
+
             for(Double d : result.getValue()) {
                 sum += d;
             }
@@ -432,19 +468,25 @@ public class QueryParser {
         Double currentPosition = new Double(1); //start at 1 to avoid divide by 0 problems
         ArrayList<Double> recall = new ArrayList<Double>();
         ArrayList<Double> precision = new ArrayList<Double>();
-
+        System.out.println("getInterpolatedPrecisionRecallTable");
+//        System.out.println("releva ncyList.size="+relevancyList.size());
+//        System.out.println("queryResults.size="+queryResults.size());
+//        System.out.println("estimated precision="+(double)(relevancyList.size()/queryResults.size()));
         for(String queryResult : queryResults) {
             if(relevancyList.contains(queryResult)) {
                 numRelevantFound++;
             }
+//            System.out.println("numRelevantFound=" + numRelevantFound);
             Double currentRecall = new Double(numRelevantFound / totalRelevant);
             Double currentPrecision = new Double(numRelevantFound / currentPosition);
-
+//            System.out.println("currentPrecesion="+currentPrecision);
+//            System.out.println("currentPosition="+currentPosition);
             recall.add(currentRecall);
             precision.add(currentPrecision);
 
             //for testing
-            //System.out.println(queryResult + " | " + currentRecall + " | " + currentPrecision);
+            System.out.println(queryResult + " | " + currentRecall + " | " + currentPrecision + " | " + currentPosition);
+
 
             if(numRelevantFound.equals(totalRelevant)) {
                 break;
@@ -466,6 +508,7 @@ public class QueryParser {
             }
             interpolatedPrecisionRecallTable.put(recallLevel, highestPrecision);
         }
+        System.out.println(" interpolatedPrecisionRecallTable=" + interpolatedPrecisionRecallTable);
         
         return interpolatedPrecisionRecallTable;
     }
