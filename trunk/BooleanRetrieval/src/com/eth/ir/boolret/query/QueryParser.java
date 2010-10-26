@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -389,11 +390,12 @@ public class QueryParser {
 
 
     private void precisionRecallGraphForAllQueriesInDirectory(String dir, Map<String, HashSet<String>> relevancyLists) {
+        DecimalFormat oneDecimal = new DecimalFormat("#.#");
         Boolean isVectorQuery = true;
         File directory = new File(dir);
         File[] files = directory.listFiles();
         TreeMap<Double, ArrayList<Double>> results = new TreeMap<Double, ArrayList<Double>>();
-        for(Double d=new Double(0); d <= 1.0; d = d + 0.1) {
+        for(Double d=new Double(0); d <= 1.0; d = Double.valueOf(oneDecimal.format(d + 0.1))) {
             results.put(d, new ArrayList<Double>());
         }
 
@@ -424,6 +426,7 @@ public class QueryParser {
     }
 
     private Map<Double, Double> getInterpolatedPrecisionRecallTable(LinkedHashSet<String> queryResults, Set<String> relevancyList) {
+        DecimalFormat oneDecimal = new DecimalFormat("#.#");
         Double totalRelevant = new Double(relevancyList.size());
         Double numRelevantFound = new Double(0);
         Double currentPosition = new Double(1); //start at 1 to avoid divide by 0 problems
@@ -454,7 +457,7 @@ public class QueryParser {
         Map<Double, Double> interpolatedPrecisionRecallTable = new TreeMap<Double, Double>();
         int currentIndex = recall.size() - 1;
         Double highestPrecision = new Double(0);
-        for(Double recallLevel = 1.0; recallLevel >= 0; recallLevel = recallLevel - 0.1) {
+        for(Double recallLevel = 1.0; recallLevel >= 0; recallLevel = Double.valueOf(oneDecimal.format(recallLevel - 0.1))) {
             while(currentIndex >= 0 && recall.get(currentIndex) >= recallLevel) {
                 if(precision.get(currentIndex) > highestPrecision) {
                     highestPrecision = precision.get(currentIndex);
