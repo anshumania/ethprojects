@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -391,9 +392,9 @@ public class QueryParser {
         Boolean isVectorQuery = true;
         File directory = new File(dir);
         File[] files = directory.listFiles();
-        ArrayList<ArrayList<Double>> results = new ArrayList<ArrayList<Double>>();
-        for(int z=0; z < 11; z++) {
-            results.add(new ArrayList<Double>());
+        TreeMap<Double, ArrayList<Double>> results = new TreeMap<Double, ArrayList<Double>>();
+        for(Double d=new Double(0); d <= 1.0; d = d + 0.1) {
+            results.put(d, new ArrayList<Double>());
         }
 
         for (File file : files) {
@@ -404,28 +405,25 @@ public class QueryParser {
                 //System.out.println(queryId + ":" + query);
                 LinkedHashSet<String> queryResults = executeVectorQuery(query);
 
-                ArrayList<Double> iprt = getInterpolatedPrecisionRecallTable(queryResults, relevancyLists.get(queryId));
-                int index = 0;
-                for(Double d : iprt) {
-                    results.get(index).add(d);
-                    index++;
+                Map<Double, Double> iprt = getInterpolatedPrecisionRecallTable(queryResults, relevancyLists.get(queryId));
+                for(Entry<Double,Double> e : iprt.entrySet()) {
+                    results.get(e.getKey()).add(e.getValue());
                 }
             }
         }
 
         //take average of all interpolated precision/recall tables
-        for(ArrayList<Double> result : results) {
+        for(Entry<Double, ArrayList<Double>> result : results.entrySet()) {
             Double sum = new Double(0);
-            for(Double d : result) {
+            for(Double d : result.getValue()) {
                 sum += d;
             }
-            Double average = sum / new Double(result.size());
-            System.out.print(average + ",");
+            Double average = sum / new Double(result.getValue().size());
+            System.out.println(result.getKey() + "," + average);
         }
-        System.out.println("");
     }
 
-    private ArrayList<Double> getInterpolatedPrecisionRecallTable(LinkedHashSet<String> queryResults, Set<String> relevancyList) {
+    private Map<Double, Double> getInterpolatedPrecisionRecallTable(LinkedHashSet<String> queryResults, Set<String> relevancyList) {
         Double totalRelevant = new Double(relevancyList.size());
         Double numRelevantFound = new Double(0);
         Double currentPosition = new Double(1); //start at 1 to avoid divide by 0 problems
@@ -453,17 +451,19 @@ public class QueryParser {
         //System.out.println("");
 
         //create interpolated precision/recall table
-        ArrayList<Double> interpolatedPrecisionRecallTable = new ArrayList<Double>();
+        Map<Double, Double> interpolatedPrecisionRecallTable = new TreeMap<Double, Double>();
         int currentIndex = recall.size() - 1;
         Double highestPrecision = new Double(0);
         for(Double recallLevel = 1.0; recallLevel >= 0; recallLevel = recallLevel - 0.1) {
             while(currentIndex >= 0 && recall.get(currentIndex) >= recallLevel) {
-                highestPrecision = precision.get(currentIndex);
+                if(precision.get(currentIndex) > highestPrecision) {
+                    highestPrecision = precision.get(currentIndex);
+                }
                 currentIndex--;
             }
-            interpolatedPrecisionRecallTable.add(highestPrecision);
+            interpolatedPrecisionRecallTable.put(recallLevel, highestPrecision);
         }
-        Collections.reverse(interpolatedPrecisionRecallTable);
+        
         return interpolatedPrecisionRecallTable;
     }
 
