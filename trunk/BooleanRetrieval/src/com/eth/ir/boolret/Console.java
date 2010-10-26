@@ -32,18 +32,38 @@ public class Console {
                 String index = "";
                 String query = "";
                 String spellNum = "";
+                String mode = "";
 
-                while (!index.equalsIgnoreCase("BASIC") && !index.equalsIgnoreCase("STOPWORD") && !index.equalsIgnoreCase("STEM")
+                while (!mode.equalsIgnoreCase("V") && ! mode.equalsIgnoreCase("B")
+                        && !mode.equalsIgnoreCase("exit") && !mode.equalsIgnoreCase("restart")) {
+                    System.out.print("(B)asic or (V)ector query mode?  ");
+                    mode = userIn.readLine();
+                }
+
+                if (index.equals("exit")) { break; }
+                if (index.equals("restart")) { continue; }
+
+                while (!index.equalsIgnoreCase("BASIC") && !index.equalsIgnoreCase("STOPWORD") && !index.equalsIgnoreCase("STEM") && !index.equalsIgnoreCase("BOTH")
                         && !index.equalsIgnoreCase("exit") && !index.equalsIgnoreCase("restart")) {
-                    System.out.print("Load (basic) index, (stopword) index, or (stem)med index?  ");
+                    System.out.print("Load (basic) index, (stopword) index, (stem)med index, or (both) stopword and stemmed index?  ");
                     index = userIn.readLine();
                 }
 
                 if (index.equals("exit")) { break; }
                 if (index.equals("restart")) { continue; }
 
-                if(index.equalsIgnoreCase("STEM")) {
+                if(mode.equalsIgnoreCase("V")) {
+                    queryParser.setCurrentQueryDictionary(new QueryDictionary());
+                    if(index.equalsIgnoreCase("STEM") || index.equalsIgnoreCase("BOTH")) {
+                        queryParser.getCurrentQueryDictionary().setStemmedWordMode(true);
+                    } else if(index.equalsIgnoreCase("STOPWORD") || index.equalsIgnoreCase("BOTH")) {
+                        queryParser.getCurrentQueryDictionary().setStopWordMode(true);
+                    }
+                } else if (index.equalsIgnoreCase("STEM")) {
                     queryParser.setCurrentQueryDictionary(new StemmedQueryDictionary());
+                } else if (index.equalsIgnoreCase("BOTH")) {
+                    System.out.println("Stopword AND stemming is only supported for vector model.");
+                    continue;
                 } else {
                     queryParser.setCurrentQueryDictionary(new QueryDictionary());
                 }
@@ -74,7 +94,8 @@ public class Console {
                         
                         queryParser.findSpellingErrors(Integer.parseInt(spellNum));
                     } else {
-                        queryParser.executeQuery(query, false);
+                        Boolean isVector = (mode.equalsIgnoreCase("V") ? true : false);
+                        queryParser.executeQuery(query, isVector);
                     }
                 }
 
