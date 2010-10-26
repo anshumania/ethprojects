@@ -5,8 +5,10 @@
 
 package com.eth.ir.boolret.dictionary;
 
+import com.eth.ir.boolret.StopWords;
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
 import com.eth.ir.boolret.dictionary.datastructure.PostingListNode;
+import com.eth.ir.boolret.stem.porter.Porter;
 import java.util.Map;
 
 /**
@@ -18,17 +20,51 @@ public class VectorDictionary extends Dictionary{
     private boolean stopWordMode;
     private boolean stemmedWordMode;
 
+    private Porter porterStemmer;
+
+
     public VectorDictionary(String indexFile) {
         super(indexFile);
+        this.porterStemmer = new Porter();
+    }
+
+    public VectorDictionary(String indexFile, boolean stopWord, boolean stemmedWord) {
+        super(indexFile);
+        this.stemmedWordMode = stemmedWord;
+        this.stopWordMode = stopWord;
+        this.porterStemmer = new Porter();
     }
 
     @Override
     public void addToDictionary(String docId, String key, Integer position) {
 
+
+
         // normal mode
         // just add all the relevant words to the dictionary.
 
-        super.addToDictionary(docId, key, position);
+        if(!stopWordMode && !stemmedWordMode)
+        {
+
+                super.addToDictionary(docId, key, position);
+        }
+
+        if(stopWordMode && !stemmedWordMode)
+        {
+            if (!StopWords.isStopWord(key.trim()))
+                super.addToDictionary(docId, key, position);
+        }
+        if(stopWordMode && stemmedWordMode)
+        {
+           if (!StopWords.isStopWord(key.trim()))
+           {
+            String stemmedKey = (key.trim().length() == 1) ? key : porterStemmer.stem(key.toLowerCase());
+            stemmedKey = stemmedKey.toUpperCase();
+            
+            super.addToDictionary(docId, stemmedKey, position);
+            }
+        }
+        
 
 
     }
