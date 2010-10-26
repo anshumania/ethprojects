@@ -219,15 +219,23 @@ public class QueryDictionary {
             String stTerm = term;
 
              // NORMAL MODE = (!stopWordMode && !stemmedWordMode) || (stopWordMode && !stemmedWordMode))
+
+            if(!stopWordMode && stemmedWordMode) // STEMMING
+            {
+                
+                stTerm = (stTerm.trim().length() == 1) ? stTerm : porterStemmer.stem(stTerm.toLowerCase());
+                stTerm = stTerm.toUpperCase();
+            }
+
                pl = index.get(stTerm);
 
 //            PostingList pl = index.get(term);
 
             if (pl != null) { // implicit STOP WORD check  ; if stemmedWordMode is set then stemming and stop word is done
 
-                if(stopWordMode && stemmedWordMode) // STEMMING
+                if(stopWordMode && stemmedWordMode) // STEMMING AND STOPWORD
                 {
-                    stTerm = porterStemmer.stem(term.toLowerCase());
+                    stTerm = (stTerm.trim().length() == 1) ? stTerm : porterStemmer.stem(stTerm.toLowerCase());
                     stTerm = stTerm.toUpperCase();
                 }
 

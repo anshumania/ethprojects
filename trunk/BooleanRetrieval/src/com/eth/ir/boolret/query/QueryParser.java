@@ -322,6 +322,24 @@ public class QueryParser {
         //queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), true);
         queryParser.precisionRecallGraphForAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), relevancyLists);
     }
+
+      public static void project2_vectorSpaceModel_StemmedWords() {
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling");
+        QueryParser queryParser = new QueryParser();
+        queryParser.setCurrentQueryDictionary(new QueryDictionary());
+        //stemmed words
+        queryParser.getCurrentQueryDictionary().setStemmedWordMode(true);
+
+        //Load index from file
+        queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.PORTERSTEM).getFile());
+        queryParser.readDocumentLengthsFile(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.DOCUMENT_LENGTHS_FILE).getFile());
+        Map<String, HashSet<String>> relevancyLists = queryParser.readRelevancyListsFile("../" + Bundle.RELEVANCY_LISTS_FILE);
+
+        // Execute all the queries in the directory
+        //queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), true);
+        queryParser.precisionRecallGraphForAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), relevancyLists);
+    }
+
     public static void project2_vectorSpaceModel_StopStemmedWords() {
         Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling");
         QueryParser queryParser = new QueryParser();
@@ -332,7 +350,7 @@ public class QueryParser {
         queryParser.getCurrentQueryDictionary().setStemmedWordMode(true);
 
         //Load index from file
-        queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.PORTERSTEM).getFile());
+        queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD +Bundle.PORTERSTEM).getFile());
         queryParser.readDocumentLengthsFile(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.DOCUMENT_LENGTHS_FILE).getFile());
         Map<String, HashSet<String>> relevancyLists = queryParser.readRelevancyListsFile("../" + Bundle.RELEVANCY_LISTS_FILE);
 
@@ -350,8 +368,9 @@ public class QueryParser {
         //QueryParser.phase2_Stemming();
         //QueryParser.phraseTest();
         //QueryParser.proximityTest();
-//        QueryParser.project2_vectorSpaceModel();
-//        QueryParser.project2_vectorSpaceModel_StopWords();
+        QueryParser.project2_vectorSpaceModel();
+        QueryParser.project2_vectorSpaceModel_StopWords();
+        QueryParser.project2_vectorSpaceModel_StemmedWords();
         QueryParser.project2_vectorSpaceModel_StopStemmedWords();
     }
 
@@ -439,7 +458,7 @@ public class QueryParser {
             {
                 String queryId = file.getName();
                 String query = loadQueryFromFile(file);
-                System.out.println(queryId + ":" + query);
+//                System.out.println(queryId + ":" + query);
                 LinkedHashSet<String> queryResults = executeVectorQuery(query);
 
                 Map<Double, Double> iprt = getInterpolatedPrecisionRecallTable(queryResults, relevancyLists.get(queryId));
@@ -468,7 +487,7 @@ public class QueryParser {
         Double currentPosition = new Double(1); //start at 1 to avoid divide by 0 problems
         ArrayList<Double> recall = new ArrayList<Double>();
         ArrayList<Double> precision = new ArrayList<Double>();
-        System.out.println("getInterpolatedPrecisionRecallTable");
+//        System.out.println("getInterpolatedPrecisionRecallTable");
 //        System.out.println("releva ncyList.size="+relevancyList.size());
 //        System.out.println("queryResults.size="+queryResults.size());
 //        System.out.println("estimated precision="+(double)(relevancyList.size()/queryResults.size()));
@@ -485,7 +504,7 @@ public class QueryParser {
             precision.add(currentPrecision);
 
             //for testing
-            System.out.println(queryResult + " | " + currentRecall + " | " + currentPrecision + " | " + currentPosition);
+//            System.out.println(queryResult + " | " + currentRecall + " | " + currentPrecision + " | " + currentPosition);
 
 
             if(numRelevantFound.equals(totalRelevant)) {
@@ -508,7 +527,7 @@ public class QueryParser {
             }
             interpolatedPrecisionRecallTable.put(recallLevel, highestPrecision);
         }
-        System.out.println(" interpolatedPrecisionRecallTable=" + interpolatedPrecisionRecallTable);
+//        System.out.println(" interpolatedPrecisionRecallTable=" + interpolatedPrecisionRecallTable);
         
         return interpolatedPrecisionRecallTable;
     }

@@ -43,27 +43,34 @@ public class VectorDictionary extends Dictionary{
         // normal mode
         // just add all the relevant words to the dictionary.
 
-        if(!stopWordMode && !stemmedWordMode)
-        {
 
-                super.addToDictionary(docId, key, position);
-        }
-
-        if(stopWordMode && !stemmedWordMode)
+        if(stopWordMode)
         {
             if (!StopWords.isStopWord(key.trim()))
-                super.addToDictionary(docId, key, position);
-        }
-        if(stopWordMode && stemmedWordMode)
-        {
-           if (!StopWords.isStopWord(key.trim()))
-           {
-            String stemmedKey = (key.trim().length() == 1) ? key : porterStemmer.stem(key.toLowerCase());
-            stemmedKey = stemmedKey.toUpperCase();
-            
-            super.addToDictionary(docId, stemmedKey, position);
+            {
+                if(stemmedWordMode) // STOPWORD AND STEMMING
+                {
+                 String stemmedKey = (key.trim().length() == 1) ? key : porterStemmer.stem(key.toLowerCase());
+                 stemmedKey = stemmedKey.toUpperCase();
+                 super.addToDictionary(docId, stemmedKey, position);
+                }
+                else
+                  super.addToDictionary(docId, key, position);  // STOPWORDS
             }
         }
+        else
+        {
+            if (stemmedWordMode) //STEMMING
+            {
+                 String stemmedKey = (key.trim().length() == 1) ? key : porterStemmer.stem(key.toLowerCase());
+                 stemmedKey = stemmedKey.toUpperCase();
+                 super.addToDictionary(docId, stemmedKey, position);
+            }
+            else
+                super.addToDictionary(docId, key, position); // NORMAL MODE
+        }
+
+
         
 
 
