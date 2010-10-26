@@ -24,6 +24,7 @@ public class Console {
         indexFilenames.put("BASIC", Bundle.INDEX_FILE);
         indexFilenames.put("STOPWORD", Bundle.INDEX_FILE + Bundle.STOPWORD);
         indexFilenames.put("STEM", Bundle.INDEX_FILE + Bundle.PORTERSTEM);
+        indexFilenames.put("BOTH", Bundle.INDEX_FILE + Bundle.STOPWORD +Bundle.PORTERSTEM);
         
         try {
             userIn = new BufferedReader(new InputStreamReader(System.in));
@@ -70,7 +71,7 @@ public class Console {
 
                 System.out.println("Loading index...");
                 String filename = indexFilenames.get(index.toUpperCase());
-                queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + indexFilenames.get(index.toUpperCase())).getFile());
+                queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + filename).getFile());
                 System.out.println("Finished loading index.");
                 
                 while(true) {
