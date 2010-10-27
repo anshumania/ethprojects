@@ -50,8 +50,10 @@ public class VectorDictionary extends Dictionary{
             {
                 if(stemmedWordMode) // STOPWORD AND STEMMING
                 {
+
                  String stemmedKey = (key.trim().length() == 1) ? key : porterStemmer.stem(key.toLowerCase());
                  stemmedKey = stemmedKey.toUpperCase();
+                 
                  super.addToDictionary(docId, stemmedKey, position);
                 }
                 else
