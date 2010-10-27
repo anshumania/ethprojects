@@ -351,7 +351,7 @@ public class QueryParser {
 
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD +Bundle.PORTERSTEM).getFile());
-        queryParser.readDocumentLengthsFile(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.DOCUMENT_LENGTHS_FILE).getFile());
+//        queryParser.readDocumentLengthsFile(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.DOCUMENT_LENGTHS_FILE).getFile());
         Map<String, HashSet<String>> relevancyLists = queryParser.readRelevancyListsFile("../" + Bundle.RELEVANCY_LISTS_FILE);
 
         // Execute all the queries in the directory
@@ -430,7 +430,7 @@ public class QueryParser {
             precision.add(currentPrecision);
 
             //for testing
-            System.out.println(queryResult + " | " + currentRecall + " | " + currentPrecision);
+//            System.out.println(queryResult + " | " + currentRecall + " | " + currentPrecision);
 
             if(numRelevantFound.equals(totalRelevant)) {
                 break;
@@ -460,6 +460,7 @@ public class QueryParser {
                 String query = loadQueryFromFile(file);
 //                System.out.println(queryId + ":" + query);
                 LinkedHashSet<String> queryResults = executeVectorQuery(query);
+//                System.out.println("queryResults=" + queryResults);
 
                 Map<Double, Double> iprt = getInterpolatedPrecisionRecallTable(queryResults, relevancyLists.get(queryId));
                 for(Entry<Double,Double> e : iprt.entrySet()) {
@@ -487,6 +488,7 @@ public class QueryParser {
         Double currentPosition = new Double(1); //start at 1 to avoid divide by 0 problems
         ArrayList<Double> recall = new ArrayList<Double>();
         ArrayList<Double> precision = new ArrayList<Double>();
+//        System.out.println("relevancyList=" + relevancyList);
 //        System.out.println("getInterpolatedPrecisionRecallTable");
 //        System.out.println("releva ncyList.size="+relevancyList.size());
 //        System.out.println("queryResults.size="+queryResults.size());

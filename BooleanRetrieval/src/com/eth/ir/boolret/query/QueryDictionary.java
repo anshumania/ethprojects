@@ -2,7 +2,7 @@ package com.eth.ir.boolret.query;
 
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
 import com.eth.ir.boolret.dictionary.datastructure.PostingListNode;
-import com.eth.ir.boolret.stem.porter.PorterStemmer;
+import com.eth.ir.boolret.stem.porter.Porter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -36,8 +36,7 @@ public class QueryDictionary {
     protected HashMap<String, Integer> documentLengths = new HashMap<String, Integer>();
     protected boolean stopWordMode;
     protected boolean stemmedWordMode;
-
-    protected PorterStemmer porterStemmer = new PorterStemmer();
+    protected Porter porterStemmer = new Porter();
 
     public boolean isStemmedWordMode() {
         return stemmedWordMode;
@@ -54,9 +53,6 @@ public class QueryDictionary {
     public void setStopWordMode(boolean stopWordMode) {
         this.stopWordMode = stopWordMode;
     }
-
-   
-
 
     public TreeMap<String, PostingList> getIndex() {
         return index;
@@ -212,69 +208,80 @@ public class QueryDictionary {
         // fetch the inverseDocument frequency idf for that term
         // create the tf-idf weight for that term in that document
 
-
+//        System.out.println("index=" + index);
         for (String term : phraseTerms) {
 
             PostingList pl = null;
             String stTerm = term;
 
-             // NORMAL MODE = (!stopWordMode && !stemmedWordMode) || (stopWordMode && !stemmedWordMode))
+            // NORMAL MODE = (!stopWordMode && !stemmedWordMode) || (stopWordMode && !stemmedWordMode))
+            // the term frequency : have to do this before because the word will be stemmed later on
+            Integer termFrequency = countFrequency(stTerm, phraseTerms);
 
-            if(!stopWordMode && stemmedWordMode) // STEMMING
-            {
-                
-                stTerm = (stTerm.trim().length() == 1) ? stTerm : porterStemmer.stem(stTerm.toLowerCase());
-                stTerm = stTerm.toUpperCase();
-            }
-
-               pl = index.get(stTerm);
-
-//            PostingList pl = index.get(term);
-
-            if (pl != null) { // implicit STOP WORD check  ; if stemmedWordMode is set then stemming and stop word is done
-
-                if(stopWordMode && stemmedWordMode) // STEMMING AND STOPWORD
+            if (stopWordMode) {
+                if (stemmedWordMode) // STOP WORD AND STEMMING
                 {
                     stTerm = (stTerm.trim().length() == 1) ? stTerm : porterStemmer.stem(stTerm.toLowerCase());
                     stTerm = stTerm.toUpperCase();
                 }
-
-                /*
-                // the document frequency = dft
-                Integer docFrequency = pl.getPostingList().size();
-                // damp the document frequency = log<10>(N/dft)
-                Double docFrequencyDamped = Math.log10(425/docFrequency);
-                 */
-                Double docFrequencyDamped = pl.getInverseDocumentFrequency();
-
-                // the term frequency
-                Integer termFrequency = countFrequency(stTerm, phraseTerms);
-                // damp the frequency
-                Double termFrequencyDamped = (1 + Math.log10(termFrequency));
-                //calculate the weighted tf-idf weight for the term
-                Double tfIdfWeight = docFrequencyDamped * termFrequencyDamped;
-
-                if (!pl.isHasQueryDocument()) {
-                    // create  a new postingList for this "Query" Document
-                    PostingListNode pln = new PostingListNode("Query");
-                    pln.setTf_idf_weight(tfIdfWeight);
-                    pl.getPostingList().addLast(pln);
-                    pl.setHasQueryDocument(true);
-                } else {
-                    // no need to do this ; we may as well skip as it is set the first time
-                    pl.getPostingList().getLast().setTf_idf_weight(tfIdfWeight);
+                pl = index.get(stTerm);
+                if (pl == null) { // this is a STOP WORD and hence not in index
+//                    System.out.println("skipped stopword" + stTerm);
+                    continue;  // STOP WORD ; skip
                 }
+            } else {
+                if (stemmedWordMode) // STEMMING
+                {
+                    stTerm = (stTerm.trim().length() == 1) ? stTerm : porterStemmer.stem(stTerm.toLowerCase());
+                    stTerm = stTerm.toUpperCase();
+
+                }
+                // else NORMAL
+                pl = index.get(stTerm);
+            }
+
+            if (pl == null) {
+                // this word is not in our index because its in none of the documents
+                 Logger.getLogger(QueryDictionary.class.getName()).log(Level.WARNING,"Query term {0} does not appear in any doc", term);
+                continue;
+            }
 
 
 
+            /*
+            // the document frequency = dft
+            Integer docFrequency = pl.getPostingList().size();
+            // damp the document frequency = log<10>(N/dft)
+            Double docFrequencyDamped = Math.log10(425/docFrequency);
+             */
+            Double docFrequencyDamped = pl.getInverseDocumentFrequency();
 
 
 
+            // damp the frequency
+            Double termFrequencyDamped = (1 + Math.log10(termFrequency));
+
+            //calculate the weighted tf-idf weight for the term
+            Double tfIdfWeight = docFrequencyDamped * termFrequencyDamped;
 
 
+            if (!pl.isHasQueryDocument()) {
+                // create  a new postingList for this "Query" Document
+                PostingListNode pln = new PostingListNode("Query");
+                pln.setTf_idf_weight(tfIdfWeight);
+                pl.getPostingList().addLast(pln);
+                pl.setHasQueryDocument(true);
 
+            } else {
+                // no need to do this ; we may as well skip as it is set the first time
+                pl.getPostingList().getLast().setTf_idf_weight(tfIdfWeight);
 
-                //calculate dot-product of query term weight and document term weight
+            }
+
+            index.put(stTerm, pl);
+        }
+
+        //calculate dot-product of query term weight and document term weight
 //                for(PostingListNode pln : pl.getPostingList())
 //                {
 //                    Double score = tfIdfWeight * pln.getTf_idf_weight();
@@ -286,11 +293,14 @@ public class QueryDictionary {
 //                    }
 //
 //                }
-            }
-        }
 
 
-//        System.out.println("index = " + index);
+
+
+
+
+
+
         Map<String, Double> vectorLengthForAllDocuments = new HashMap<String, Double>();
 
 
@@ -313,7 +323,7 @@ public class QueryDictionary {
             }
         }
 
-        //    System.out.println("vectorLengthForAllDocuments = " + vectorLengthForAllDocuments);
+//        System.out.println("vectorLengthForAllDocuments = " + vectorLengthForAllDocuments);
 
 
 
@@ -365,7 +375,7 @@ public class QueryDictionary {
 //             System.out.println("cosineScores = " + cosineScores);
         //sort by score
         Map<String, Double> sorted_scores = sortByValue(cosineScores);
-  //      System.out.println("sorted_scores=  " + sorted_scores);
+//        System.out.println("sorted_scores=  " + sorted_scores);
 
         /* //for testing only
         for(Entry<String, Double> entry : sorted_scores.entrySet()) {
@@ -376,7 +386,7 @@ public class QueryDictionary {
         //save sorted keys into a set
         LinkedHashSet<String> result = new LinkedHashSet<String>();
         result.addAll(sorted_scores.keySet());
-     //   System.out.println("result=" + result);
+//        System.out.println("result=" + result);
         return result;
     }
 
