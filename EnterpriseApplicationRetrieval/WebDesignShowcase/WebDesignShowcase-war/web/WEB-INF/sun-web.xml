@@ -6,6 +6,10 @@
     <res-ref-name>TopicConnectionFactory</res-ref-name>
     <jndi-name>TopicConnectionFactory</jndi-name>
   </resource-ref>
+  <resource-ref>
+    <res-ref-name>CommentsFactory</res-ref-name>
+    <jndi-name>CommentsFactory</jndi-name>
+  </resource-ref>
   <message-destination-ref>
     <message-destination-ref-name>Comments</message-destination-ref-name>
     <jndi-name>Comments</jndi-name>

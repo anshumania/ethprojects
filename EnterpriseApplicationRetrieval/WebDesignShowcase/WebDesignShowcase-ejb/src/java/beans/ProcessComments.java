@@ -26,35 +26,35 @@ public class ProcessComments implements MessageListener {
     public void onMessage(Message message) {
 		TextMessage msg = null;
 
-		try {
-			if (message instanceof TextMessage) {
-				msg = (TextMessage)message;
-				String msgContent = msg.getText();
-
-				int userID = Integer.parseInt(msgContent.split(" ")[0]);
-				int designID = Integer.parseInt(msgContent.split(" ")[1]);
-				String text = msgContent.substring((userID + " " + designID +" ").length());
-
-				CommentsJpaController commentsJpaController = new CommentsJpaController();
-				Users user = new UsersJpaController().findUsers(userID);
-				Designs design = new DesignsJpaController().findDesigns(designID);
-				int commentID = commentsJpaController.getCommentsCount() + 1;
-
-				Comments comment = new Comments();
-				comment.setComment(text);
-				comment.setDesigns(design);
-				comment.setId(commentID);
-				comment.setUsers(user);
-
-				try {
-					commentsJpaController.create(comment);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		} catch (JMSException jmse) {
-			jmse.printStackTrace();
-		}
+//		try {
+//			if (message instanceof TextMessage) {
+//				msg = (TextMessage)message;
+//				String msgContent = msg.getText();
+//
+//				int userID = Integer.parseInt(msgContent.split(" ")[0]);
+//				int designID = Integer.parseInt(msgContent.split(" ")[1]);
+//				String text = msgContent.substring((userID + " " + designID +" ").length());
+//
+//				CommentsJpaController commentsJpaController = new CommentsJpaController();
+//				Userss user = new UsersJpaController().findUsers(userID);
+//				Designss design = new DesignsJpaController().findDesigns(designID);
+//				int commentID = commentsJpaController.getCommentsCount() + 1;
+//
+//				CommentsE comment = new CommentsE();
+//				comment.setComment(text);
+//				comment.setDesigns(design);
+//				comment.setId(commentID);
+//				comment.setUsers(user);
+//
+//				try {
+//					commentsJpaController.create(comment);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		} catch (JMSException jmse) {
+//			jmse.printStackTrace();
+//		}
     }
     
 }
