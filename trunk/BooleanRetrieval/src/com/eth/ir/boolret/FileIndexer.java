@@ -129,6 +129,8 @@ public class FileIndexer {
         File directory = new File(dir);
         File[] files = directory.listFiles();
         int numberOfDocuments  = 0;
+        // set the number of Documents
+        getCurrentDictionary().setNUMBER_OF_DOCUMENTS(425);
 
         for (File file : files) {
             if (!file.isHidden() && !file.getName().contains(Bundle.INDEX_FILE)) // hack for getting rid of svn files
@@ -139,8 +141,7 @@ public class FileIndexer {
             }
         }
         
-        // set the number of Documents
-        getCurrentDictionary().setNUMBER_OF_DOCUMENTS(numberOfDocuments);
+
 
 
     }
@@ -448,9 +449,9 @@ public class FileIndexer {
 //     FileIndexer.phase1();
 //     FileIndexer.phase2_StopWords();
 //     FileIndexer.phase2_Stemming();
-       FileIndexer.project2_phase1_vectorSpaceModel();
-        FileIndexer.project2_phase1_vectorSpaceModel_StopWords();
-        FileIndexer.project2_phase1_vectorSpaceModel_StemmedWords();
+//       FileIndexer.project2_phase1_vectorSpaceModel();
+//        FileIndexer.project2_phase1_vectorSpaceModel_StopWords();
+//        FileIndexer.project2_phase1_vectorSpaceModel_StemmedWords();
         FileIndexer.project2_phase1_vectorSpaceModel_StopAndStemmedWords();
 
 

@@ -115,6 +115,7 @@ public class VectorDictionary extends Dictionary{
         }
 
        // protected TreeMap<String, PostingList> index;
+//        System.out.println("index-"+index);
 
     }
 }

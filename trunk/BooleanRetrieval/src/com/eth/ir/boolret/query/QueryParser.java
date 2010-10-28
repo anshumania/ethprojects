@@ -368,9 +368,9 @@ public class QueryParser {
         //QueryParser.phase2_Stemming();
         //QueryParser.phraseTest();
         //QueryParser.proximityTest();
-        QueryParser.project2_vectorSpaceModel();
-        QueryParser.project2_vectorSpaceModel_StopWords();
-        QueryParser.project2_vectorSpaceModel_StemmedWords();
+//        QueryParser.project2_vectorSpaceModel();
+//        QueryParser.project2_vectorSpaceModel_StopWords();
+//        QueryParser.project2_vectorSpaceModel_StemmedWords();
         QueryParser.project2_vectorSpaceModel_StopStemmedWords();
     }
 
@@ -430,7 +430,7 @@ public class QueryParser {
             precision.add(currentPrecision);
 
             //for testing
-//            System.out.println(queryResult + " | " + currentRecall + " | " + currentPrecision);
+            System.out.println(queryResult + " | " + currentRecall + " | " + currentPrecision);
 
             if(numRelevantFound.equals(totalRelevant)) {
                 break;
@@ -461,6 +461,8 @@ public class QueryParser {
 //                System.out.println(queryId + ":" + query);
                 LinkedHashSet<String> queryResults = executeVectorQuery(query);
 //                System.out.println("queryResults=" + queryResults);
+        
+//                printPrecisionRecallTable(queryResults, relevancyLists.get(queryId));
 
                 Map<Double, Double> iprt = getInterpolatedPrecisionRecallTable(queryResults, relevancyLists.get(queryId));
                 for(Entry<Double,Double> e : iprt.entrySet()) {

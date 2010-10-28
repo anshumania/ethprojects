@@ -3,6 +3,7 @@ package com.eth.ir.boolret.query;
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
 import com.eth.ir.boolret.dictionary.datastructure.PostingListNode;
 import com.eth.ir.boolret.stem.porter.Porter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -202,19 +203,25 @@ public class QueryDictionary {
         return doProximityQuery(phraseTerms, 1);
     }
 
-    public Set<String> doVectorQuery(ArrayList<String> phraseTerms) {
+    public Set<String> doVectorQuery(ArrayList<String> phraseTerms)
+    {
+        
+        Map<String,Double> scores = new HashMap<String,Double>();
+        
+
         // represent the query as a vector
         // for each term calculate its termFrequency
         // fetch the inverseDocument frequency idf for that term
         // create the tf-idf weight for that term in that document
 
-//        System.out.println("index=" + index);
-        for (String term : phraseTerms) {
+        TreeMap<String, PostingList> indexTemp = new TreeMap<String, PostingList>();
+        indexTemp.putAll(index);
+
+        for (String term : phraseTerms) { // for every term in the query
 
             PostingList pl = null;
             String stTerm = term;
 
-            // NORMAL MODE = (!stopWordMode && !stemmedWordMode) || (stopWordMode && !stemmedWordMode))
             // the term frequency : have to do this before because the word will be stemmed later on
             Integer termFrequency = countFrequency(stTerm, phraseTerms);
 
@@ -224,7 +231,7 @@ public class QueryDictionary {
                     stTerm = (stTerm.trim().length() == 1) ? stTerm : porterStemmer.stem(stTerm.toLowerCase());
                     stTerm = stTerm.toUpperCase();
                 }
-                pl = index.get(stTerm);
+                pl = indexTemp.get(stTerm);
                 if (pl == null) { // this is a STOP WORD and hence not in index
 //                    System.out.println("skipped stopword" + stTerm);
                     continue;  // STOP WORD ; skip
@@ -237,7 +244,7 @@ public class QueryDictionary {
 
                 }
                 // else NORMAL
-                pl = index.get(stTerm);
+                pl = indexTemp.get(stTerm);
             }
 
             if (pl == null) {
@@ -245,57 +252,34 @@ public class QueryDictionary {
                  Logger.getLogger(QueryDictionary.class.getName()).log(Level.WARNING,"Query term {0} does not appear in any doc", term);
                 continue;
             }
-
-
-
-            /*
-            // the document frequency = dft
-            Integer docFrequency = pl.getPostingList().size();
-            // damp the document frequency = log<10>(N/dft)
-            Double docFrequencyDamped = Math.log10(425/docFrequency);
-             */
+            // now for a particular term we have fetched the correctPostingList
+            // fetch the damped inverse document frequency
             Double docFrequencyDamped = pl.getInverseDocumentFrequency();
-
-
-
-            // damp the frequency
+            // damp the term frequency
             Double termFrequencyDamped = (1 + Math.log10(termFrequency));
-
             //calculate the weighted tf-idf weight for the term
-            Double tfIdfWeight = docFrequencyDamped * termFrequencyDamped;
+            Double tfIdfWeightForQ = docFrequencyDamped * termFrequencyDamped;
+            
+            
 
+            for(PostingListNode pln : pl.getPostingList())
+            {
 
-            if (!pl.isHasQueryDocument()) {
-                // create  a new postingList for this "Query" Document
-                PostingListNode pln = new PostingListNode("Query");
-                pln.setTf_idf_weight(tfIdfWeight);
-                pl.getPostingList().addLast(pln);
-                pl.setHasQueryDocument(true);
-
-            } else {
-                // no need to do this ; we may as well skip as it is set the first time
-                pl.getPostingList().getLast().setTf_idf_weight(tfIdfWeight);
+                if(scores.containsKey(pln.getDocId()))
+                {
+                    Double prevScore = scores.get(pln.getDocId());
+                    prevScore += tfIdfWeightForQ * pln.getTf_idf_weight();
+                    scores.put(pln.getDocId(), prevScore);
+                }
+                else
+                {
+                    Double newScore = tfIdfWeightForQ * pln.getTf_idf_weight();
+                    scores.put(pln.getDocId(), newScore);
+                }
 
             }
 
-            index.put(stTerm, pl);
         }
-
-        //calculate dot-product of query term weight and document term weight
-//                for(PostingListNode pln : pl.getPostingList())
-//                {
-//                    Double score = tfIdfWeight * pln.getTf_idf_weight();
-//                    if(scores.containsKey(pln.getDocId())) {
-//                        Double newScore = score + scores.get(pln.getDocId());
-//                        scores.put(pln.getDocId(),  newScore);
-//                    } else {
-//                        scores.put(pln.getDocId(), score);
-//                    }
-//
-//                }
-
-
-
 
 
 
@@ -305,7 +289,7 @@ public class QueryDictionary {
 
 
         // run through the entire index and calculate the vector length per document
-        for (Map.Entry<String, PostingList> iterator : index.entrySet()) {
+        for (Map.Entry<String, PostingList> iterator : indexTemp.entrySet()) {
             PostingList pl = iterator.getValue();
 
             for (PostingListNode pln : pl.getPostingList()) {
@@ -323,71 +307,29 @@ public class QueryDictionary {
             }
         }
 
-//        System.out.println("vectorLengthForAllDocuments = " + vectorLengthForAllDocuments);
 
 
 
-        // create a Map for all dot products for each document
-        Map<String, Double> dotProducts = new HashMap<String, Double>();
-
-        // next compute all dot products of type Query * Document(i)
-        for (Map.Entry<String, PostingList> iterator : index.entrySet()) {
-            // if the term has a document for query then calculate Q*D(i)
-            PostingList pl = iterator.getValue();
-            if (pl.isHasQueryDocument()) {
-                // fetch the query document
-                PostingListNode plq = pl.getPostingList().getLast();
-
-                for (PostingListNode pln : pl.getPostingList()) {
-                    // if its not the query doc
-                    if (!pln.getDocId().equals("Query")) {
-                        Double dotProducti = pln.getTf_idf_weight() * plq.getTf_idf_weight();
-                        if (dotProducts.containsKey(pln.getDocId())) {
-                            Double newDotProducti = dotProducts.get(pln.getDocId()) + dotProducti;
-                            dotProducts.put(pln.getDocId(), newDotProducti);
-                        } else {
-                            dotProducts.put(pln.getDocId(), dotProducti);
-                        }
-                    }
-                }
-            }
+          //normalize for length
+        for(Entry<String, Double> entry : scores.entrySet()) {
+            entry.setValue(entry.getValue() / vectorLengthForAllDocuments.get(entry.getKey()));
         }
 
+         //sort by score
+        Map<String, Double> sorted_scores = sortByValue(scores);
 
-        //    System.out.println("dotProducts = " + dotProducts);
-
-        Map<String, Double> cosineScores = new HashMap<String, Double>();
-        Double vectorLengthForQuery = vectorLengthForAllDocuments.get("Query");
-//        System.out.println("vectorLengthForQuery = " + vectorLengthForQuery);
-
-        // next calculate the similarity scores
-        for (Map.Entry<String, Double> iterator : dotProducts.entrySet()) {
-            Double dotProduct = iterator.getValue();
-            String document = iterator.getKey();
-            Double vectorLengthForDoc = vectorLengthForAllDocuments.get(document);
-//            System.out.println("document=" + document + " vectorLengthForDoc " + vectorLengthForDoc );
-            Double cosineScore = dotProduct / (vectorLengthForQuery * vectorLengthForDoc);
-            cosineScores.put(document, cosineScore);
-        }
-
-
-
-//             System.out.println("cosineScores = " + cosineScores);
-        //sort by score
-        Map<String, Double> sorted_scores = sortByValue(cosineScores);
-//        System.out.println("sorted_scores=  " + sorted_scores);
 
         /* //for testing only
         for(Entry<String, Double> entry : sorted_scores.entrySet()) {
-        System.out.println(entry.getKey() + " => " + entry.getValue());
+            System.out.println(entry.getKey() + " => " + entry.getValue());
         }
-         */
+        */
 
         //save sorted keys into a set
         LinkedHashSet<String> result = new LinkedHashSet<String>();
         result.addAll(sorted_scores.keySet());
-//        System.out.println("result=" + result);
         return result;
+
     }
 
     public Set<String> doANDQuery(Query query) {
@@ -699,6 +641,7 @@ public class QueryDictionary {
 
     //from: http://stackoverflow.com/questions/109383/how-to-sort-a-mapkey-value-on-the-values-in-java/3420912#3420912
     //switched compare order to sort highest to lowest
+    
     static Map sortByValue(Map map) {
         List list = new LinkedList(map.entrySet());
         Collections.sort(list, new Comparator() {
@@ -713,6 +656,7 @@ public class QueryDictionary {
             Map.Entry entry = (Map.Entry) it.next();
             result.put(entry.getKey(), entry.getValue());
         }
+
         return result;
     }
 }
