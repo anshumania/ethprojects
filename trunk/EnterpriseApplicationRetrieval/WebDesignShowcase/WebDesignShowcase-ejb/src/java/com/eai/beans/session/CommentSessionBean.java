@@ -1,15 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.eai.beans.session;
 
 import com.eai.beans.CommentBean;
 import com.eai.beans.entity.Comments;
 import com.eai.beans.entity.Users;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
@@ -37,44 +31,31 @@ public class CommentSessionBean implements CommentSessionBeanLocal {
     @Resource(name = "TopicConnectionFactory")
     private ConnectionFactory topicConnectionFactory;
     
-
-
-
     @PersistenceUnit(unitName = "eai")
     EntityManagerFactory entityManagerEai;
-    // Add business logic below. (Right-click in editor and choose
-    // "Insert Code > Add Business Method")
-
-
 
     @Override
     public void findAllUsers() {
-
         Collection<Users> users = entityManagerEai.createEntityManager().createNamedQuery("Users.findAll").getResultList();
         System.out.println("result.size" + users.size());
-        for(Users user : users)
-        {
+        for(Users user : users) {
             System.out.println("user"+user.getFirstname());
         }
     }
 
     @Override
-    public void addComment(CommentBean comment){
-
+    public void addComment(CommentBean comment) {
         EntityManager em = entityManagerEai.createEntityManager();
-        Comments lastComment = (Comments) em.createNamedQuery("Comments.getLatestComment").getResultList().get(0);;
+        long commentCount = em.createNamedQuery("Comments.findAll").getResultList().size();
 
         Comments c = new Comments();
-        c.setId(lastComment.getId()+1);
+        c.setId(commentCount + 1);
         c.setComment(comment.getComment());
         c.setDesignId(comment.getDesignId());
         c.setUserId(comment.getUserId());
 
         em.persist(c);
-
     }
-
-
 
     @Override
     public void notifySubscribers(CommentBean comment) {
@@ -114,6 +95,5 @@ public class CommentSessionBean implements CommentSessionBeanLocal {
             }
         }
     }
-
     
 }
