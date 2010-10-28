@@ -43,6 +43,12 @@ public class CommentSessionBean implements CommentSessionBeanLocal {
         }
     }
 
+	@Override
+	public Collection<Comments> findAllComments() {
+		Collection<Comments> c = entityManagerEai.createEntityManager().createNamedQuery("Comments.findAll").getResultList();
+		return c;
+	}
+
     @Override
     public void addComment(CommentBean comment) {
         EntityManager em = entityManagerEai.createEntityManager();

@@ -4,12 +4,8 @@ import com.eai.beans.CommentBean;
 import com.eai.beans.session.CommentSessionBeanLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.Resource;
 import javax.ejb.EJB;
-import javax.jms.*;
-import javax.naming.*;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -20,14 +16,10 @@ import javax.servlet.http.HttpServletResponse;
  * @author Tim Church
  */
 public class AddCommentServlet extends HttpServlet {
-    
-        @EJB
-        private CommentSessionBeanLocal commentSessionBean;
-        
 	
-
-
-   
+	@EJB
+	private CommentSessionBeanLocal commentSessionBean;
+           
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
@@ -41,7 +33,6 @@ public class AddCommentServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
 		// comment information
-
         int userID = 1; // TODO: retrieve user ID associated with comment
         int designID = 1; // TODO: retrieve design ID associated with comment
         String comment = request.getParameter("comment");
@@ -51,22 +42,13 @@ public class AddCommentServlet extends HttpServlet {
         commentBean.setDesignId(1);// TODO: retrieve design ID associated with comment
         commentBean.setComment(comment);
 
-//        commentSessionBean.findAllUsers();
         commentSessionBean.addComment(commentBean);
         commentSessionBean.notifySubscribers(commentBean);
 
+		request.setAttribute("comments", commentSessionBean.findAllComments());
 
-
-
-//
-//        try {
-//			sendJMSMessageToComments(userID + " " + designID + " " + comment);
-//			out.println("THIS WORKS!");
-//        } catch (JMSException jmse) {
-//			jmse.printStackTrace();
-//		} finally {
-//            out.close();
-//        }
+		RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
+		dispatcher.forward(request, response);
     } 
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -104,9 +86,5 @@ public class AddCommentServlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
-
-
-   
 
 }
