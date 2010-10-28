@@ -14,6 +14,15 @@ public class PostingListNode implements Serializable {
     private String docId;
     private TreeSet<Integer> positions;
 
+    public Double getNormalizedVectorLength() {
+        return normalizedVectorLength;
+    }
+
+    public void setNormalizedVectorLength(Double normalizedVectorLength) {
+        this.normalizedVectorLength = normalizedVectorLength;
+    }
+    private Double normalizedVectorLength;
+
     public Double getTf_idf_weight() {
         return tf_idf_weight;
     }
@@ -67,6 +76,7 @@ public class PostingListNode implements Serializable {
 
     @Override
     public String toString() {
-        return "[docId=" + getDocId() + ", positions=" + getPositions() + ", tdf-idfWeight=" + getTf_idf_weight() + "]";
+//        return "[docId=" + getDocId() + ", positions=" + getPositions() + ", tdf-idfWeight=" + getTf_idf_weight() + "]";
+        return "[docId=" + getDocId() + ", positions=" + getPositions() + ", normalizedLenght=" + getNormalizedVectorLength() + "]";
     }
 }
