@@ -4,7 +4,10 @@
     Author     : Tim Church
 --%>
 
+<%@page import="com.eai.beans.entity.*"%>
+<%@page import="java.util.*"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
    "http://www.w3.org/TR/html4/loose.dtd">
 
@@ -25,7 +28,7 @@
                 <div id="comments">
                     <h2>Comments:</h2>
                     <ul class="comments">
-                        <li class="comment">THIS IS A COMMENT</li>
+						<li class='comment'>THIS IS A COMMENT</li>
                     </ul>
 
                     <h3>Add a comment:</h3>
