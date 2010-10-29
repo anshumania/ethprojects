@@ -11,6 +11,10 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
    "http://www.w3.org/TR/html4/loose.dtd">
 
+<%
+	Collection<Comments> comments = (Collection<Comments>)request.getAttribute("comments");
+%>
+
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -28,7 +32,13 @@
                 <div id="comments">
                     <h2>Comments:</h2>
                     <ul class="comments">
-						<li class='comment'>THIS IS A COMMENT</li>
+						<%
+							for (Comments c : comments) {
+								out.print("<li class='comment'>");
+								out.print(c.getComment());
+								out.print("</li>\n");
+							}
+						%>
                     </ul>
 
                     <h3>Add a comment:</h3>

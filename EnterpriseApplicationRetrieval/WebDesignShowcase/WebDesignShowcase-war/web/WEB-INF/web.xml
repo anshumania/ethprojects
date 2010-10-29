@@ -2,11 +2,15 @@
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
     <servlet>
         <servlet-name>AddComment</servlet-name>
-        <servlet-class>com.eai.servlet.AddCommentServlet</servlet-class>
+        <servlet-class>com.eai.servlet.AddComment</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>showDesign</servlet-name>
         <servlet-class>com.eai.servlet.ShowDesign</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>GetComments</servlet-name>
+        <servlet-class>com.eai.servlet.GetComments</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AddComment</servlet-name>
@@ -15,6 +19,10 @@
     <servlet-mapping>
         <servlet-name>showDesign</servlet-name>
         <url-pattern>/showDesign</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GetComments</servlet-name>
+        <url-pattern>/GetComments</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
