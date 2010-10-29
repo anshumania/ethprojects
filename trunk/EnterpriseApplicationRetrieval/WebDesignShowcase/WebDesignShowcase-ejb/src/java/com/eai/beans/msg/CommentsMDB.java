@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.eai.beans.msg;
 
 import java.util.logging.Level;
@@ -30,6 +25,7 @@ public class CommentsMDB implements MessageListener {
     public CommentsMDB() {
     }
 
+	@Override
     public void onMessage(Message message) {
         try {
             System.out.println("MessageReceived :)" + ((TextMessage) message).getText());

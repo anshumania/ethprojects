@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Tim Church
  */
-public class AddCommentServlet extends HttpServlet {
+public class AddComment extends HttpServlet {
 	
 	@EJB
 	private CommentSessionBeanLocal commentSessionBean;
