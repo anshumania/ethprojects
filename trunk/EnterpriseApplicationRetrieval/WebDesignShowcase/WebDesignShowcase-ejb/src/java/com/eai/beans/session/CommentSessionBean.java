@@ -13,8 +13,8 @@ import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -75,9 +75,9 @@ public class CommentSessionBean implements CommentSessionBeanLocal {
 
     private Message createJMSMessageForcomments(Session session, Object messageData) throws JMSException {
         // TODO create and populate message to send
-        TextMessage tm = session.createTextMessage();
-        tm.setText(messageData.toString());
-        return tm;
+        ObjectMessage om = session.createObjectMessage();
+		om.setObject((CommentBean)messageData);
+        return om;
     }
 
     private void sendJMSMessageToComments(Object messageData) throws JMSException {
