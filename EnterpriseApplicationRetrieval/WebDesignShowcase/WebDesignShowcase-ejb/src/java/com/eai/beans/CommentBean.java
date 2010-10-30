@@ -1,17 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.eai.beans;
+
+import java.io.Serializable;
 
 /**
  *
  * @author ANSHUMAN
  */
-public class CommentBean {
-
-
+public class CommentBean implements Serializable {
 
     private int userId;
     private int designId;
@@ -41,11 +36,10 @@ public class CommentBean {
         this.userId = userId;
     }
 
-    public String toString()
-    {
+	@Override
+    public String toString() {
         return "User["+getUserId()+"] commented ["+getComment()+"] on Design["+getDesignId()+"]";
 
     }
-
 
 }
