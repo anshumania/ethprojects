@@ -449,10 +449,10 @@ public class FileIndexer {
 //     FileIndexer.phase1();
 //     FileIndexer.phase2_StopWords();
 //     FileIndexer.phase2_Stemming();
-//       FileIndexer.project2_phase1_vectorSpaceModel();
+       FileIndexer.project2_phase1_vectorSpaceModel();
 //        FileIndexer.project2_phase1_vectorSpaceModel_StopWords();
 //        FileIndexer.project2_phase1_vectorSpaceModel_StemmedWords();
-        FileIndexer.project2_phase1_vectorSpaceModel_StopAndStemmedWords();
+//        FileIndexer.project2_phase1_vectorSpaceModel_StopAndStemmedWords();
 
 
     }
