@@ -1,24 +1,20 @@
 package com.eai.servlet;
 
-import com.eai.beans.CommentBean;
-import com.eai.beans.session.CommentSessionBeanLocal;
 import java.io.IOException;
-import java.io.PrintWriter;
-import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
  * @author Tim Church
  */
-public class AddComment extends HttpServlet {
-
-    @EJB
-    private CommentSessionBeanLocal commentSessionBean;
+@WebServlet(name = "Logout", urlPatterns = {"/Logout"})
+public class Logout extends HttpServlet {
 
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -29,24 +25,12 @@ public class AddComment extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
 
-        // comment information
-        int userID = 1; // TODO: retrieve user ID associated with comment
-        int designID = 1; // TODO: retrieve design ID associated with comment
-        String comment = request.getParameter("comment");
-
-        CommentBean commentBean = new CommentBean();
-        commentBean.setUserId(1);// TODO: retrieve user ID associated with comment
-        commentBean.setDesignId(1);// TODO: retrieve design ID associated with comment
-        commentBean.setComment(comment);
-
-        commentSessionBean.addComment(commentBean);
-        commentSessionBean.notifySubscribers(commentBean);
-
-        request.setAttribute("comments", commentSessionBean.findAllComments());
-
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
+        HttpSession session = request.getSession();
+        session.setAttribute("User", null);
+        
+        request.setAttribute("logoutSuccess", true);
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/login.jsp");
         dispatcher.forward(request, response);
     }
 

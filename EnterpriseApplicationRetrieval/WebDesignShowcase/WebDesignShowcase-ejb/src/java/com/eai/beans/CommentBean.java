@@ -36,10 +36,9 @@ public class CommentBean implements Serializable {
         this.userId = userId;
     }
 
-	@Override
+    @Override
     public String toString() {
-        return "User["+getUserId()+"] commented ["+getComment()+"] on Design["+getDesignId()+"]";
+        return "User[" + getUserId() + "] commented [" + getComment() + "] on Design[" + getDesignId() + "]";
 
     }
-
 }

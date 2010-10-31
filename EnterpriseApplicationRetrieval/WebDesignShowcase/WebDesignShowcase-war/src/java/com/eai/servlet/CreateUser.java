@@ -1,25 +1,28 @@
 package com.eai.servlet;
 
-import com.eai.beans.CommentBean;
-import com.eai.beans.session.CommentSessionBeanLocal;
+import com.eai.beans.UserBean;
+import com.eai.beans.entity.Users;
+import com.eai.beans.session.UserSessionLocal;
 import java.io.IOException;
-import java.io.PrintWriter;
 import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
  * @author Tim Church
  */
-public class AddComment extends HttpServlet {
+@WebServlet(name = "CreateUser", urlPatterns = {"/CreateUser"})
+public class CreateUser extends HttpServlet {
 
     @EJB
-    private CommentSessionBeanLocal commentSessionBean;
-
+    private UserSessionLocal userSession;
+    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
@@ -29,24 +32,22 @@ public class AddComment extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
 
-        // comment information
-        int userID = 1; // TODO: retrieve user ID associated with comment
-        int designID = 1; // TODO: retrieve design ID associated with comment
-        String comment = request.getParameter("comment");
+        //TODO - validate input data (length, type, required)
 
-        CommentBean commentBean = new CommentBean();
-        commentBean.setUserId(1);// TODO: retrieve user ID associated with comment
-        commentBean.setDesignId(1);// TODO: retrieve design ID associated with comment
-        commentBean.setComment(comment);
+        UserBean userBean = new UserBean();
+        userBean.setUsername(request.getParameter("username"));
+        userBean.setPassword(request.getParameter("password"));
+        userBean.setFirstname(request.getParameter("firstName"));
+        userBean.setLastname(request.getParameter("lastName"));
+        userBean.setEmail(request.getParameter("email"));
+        Users user = userSession.createUser(userBean);
 
-        commentSessionBean.addComment(commentBean);
-        commentSessionBean.notifySubscribers(commentBean);
+        //Automatically login user by saving user to session
+        HttpSession session = request.getSession(true);
+        session.setAttribute("user", user);
 
-        request.setAttribute("comments", commentSessionBean.findAllComments());
-
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/addDesign.jsp");
         dispatcher.forward(request, response);
     }
 
