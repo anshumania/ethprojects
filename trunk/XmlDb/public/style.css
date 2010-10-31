@@ -1,0 +1,43 @@
+* {
+	font-family: Georgia, "Trebuchet MS", serif;
+	font-size: 11pt;
+}
+
+body {
+	background-attachment: fixed;
+	background-image: url("hollywood.jpg");
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+div.center {
+	text-align: center;
+}
+
+div#main {
+	margin: 0 auto;
+	width: 400px;
+}
+
+div#results {
+	background-color: #fff;
+	border: 1px #77A1FF solid;
+	padding: 5px;
+}
+
+div#tabs {
+	padding: 5px;
+}
+
+span.tab {
+	position: relative;
+	top: 1px;
+	padding: 5px;
+}
+
+span.tab_active {
+	background-color: #fff;
+	border-left: 1px #77A1FF solid;
+	border-right: 1px #77A1FF solid;
+	border-top: 1px #77A1FF solid;
+}
