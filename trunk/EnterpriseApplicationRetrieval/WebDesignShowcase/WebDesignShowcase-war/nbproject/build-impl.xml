@@ -211,14 +211,14 @@ The Java EE server classpath is not correctly set up - server home directory is 
 Either open the project in the IDE and assign the server or setup the server classpath manually.
 For example like this:
    ant -Dj2ee.server.home=&lt;app_server_installation_directory&gt;
-                </fail>
+        </fail>
         <fail unless="j2ee.platform.classpath">
 The Java EE server classpath is not correctly set up. Your active server type is ${j2ee.server.type}.
 Either open the project in the IDE and assign the server or setup the server classpath manually.
 For example like this:
    ant -Duser.properties.file=&lt;path_to_property_file&gt; (where you put the property "j2ee.platform.classpath" in a .properties file)
 or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties file is used)
-                </fail>
+        </fail>
     </target>
     <target name="-init-macrodef-property">
         <macrodef name="property" uri="http://www.netbeans.org/ns/web-project/1">
@@ -466,7 +466,7 @@ of NetBeans IDE installation and is usually located at
 Either open the project in the IDE and make sure CopyLibs library
 exists or setup the property manually. For example like this:
  ant -Dlibs.CopyLibs.classpath=a/path/to/org-netbeans-modules-java-j2seproject-copylibstask.jar
-                </fail>
+        </fail>
         <taskdef classpath="${libs.CopyLibs.classpath}" resource="org/netbeans/modules/java/j2seproject/copylibstask/antlib.xml"/>
     </target>
     <target name="-init-ap-cmdline-properties">
@@ -758,7 +758,7 @@ exists or setup the property manually. For example like this:
     <target depends="-get-browser" if="do.display.browser.cl" name="-display-browser-cl">
         <fail unless="browser">
                     Browser not found, cannot launch the deployed application. Try to set the BROWSER environment variable.
-                </fail>
+        </fail>
         <property name="browse.url" value="${deploy.ant.client.url}${client.urlPart}"/>
         <echo>Launching ${browse.url}</echo>
         <exec executable="${browser}" spawn="true">
