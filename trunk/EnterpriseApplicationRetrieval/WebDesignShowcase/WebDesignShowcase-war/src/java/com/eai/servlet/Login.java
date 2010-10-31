@@ -1,24 +1,24 @@
 package com.eai.servlet;
 
-import com.eai.beans.CommentBean;
-import com.eai.beans.session.CommentSessionBeanLocal;
+import com.eai.beans.entity.Users;
+import com.eai.beans.session.UserSessionLocal;
 import java.io.IOException;
-import java.io.PrintWriter;
 import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
  * @author Tim Church
  */
-public class AddComment extends HttpServlet {
+public class Login extends HttpServlet {
 
     @EJB
-    private CommentSessionBeanLocal commentSessionBean;
+    private UserSessionLocal userSession;
 
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -29,25 +29,28 @@ public class AddComment extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
 
-        // comment information
-        int userID = 1; // TODO: retrieve user ID associated with comment
-        int designID = 1; // TODO: retrieve design ID associated with comment
-        String comment = request.getParameter("comment");
+        //load request parameters
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        //String nextPage = request.getParameter("nextPage"); //TODO - save page to return to after login
 
-        CommentBean commentBean = new CommentBean();
-        commentBean.setUserId(1);// TODO: retrieve user ID associated with comment
-        commentBean.setDesignId(1);// TODO: retrieve design ID associated with comment
-        commentBean.setComment(comment);
+        //now try to login
+        Users user = userSession.authenticate(username, password);
+        if(user != null) {
+            //authentication successful.  save user in http session
+            HttpSession session = request.getSession(true);
+            session.setAttribute("user", user);
 
-        commentSessionBean.addComment(commentBean);
-        commentSessionBean.notifySubscribers(commentBean);
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
+            dispatcher.forward(request, response);
+        } else {
+            //login failed, redisplay login page with error message
+            request.setAttribute("loginFailed", true);
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/login.jsp");
+            dispatcher.forward(request, response);
+        }
 
-        request.setAttribute("comments", commentSessionBean.findAllComments());
-
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
-        dispatcher.forward(request, response);
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

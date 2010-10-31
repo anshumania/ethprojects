@@ -26,11 +26,11 @@ import javax.persistence.PersistenceUnit;
  */
 @Stateless
 public class CommentSessionBean implements CommentSessionBeanLocal {
+
     @Resource(name = "Comments")
     private Topic comments;
     @Resource(name = "TopicConnectionFactory")
     private ConnectionFactory topicConnectionFactory;
-    
     @PersistenceUnit(unitName = "eai")
     EntityManagerFactory entityManagerEai;
 
@@ -38,16 +38,16 @@ public class CommentSessionBean implements CommentSessionBeanLocal {
     public void findAllUsers() {
         Collection<Users> users = entityManagerEai.createEntityManager().createNamedQuery("Users.findAll").getResultList();
         System.out.println("result.size" + users.size());
-        for(Users user : users) {
-            System.out.println("user"+user.getFirstname());
+        for (Users user : users) {
+            System.out.println("user" + user.getFirstname());
         }
     }
 
-	@Override
-	public Collection<Comments> findAllComments() {
-		Collection<Comments> c = entityManagerEai.createEntityManager().createNamedQuery("Comments.findAll").getResultList();
-		return c;
-	}
+    @Override
+    public Collection<Comments> findAllComments() {
+        Collection<Comments> c = entityManagerEai.createEntityManager().createNamedQuery("Comments.findAll").getResultList();
+        return c;
+    }
 
     @Override
     public void addComment(CommentBean comment) {
@@ -76,7 +76,7 @@ public class CommentSessionBean implements CommentSessionBeanLocal {
     private Message createJMSMessageForcomments(Session session, Object messageData) throws JMSException {
         // TODO create and populate message to send
         ObjectMessage om = session.createObjectMessage();
-		om.setObject((CommentBean)messageData);
+        om.setObject((CommentBean) messageData);
         return om;
     }
 
@@ -101,5 +101,4 @@ public class CommentSessionBean implements CommentSessionBeanLocal {
             }
         }
     }
-    
 }
