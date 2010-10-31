@@ -2,18 +2,6 @@
 <!DOCTYPE sun-web-app PUBLIC "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Servlet 3.0//EN" "http://www.sun.com/software/appserver/dtds/sun-web-app_3_0-0.dtd">
 <sun-web-app error-url="">
   <context-root>/WebDesignShowcase-war</context-root>
-  <resource-ref>
-    <res-ref-name>TopicConnectionFactory</res-ref-name>
-    <jndi-name>TopicConnectionFactory</jndi-name>
-  </resource-ref>
-  <resource-ref>
-    <res-ref-name>CommentsFactory</res-ref-name>
-    <jndi-name>CommentsFactory</jndi-name>
-  </resource-ref>
-  <message-destination-ref>
-    <message-destination-ref-name>Comments</message-destination-ref-name>
-    <jndi-name>Comments</jndi-name>
-  </message-destination-ref>
   <class-loader delegate="true"/>
   <jsp-config>
     <property name="keepgenerated" value="true">
