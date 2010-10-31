@@ -56,7 +56,7 @@
     The start page has to start with a "/".
     ################################################################################################
   -->
-  <start_page>/default/index</start_page>
+  <start_page>/index.html</start_page>
   <!--
     element api_version (optional | default: no value)
     ################################################################################################

@@ -4,33 +4,51 @@
 		<link rel="stylesheet" href="style.css" type="text/css" />
 		<script type="text/javascript" src="jquery-1.4.3.js"></script>
 		<script type="text/javascript">
+			$(document).ready( function() {
+				$('.tab > a').focus( function() {
+					this.blur();
+				});
+			});
+			
 			function getResults() {
 				$.ajax({
 					'url': 'default/index?query=' + document.search.query.value,
 					'success': function(data) {
-							$('#results').html(data);
+							$('#movie_results').html(data);
 						},
 					'error': function() {
 						alert('Error');
 					}
 				});
 			}
+			
+			function show(id) {
+				$('.results').css('display', 'none');
+				$('.tab').removeClass('tab_active');
+				$('#' + id + '_results').css('display', 'block');
+				$('#' + id + '_tab').addClass('tab_active');
+			}
 		</script>
 	</head>
 	<body>
 		<div id="main">
 			<div class="center">
+				<h1>WatchMoviesOnline</h1>
 				<form name="search" action="javascript:getResults();">
 					<input type="text" name="query" />
 					<input type="submit" value="Search" />
 				</form>
 			</div>
 			<div id="tabs">
-				<span class="tab tab_active">Movies</span>
-				<span class="tab">Tweets</span>
-				<span class="tab">Ratings</span>
+				<span id="movie_tab" class="tab tab_active"><a href="javascript:show('movie');">Movies</a></span>
+				<span id="twitter_tab" class="tab"><a href="javascript:show('twitter');">Tweets</a></span>
+				<span id="rating_tab" class="tab"><a href="javascript:show('rating');">Ratings</a></span>
 			</div>
-			<div id="results">
+			<div id="movie_results" class="results">Movie</div>
+			<div id="twitter_results" class="results">Twitter</div>
+			<div id="rating_results" class="results">Rating</div>
+			<div class="center">
+				<h2>&copy; 2010, An Anshuman/Max Production.</h2>
 			</div>
 		</div>
 	</body>

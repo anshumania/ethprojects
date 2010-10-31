@@ -1,6 +1,14 @@
 * {
-	font-family: Georgia, "Trebuchet MS", serif;
+	font-family: Helvetica, Georgia, Arial;
 	font-size: 11pt;
+}
+
+a:link, a:visited {
+	text-decoration: none;
+}
+
+a:hover, a:active {
+	text-decoration: underline;
 }
 
 body {
@@ -14,19 +22,53 @@ div.center {
 	text-align: center;
 }
 
+div.entry {
+	margin-bottom: 5px;
+}
+
 div#main {
 	margin: 0 auto;
 	width: 400px;
 }
 
-div#results {
+div#movie_results {
+	display: block;
+}
+
+div#rating_results {
+	display: none;
+}
+
+div.results {
 	background-color: #fff;
 	border: 1px #77A1FF solid;
-	padding: 5px;
+	padding: 10px;
 }
 
 div#tabs {
 	padding: 5px;
+}
+
+div#twitter_results {
+	display: none;
+}
+
+h1 {
+	color: #fff;
+	font-size: 50px;
+	letter-spacing: -6px;
+	line-height: 43px;
+}
+
+h2 {
+	color: #fff;
+	font-size: 9pt;
+	font-variant: small-caps;
+}
+
+small {
+	color: #666;
+	font-size: 9pt;
 }
 
 span.tab {

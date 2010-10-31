@@ -16,12 +16,25 @@ declare sequential function def:index ()
 {
     declare $i as xs:integer := 0;
     
+    (:
+        FLWOR expressions processign data from remote sites must
+        return a sequence of <div class="entry"> elements.
+    :)
+    
     for $link in def:sidereel(http:get-parameters("query"))
     return (
         set $i := $i + 1,
-        <div>{$i}. {$link}</div>
+        <div class="entry">
+            {$i}. {$link}<br />
+            <small>SideReel.com</small>
+        </div>
     )
 };
+
+(:
+    Functions retrieving data from remote sites must return
+    a sequence of link elements.
+:)
 
 declare function def:sidereel ($query as xs:string)
 {
