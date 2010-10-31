@@ -1,0 +1,37 @@
+<html>
+	<head>
+		<title>WatchMoviesOnline</title>
+		<link rel="stylesheet" href="style.css" type="text/css" />
+		<script type="text/javascript" src="jquery-1.4.3.js"></script>
+		<script type="text/javascript">
+			function getResults() {
+				$.ajax({
+					'url': 'default/index?query=' + document.search.query.value,
+					'success': function(data) {
+							$('#results').html(data);
+						},
+					'error': function() {
+						alert('Error');
+					}
+				});
+			}
+		</script>
+	</head>
+	<body>
+		<div id="main">
+			<div class="center">
+				<form name="search" action="javascript:getResults();">
+					<input type="text" name="query" />
+					<input type="submit" value="Search" />
+				</form>
+			</div>
+			<div id="tabs">
+				<span class="tab tab_active">Movies</span>
+				<span class="tab">Tweets</span>
+				<span class="tab">Ratings</span>
+			</div>
+			<div id="results">
+			</div>
+		</div>
+	</body>
+</html>
