@@ -17,7 +17,7 @@ declare sequential function def:index ()
     declare $i as xs:integer := 0;
     
     (:
-        FLWOR expressions processign data from remote sites must
+        FLWOR expressions processing data from remote sites must
         return a sequence of <div class="entry"> elements.
     :)
     
