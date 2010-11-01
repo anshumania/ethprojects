@@ -10,11 +10,15 @@
     </servlet>
     <servlet>
         <servlet-name>GetComments</servlet-name>
-        <servlet-class>com.eai.servlet.GetComments</servlet-class>
+        <servlet-class>com.eai.servlet.ShowDesign</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>Login</servlet-name>
         <servlet-class>com.eai.servlet.Login</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UserDesigns</servlet-name>
+        <servlet-class>com.eai.servlet.UserDesigns</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AddComment</servlet-name>
@@ -31,6 +35,10 @@
     <servlet-mapping>
         <servlet-name>Login</servlet-name>
         <url-pattern>/Login</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserDesigns</servlet-name>
+        <url-pattern>/UserDesigns</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

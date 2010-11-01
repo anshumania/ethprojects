@@ -2,6 +2,7 @@ package com.eai.beans.session;
 
 import com.eai.beans.UserBean;
 import com.eai.beans.entity.Users;
+import java.util.Collection;
 import javax.ejb.Local;
 
 /**
@@ -10,6 +11,8 @@ import javax.ejb.Local;
  */
 @Local
 public interface UserSessionLocal {
+
+	Collection<Users> findAllUsers();
 
     Users authenticate(String username, String password);
 

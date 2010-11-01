@@ -14,11 +14,11 @@ import javax.ejb.Local;
  * @author ANSHUMAN
  */
 @Local
-public interface CommentSessionBeanLocal {
-
-    public void findAllUsers();
+public interface CommentSessionLocal {
 
     public Collection<Comments> findAllComments();
+
+	public Collection<Comments> findCommentsByUserIdAndDesignId(long userID, int designID);
 
     public void notifySubscribers(CommentBean comment);
 

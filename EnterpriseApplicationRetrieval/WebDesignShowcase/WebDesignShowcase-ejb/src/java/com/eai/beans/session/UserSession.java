@@ -18,6 +18,14 @@ public class UserSession implements UserSessionLocal {
     @PersistenceUnit(unitName = "eai")
     EntityManagerFactory entityManagerEai;
 
+	@Override
+    public Collection<Users> findAllUsers() {
+        Collection<Users> users = entityManagerEai.createEntityManager()
+				.createNamedQuery("Users.findAll")
+				.getResultList();
+        return users;
+    }
+
     @Override
     public Users authenticate(String username, String password) {
         Collection<Users> users = entityManagerEai.createEntityManager().createNamedQuery("Users.findByUsernameAndPassword").setParameter("username", username).setParameter("password", password).getResultList();
@@ -42,8 +50,5 @@ public class UserSession implements UserSessionLocal {
         em.persist(u);
         return u;
     }
-    
-    // Add business logic below. (Right-click in editor and choose
-    // "Insert Code > Add Business Method")
  
 }

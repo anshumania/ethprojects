@@ -42,7 +42,7 @@ public class Login extends HttpServlet {
             HttpSession session = request.getSession(true);
             session.setAttribute("user", user);
 
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/UserDesigns");
             dispatcher.forward(request, response);
         } else {
             //login failed, redisplay login page with error message

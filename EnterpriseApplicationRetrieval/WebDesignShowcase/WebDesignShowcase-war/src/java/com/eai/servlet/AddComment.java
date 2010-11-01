@@ -1,15 +1,16 @@
 package com.eai.servlet;
 
 import com.eai.beans.CommentBean;
-import com.eai.beans.session.CommentSessionBeanLocal;
+import com.eai.beans.entity.Users;
+import com.eai.beans.session.CommentSessionLocal;
 import java.io.IOException;
-import java.io.PrintWriter;
 import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -18,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 public class AddComment extends HttpServlet {
 
     @EJB
-    private CommentSessionBeanLocal commentSessionBean;
+    private CommentSessionLocal csb;
 
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -31,23 +32,27 @@ public class AddComment extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
 
-        // comment information
-        int userID = 1; // TODO: retrieve user ID associated with comment
-        int designID = 1; // TODO: retrieve design ID associated with comment
-        String comment = request.getParameter("comment");
+		HttpSession session = request.getSession(false);
 
-        CommentBean commentBean = new CommentBean();
-        commentBean.setUserId(1);// TODO: retrieve user ID associated with comment
-        commentBean.setDesignId(1);// TODO: retrieve design ID associated with comment
-        commentBean.setComment(comment);
+		if (session != null) {
+			Users user = (Users)session.getAttribute("user");
 
-        commentSessionBean.addComment(commentBean);
-        commentSessionBean.notifySubscribers(commentBean);
+			// comment information
+			long userID = user.getId();
+			int designID = (Integer)session.getAttribute("designID");
+			String comment = request.getParameter("comment");
 
-        request.setAttribute("comments", commentSessionBean.findAllComments());
+			CommentBean commentBean = new CommentBean();
+			commentBean.setUserId(userID);
+			commentBean.setDesignId(designID);
+			commentBean.setComment(comment);
 
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
-        dispatcher.forward(request, response);
+			csb.addComment(commentBean);
+			csb.notifySubscribers(commentBean);
+
+			RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/ShowDesign?designID=" + designID);
+			dispatcher.forward(request, response);
+		}
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
