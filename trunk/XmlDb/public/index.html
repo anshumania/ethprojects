@@ -4,6 +4,8 @@
 		<link rel="stylesheet" href="style.css" type="text/css" />
 		<script type="text/javascript" src="jquery-1.4.3.js"></script>
 		<script type="text/javascript">
+			var LOADER = '<div class="center"><img src="/ajax-loader.gif" /></div>';
+			
 			$(document).ready( function() {
 				$('.tab > a').focus( function() {
 					this.blur();
@@ -11,14 +13,16 @@
 			});
 			
 			function getResults() {
+				$('#movie_results').html(LOADER);
+				
 				$.ajax({
 					'url': 'default/index?query=' + document.search.query.value,
 					'success': function(data) {
 							$('#movie_results').html(data);
 						},
 					'error': function() {
-						alert('Error');
-					}
+							alert('Error');
+						}
 				});
 			}
 			
