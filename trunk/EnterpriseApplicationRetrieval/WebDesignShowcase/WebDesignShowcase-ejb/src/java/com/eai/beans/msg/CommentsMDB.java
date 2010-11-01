@@ -53,7 +53,7 @@ public class CommentsMDB implements MessageListener {
 			try {
 				CommentBean c = (CommentBean)om.getObject();
 				String comment = c.getComment();
-				int userID = c.getUserId();
+				long userID = c.getUserId();
 				int designID = c.getDesignId();
 				EntityManager em = emf.createEntityManager();
 

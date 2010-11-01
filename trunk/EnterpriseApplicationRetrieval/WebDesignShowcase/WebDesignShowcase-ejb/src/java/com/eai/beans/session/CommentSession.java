@@ -25,9 +25,9 @@ import javax.persistence.PersistenceUnit;
  * @author ANSHUMAN
  */
 @Stateless
-public class CommentSessionBean implements CommentSessionBeanLocal {
+public class CommentSession implements CommentSessionLocal {
 
-    @Resource(name = "Comments")
+    @Resource(mappedName = "Comments")
     private Topic comments;
     @Resource(name = "TopicConnectionFactory")
     private ConnectionFactory topicConnectionFactory;
@@ -35,19 +35,22 @@ public class CommentSessionBean implements CommentSessionBeanLocal {
     EntityManagerFactory entityManagerEai;
 
     @Override
-    public void findAllUsers() {
-        Collection<Users> users = entityManagerEai.createEntityManager().createNamedQuery("Users.findAll").getResultList();
-        System.out.println("result.size" + users.size());
-        for (Users user : users) {
-            System.out.println("user" + user.getFirstname());
-        }
-    }
-
-    @Override
     public Collection<Comments> findAllComments() {
-        Collection<Comments> c = entityManagerEai.createEntityManager().createNamedQuery("Comments.findAll").getResultList();
+        Collection<Comments> c = entityManagerEai.createEntityManager()
+				.createNamedQuery("Comments.findAll")
+				.getResultList();
         return c;
     }
+
+	@Override
+	public Collection<Comments> findCommentsByUserIdAndDesignId(long userID, int designID) {
+		Collection<Comments> c = entityManagerEai.createEntityManager()
+				.createNamedQuery("Comments.findByUserIdAndDesignId")
+				.setParameter("userId", userID)
+				.setParameter("designId", designID)
+				.getResultList();
+		return c;
+	}
 
     @Override
     public void addComment(CommentBean comment) {
@@ -68,7 +71,7 @@ public class CommentSessionBean implements CommentSessionBeanLocal {
         try {
             sendJMSMessageToComments(comment);
         } catch (JMSException ex) {
-            Logger.getLogger(CommentSessionBean.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CommentSession.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }

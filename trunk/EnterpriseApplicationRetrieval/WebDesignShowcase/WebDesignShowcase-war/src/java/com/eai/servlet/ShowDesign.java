@@ -1,17 +1,27 @@
 package com.eai.servlet;
 
+import com.eai.beans.entity.Comments;
+import com.eai.beans.entity.Users;
+import com.eai.beans.session.CommentSessionLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
+import javax.ejb.EJB;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
- * @author Tim Church
+ * @author Max
  */
 public class ShowDesign extends HttpServlet {
+
+	@EJB
+	private CommentSessionLocal csb;
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -23,7 +33,25 @@ public class ShowDesign extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        
+        PrintWriter out = response.getWriter();
+
+        try {
+			HttpSession session = request.getSession(false);
+			
+			if (session != null) {
+				Users user = (Users)session.getAttribute("user");
+				long userID = user.getId();
+				int designID = Integer.parseInt(request.getParameter("designID"));
+				Collection<Comments> c = csb.findCommentsByUserIdAndDesignId(userID, designID);
+				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
+
+				session.setAttribute("designID", designID);
+				request.setAttribute("comments", c);
+				dispatcher.forward(request, response);
+			}
+        } finally { 
+            out.close();
+        }
     } 
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

@@ -8,7 +8,7 @@ import java.io.Serializable;
  */
 public class CommentBean implements Serializable {
 
-    private int userId;
+    private long userId;
     private int designId;
     private String comment;
 
@@ -28,11 +28,11 @@ public class CommentBean implements Serializable {
         this.designId = designId;
     }
 
-    public int getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(long userId) {
         this.userId = userId;
     }
 

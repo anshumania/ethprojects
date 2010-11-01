@@ -1,7 +1,13 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
 package com.eai.servlet;
 
-import com.eai.beans.entity.Comments;
-import com.eai.beans.session.CommentSessionBeanLocal;
+import com.eai.beans.entity.Designs;
+import com.eai.beans.entity.Users;
+import com.eai.beans.session.DesignSessionLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -11,15 +17,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
  * @author Max
  */
-public class GetComments extends HttpServlet {
+public class UserDesigns extends HttpServlet {
 
 	@EJB
-	private CommentSessionBeanLocal csb;
+	private DesignSessionLocal dsb;
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -33,10 +40,17 @@ public class GetComments extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
         try {
-            Collection<Comments> c = csb.findAllComments();
-			request.setAttribute("comments", c);
-			RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
-			dispatcher.forward(request, response);
+            HttpSession session = request.getSession(false);
+
+			if (session != null) {
+				Users user = (Users)session.getAttribute("user");
+				long userID = user.getId();
+				Collection<Designs> userDesigns = dsb.findDesignsByUserId(userID);
+				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/userDesigns.jsp");
+
+				request.setAttribute("userDesigns", userDesigns);
+				dispatcher.forward(request, response);
+			}
         } finally { 
             out.close();
         }

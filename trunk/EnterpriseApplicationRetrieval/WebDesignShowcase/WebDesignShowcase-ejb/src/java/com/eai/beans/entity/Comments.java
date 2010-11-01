@@ -27,6 +27,7 @@ import javax.persistence.Table;
     @NamedQuery(name = "Comments.findById", query = "SELECT c FROM Comments c WHERE c.id = :id"),
     @NamedQuery(name = "Comments.findByUserId", query = "SELECT c FROM Comments c WHERE c.userId = :userId"),
     @NamedQuery(name = "Comments.findByDesignId", query = "SELECT c FROM Comments c WHERE c.designId = :designId"),
+	@NamedQuery(name = "Comments.findByUserIdAndDesignId", query = "SELECT c FROM Comments c WHERE c.userId = :userId AND c.designId = :designId"),
     @NamedQuery(name = "Comments.getLatestComment", query = "SELECT c FROM Comments c ORDER BY c.id DESC"),
     @NamedQuery(name = "Comments.findByComment", query = "SELECT c FROM Comments c WHERE c.comment = :comment")})
 public class Comments implements Serializable {
@@ -38,7 +39,7 @@ public class Comments implements Serializable {
     private Long id;
     @Basic(optional = false)
     @Column(name = "user_id")
-    private int userId;
+    private Long userId;
     @Basic(optional = false)
     @Column(name = "design_id")
     private int designId;
@@ -53,7 +54,7 @@ public class Comments implements Serializable {
         this.id = id;
     }
 
-    public Comments(Long id, int userId, int designId, String comment) {
+    public Comments(Long id, Long userId, int designId, String comment) {
         this.id = id;
         this.userId = userId;
         this.designId = designId;
@@ -68,11 +69,11 @@ public class Comments implements Serializable {
         this.id = id;
     }
 
-    public int getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
