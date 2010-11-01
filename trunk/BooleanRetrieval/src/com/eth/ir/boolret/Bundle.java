@@ -28,7 +28,11 @@ public final class Bundle {
     public final static int DOUBLE_QUOTE = 34;
     public final static String BACKSLASH = "/";
     public final static String WORDNETHOME = "C:\\Program Files\\WordNet\\2.1";
+    //public final static String WORDNETHOME = "C:\\Program Files (x86)\\WordNet\\2.1";
     public final static String PATHTODICT  = WORDNETHOME + File.separator + "dict";
+    public final static String LOCAL_EXPANSION = "local";
+    public final static String GLOBAL_EXPANSION = "global";
+    public final static String NO_EXPANSION = "";
 
 
 
