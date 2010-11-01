@@ -20,7 +20,7 @@
             <div id="main">
                 <h1>Create a New User Account</h1>
 
-                <form action="createUser" method="post">
+                <form action="CreateUser" method="post">
                     <table class="newUserForm">
                         <tr>
                             <th><label for="username">Username</label></th>
