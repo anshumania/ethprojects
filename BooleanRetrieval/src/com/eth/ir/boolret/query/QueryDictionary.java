@@ -307,7 +307,7 @@ public class QueryDictionary {
     }
 
     //Local query expansion
-    public Set<String> doRelevanceFeeback(ArrayList<String> phraseTerms) {
+    public Set<String> doRelevanceFeeback(ArrayList<String> phraseTerms, Double alpha, Double beta) {
         // this is only going to work on normal mode
         Map<String, Double> scores = new HashMap<String, Double>();
 
@@ -371,23 +371,22 @@ public class QueryDictionary {
         String mostRelevantDoc = (String) result.toArray()[0];
         System.out.println("mostrelevant=" + mostRelevantDoc);
 
-        //rocchio's algo
+        //rocchio's algorithm
         for (String term : phraseTerms) { // for every term in the query
             PostingList pl = indexTemp.get(term);
             if (pl != null) {
-                //System.out.println("term="+term);
+                //System.out.println("term = "+term);
                 Double tfIdfWeightForQ = queryVector.get(term);
-                //apply alpha = 0.5,0.5 0.25,0.75 0.75,0.25
-                Double alphaTfIdfWeightForQ = 0.75 * tfIdfWeightForQ;
+                Double alphaTfIdfWeightForQ = alpha * tfIdfWeightForQ;
 
                 for (PostingListNode pln : pl.getPostingList()) {
                     int count = 0;
                     if (pln.getDocId().equals(mostRelevantDoc)) {
-                        Double betaDocWeight = 0.25 * pln.getTf_idf_weight();
+                        Double betaDocWeight = beta * pln.getTf_idf_weight();
                         alphaTfIdfWeightForQ += betaDocWeight;
                         count++;
 
-                        //System.out.println("count=" + count + " doc= " + mostRelevantDoc);
+                        //System.out.println("count = " + count + " doc = " + mostRelevantDoc);
                     }
                     assert count == 1;
                 }
