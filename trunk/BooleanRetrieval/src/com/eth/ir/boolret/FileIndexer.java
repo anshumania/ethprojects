@@ -22,6 +22,7 @@ import java.util.logging.Logger;
  * @author ANSHUMAN
  */
 public class FileIndexer {
+
     private Dictionary currentDictionary;
 
     public Dictionary getCurrentDictionary() {
@@ -49,7 +50,7 @@ public class FileIndexer {
     }
 
     public static String normalizeWord(StreamTokenizer st, int next) {
-        
+
         switch (next) {
 
             case StreamTokenizer.TT_NUMBER:
@@ -58,7 +59,7 @@ public class FileIndexer {
 
             case StreamTokenizer.TT_WORD:
                 return normalizeString(st.sval);
-                
+
             default:
                 break;
         }
@@ -91,7 +92,7 @@ public class FileIndexer {
             int next = st.nextToken();
             while (next != StreamTokenizer.TT_EOF) {
                 String nextString = normalizeWord(st, next);
-                if(!nextString.isEmpty()) {
+                if (!nextString.isEmpty()) {
                     getCurrentDictionary().addToDictionary(docId, nextString, position);
                     position++;
                 }
@@ -100,7 +101,7 @@ public class FileIndexer {
                 next = st.nextToken();
             }
 
-            if(position != 0) {
+            if (position != 0) {
                 position = position - 1;
             }
             getCurrentDictionary().getDocumentLengths().put(docId, position);
@@ -128,22 +129,17 @@ public class FileIndexer {
 
         File directory = new File(dir);
         File[] files = directory.listFiles();
-        int numberOfDocuments  = 0;
+        int numberOfDocuments = 0;
         // set the number of Documents
         getCurrentDictionary().setNUMBER_OF_DOCUMENTS(425);
 
         for (File file : files) {
-            if (!file.isHidden() && !file.getName().contains(Bundle.INDEX_FILE)) // hack for getting rid of svn files
-            {
-               tokenizeFile(file);
-               numberOfDocuments++;
-               
+            // hack for getting rid of svn files
+            if (!file.isHidden() && !file.getName().contains(Bundle.INDEX_FILE)) {
+                tokenizeFile(file);
+                numberOfDocuments++;
             }
         }
-        
-
-
-
     }
 
     /**
@@ -180,7 +176,7 @@ public class FileIndexer {
         Integer numDocs = 425;
         Integer indexSize = numTerms * numDocs;
 
-        
+
         for (Map.Entry<String, PostingList> entry : dict.getIndex().entrySet()) {
             //System.out.println(entry.getKey() + " : " + entry.getValue().getFrequency());
             //postingListSize = entry.getValue().getFrequency();
@@ -210,10 +206,10 @@ public class FileIndexer {
         System.out.println("Shortest Posting List = " + shortestPostingList + " [Occurs " + shortestPostingListTerms.size() + " times]");
         /*
         for(String term : shortestPostingListTerms) {
-            System.out.print("'" + term + "'");
+        System.out.print("'" + term + "'");
         }
         System.out.println("]");
-        */
+         */
     }
 
     // serialize the index
@@ -234,7 +230,7 @@ public class FileIndexer {
 //            if(getCurrentDictionary() instanceof PorterStemmerDictionary)
 //                p.writeObject(((PorterStemmerDictionary)getCurrentDictionary()).getStemmedIndex());
 //            else
-                p.writeObject(getCurrentDictionary().getIndex());
+            p.writeObject(getCurrentDictionary().getIndex());
 
             p.flush();
             p.close();
@@ -268,31 +264,28 @@ public class FileIndexer {
         }
     }
 
-    public static void deleteIndex(String index)
-    {
+    public static void deleteIndex(String index) {
         boolean success = new File(index).delete();
-        if(success)
-            Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO,"Deleted previous index {0}",index);
+        if (success) {
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO, "Deleted previous index {0}", index);
+        }
 
     }
-    
-    public static void deleteFile(String filename)
-    {
+
+    public static void deleteFile(String filename) {
         boolean success = new File(filename).delete();
-        if(success)
-            Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO,"Deleted file {0}", filename);
+        if (success) {
+            Logger.getLogger(FileIndexer.class.getName()).log(Level.INFO, "Deleted file {0}", filename);
+        }
 
     }
 
-
-
-    public static void phase1()
-    {
+    public static void phase1() {
         FileIndexer tkz = new FileIndexer();
 
         //create a new dictionary for this phase with its index file
-        Dictionary phase1Dictionary = new Dictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() +
-                                                                                    "/" + Bundle.INDEX_FILE);
+        Dictionary phase1Dictionary = new Dictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile()
+                + "/" + Bundle.INDEX_FILE);
         // notify the fileIndex as to which dictionary its working on
         tkz.setCurrentDictionary(phase1Dictionary);
         //delete the previous index if any
@@ -306,8 +299,7 @@ public class FileIndexer {
 
     }
 
-    public static void phase2_StopWords()
-    {
+    public static void phase2_StopWords() {
         FileIndexer tkz = new FileIndexer();
         //create a new dictionary for this phase with its index file
         Dictionary phase2_sw_Dictionary = new StopWordDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD);
@@ -324,12 +316,12 @@ public class FileIndexer {
         tkz.printIndexStats("phase2_StopWords");
         // serialize the index
         tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
-       // tkz.useStopWords = false;
+        // tkz.useStopWords = false;
 
 
     }
-    public static void phase2_Stemming()
-    {
+
+    public static void phase2_Stemming() {
         FileIndexer tkz = new FileIndexer();
         //create a new dictionary for this phase with its index file
         Dictionary phase2_pStem_Dictionary = new PorterStemmerDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.PORTERSTEM);
@@ -344,16 +336,14 @@ public class FileIndexer {
         // serialize the index
         tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
         // serialize the index
-       // tkz.serializeToFile(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.STEMMEDMAP);
+        // tkz.serializeToFile(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.STEMMEDMAP);
 
     }
-   
-    public static void project2_phase1_vectorSpaceModel()
-    {
+
+    public static void project2_phase1_vectorSpaceModel() {
         FileIndexer tkz = new FileIndexer();
         //create a new dictionary for this phase with its index file
-        Dictionary vectorDictionary = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() +
-                                                                                    "/" + Bundle.INDEX_FILE);
+        Dictionary vectorDictionary = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE);
         // notify the fileIndex as to which dictionary its working on
         tkz.setCurrentDictionary(vectorDictionary);
         //delete the previous index if any
@@ -368,14 +358,13 @@ public class FileIndexer {
         tkz.printIndexStats("Project2Phase1");
         // serialize the index
         tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
-        tkz.serializeToFile(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.DOCUMENT_LENGTHS_FILE, tkz.getCurrentDictionary().getDocumentLengths());
+        //tkz.serializeToFile(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.DOCUMENT_LENGTHS_FILE, tkz.getCurrentDictionary().getDocumentLengths());
     }
 
-    public static void project2_phase1_vectorSpaceModel_StopWords()
-    {
+    public static void project2_phase1_vectorSpaceModel_StopWords() {
         FileIndexer tkz = new FileIndexer();
         //create a new dictionary for this phase with its index file
-        Dictionary vectorDictionaryStopWords = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD,true,false);
+        Dictionary vectorDictionaryStopWords = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD, true, false);
         // notify the fileIndex as to which dictionary its working on
         tkz.setCurrentDictionary(vectorDictionaryStopWords);
         //delete previous stopword index if any
@@ -393,19 +382,18 @@ public class FileIndexer {
         tkz.printIndexStats("Project2Phase2_StopWords");
         // serialize the index
         tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
-       // tkz.useStopWords = false;
+        // tkz.useStopWords = false;
     }
 
-    public static void project2_phase1_vectorSpaceModel_StemmedWords()
-    {
+    public static void project2_phase1_vectorSpaceModel_StemmedWords() {
         FileIndexer tkz = new FileIndexer();
         //create a new dictionary for this phase with its index file
-        Dictionary vectorDictionaryStopWords = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.PORTERSTEM,false,true);
+        Dictionary vectorDictionaryStopWords = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.PORTERSTEM, false, true);
         // notify the fileIndex as to which dictionary its working on
         tkz.setCurrentDictionary(vectorDictionaryStopWords);
         //delete previous stopword index if any
         FileIndexer.deleteIndex(tkz.getCurrentDictionary().getINDEX_FILE());
-       
+
         // read all the documents in the director and tokenize
         tkz.tokenizeAllFilesInDirectory(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile());
         //set the mode for the current dictionary
@@ -416,14 +404,13 @@ public class FileIndexer {
         tkz.printIndexStats("Project2Phase2_StemmedWords");
         // serialize the index
         tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
-       // tkz.useStopWords = false;
+        // tkz.useStopWords = false;
     }
 
-    public static void project2_phase1_vectorSpaceModel_StopAndStemmedWords()
-    {
+    public static void project2_phase1_vectorSpaceModel_StopAndStemmedWords() {
         FileIndexer tkz = new FileIndexer();
         //create a new dictionary for this phase with its index file
-        Dictionary vectorDictionaryStopWords = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD + Bundle.PORTERSTEM,true,true);
+        Dictionary vectorDictionaryStopWords = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD + Bundle.PORTERSTEM, true, true);
         // notify the fileIndex as to which dictionary its working on
         tkz.setCurrentDictionary(vectorDictionaryStopWords);
         //delete previous stopword index if any
@@ -441,7 +428,7 @@ public class FileIndexer {
         tkz.printIndexStats("Project2Phase2_StopStemmedWords");
         // serialize the index
         tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
-       // tkz.useStopWords = false;
+        // tkz.useStopWords = false;
     }
 
     public static void main(String args[]) {
@@ -449,11 +436,9 @@ public class FileIndexer {
 //     FileIndexer.phase1();
 //     FileIndexer.phase2_StopWords();
 //     FileIndexer.phase2_Stemming();
-       FileIndexer.project2_phase1_vectorSpaceModel();
-       FileIndexer.project2_phase1_vectorSpaceModel_StopWords();
-       FileIndexer.project2_phase1_vectorSpaceModel_StemmedWords();
-       FileIndexer.project2_phase1_vectorSpaceModel_StopAndStemmedWords();
-
-
+        FileIndexer.project2_phase1_vectorSpaceModel();
+        FileIndexer.project2_phase1_vectorSpaceModel_StopWords();
+        FileIndexer.project2_phase1_vectorSpaceModel_StemmedWords();
+        FileIndexer.project2_phase1_vectorSpaceModel_StopAndStemmedWords();
     }
 }

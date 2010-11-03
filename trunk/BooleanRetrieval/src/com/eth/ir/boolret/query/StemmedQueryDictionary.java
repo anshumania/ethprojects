@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.eth.ir.boolret.query;
 
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
@@ -52,7 +48,7 @@ public class StemmedQueryDictionary extends QueryDictionary {
             PostingList pl = index.get(stemmedTerm);
             if (pl != null) // just in case
             {
-                HashSet<String> docSet = new HashSet<String>();
+                TreeSet<String> docSet = new TreeSet<String>();
                 for (PostingListNode pln : pl.getPostingList()) {
                     docSet.add(pln.getDocId());
                 }
@@ -64,7 +60,7 @@ public class StemmedQueryDictionary extends QueryDictionary {
 
 
 
-        Set<String> partialSet = new HashSet<String>();
+        Set<String> partialSet = new TreeSet<String>();
         boolean first = true;
         for (Map.Entry<String, Set<String>> iterator : result.entrySet()) {
             if (first) {
@@ -86,7 +82,7 @@ public class StemmedQueryDictionary extends QueryDictionary {
     public Set<String> doORQuery(Query query) {
         ArrayList<String> terms = query.getTerms();
         // a hashSet to store the docIds
-        HashSet<String> result = new HashSet<String>();
+        TreeSet<String> result = new TreeSet<String>();
         // PostingList -> LinkedList of PostingListNodes [docId, freq]
         initiateTime();
 
@@ -141,7 +137,7 @@ public class StemmedQueryDictionary extends QueryDictionary {
             if (pl != null) // just in case
             {
 
-                Set<String> docSet = new LinkedHashSet<String>();
+                Set<String> docSet = new TreeSet<String>();
                 for (PostingListNode pln : pl.getPostingList()) {
                     docSet.add(pln.getDocId());
                 }

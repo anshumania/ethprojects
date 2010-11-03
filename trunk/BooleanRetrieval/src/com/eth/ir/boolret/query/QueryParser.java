@@ -1,6 +1,8 @@
 package com.eth.ir.boolret.query;
 
 import com.eth.ir.boolret.Bundle;
+import com.eth.ir.boolret.PartOfSpeech;
+import com.eth.ir.boolret.StopWords;
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
 import java.io.BufferedReader;
 import java.io.File;
@@ -305,68 +307,58 @@ public class QueryParser {
     }
 
     public static void project2_vectorSpaceModel() {
-        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling");
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling- Normal");
         QueryParser queryParser = new QueryParser();
         queryParser.setCurrentQueryDictionary(new QueryDictionary());
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
-        //queryParser.readDocumentLengthsFile(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.DOCUMENT_LENGTHS_FILE).getFile());
         Map<String, HashSet<String>> relevancyLists = queryParser.readRelevancyListsFile("../" + Bundle.RELEVANCY_LISTS_FILE);
 
         // Execute all the queries in the directory
-        //queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), true);
         queryParser.precisionRecallGraphForAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), relevancyLists, Bundle.NO_EXPANSION, null, null);
     }
 
     public static void project2_vectorSpaceModel_StopWords() {
-        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling");
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling - STOP WORDS");
         QueryParser queryParser = new QueryParser();
         queryParser.setCurrentQueryDictionary(new QueryDictionary());
-        //stop words
         queryParser.getCurrentQueryDictionary().setStopWordMode(true);
-        //Load index from file
+
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD).getFile());
-        queryParser.readDocumentLengthsFile(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.DOCUMENT_LENGTHS_FILE).getFile());
         Map<String, HashSet<String>> relevancyLists = queryParser.readRelevancyListsFile("../" + Bundle.RELEVANCY_LISTS_FILE);
+        StopWords.readStopWordsFile(StopWords.STOPWORDFILE);
 
         // Execute all the queries in the directory
-        //queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), true);
         queryParser.precisionRecallGraphForAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), relevancyLists, Bundle.NO_EXPANSION, null, null);
     }
 
     public static void project2_vectorSpaceModel_StemmedWords() {
-        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling");
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling - STEMMING");
         QueryParser queryParser = new QueryParser();
         queryParser.setCurrentQueryDictionary(new QueryDictionary());
-        //stemmed words
-        queryParser.getCurrentQueryDictionary().setStemmedWordMode(true);
+        queryParser.getCurrentQueryDictionary().setStemmedWordMode(true); //stemmed words
 
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.PORTERSTEM).getFile());
-        queryParser.readDocumentLengthsFile(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.DOCUMENT_LENGTHS_FILE).getFile());
         Map<String, HashSet<String>> relevancyLists = queryParser.readRelevancyListsFile("../" + Bundle.RELEVANCY_LISTS_FILE);
 
         // Execute all the queries in the directory
-        //queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), true);
         queryParser.precisionRecallGraphForAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), relevancyLists, Bundle.NO_EXPANSION, null, null);
     }
 
     public static void project2_vectorSpaceModel_StopStemmedWords() {
-        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling");
+        Logger.getLogger(QueryParser.class.getName()).log(Level.INFO, "Project2 Phase1  - Query Parsing Vector Space Modelling - STOP WORDS & STEMMING");
         QueryParser queryParser = new QueryParser();
         queryParser.setCurrentQueryDictionary(new QueryDictionary());
-        //stop words
-        queryParser.getCurrentQueryDictionary().setStopWordMode(true);
-        //stemmed words
-        queryParser.getCurrentQueryDictionary().setStemmedWordMode(true);
+        queryParser.getCurrentQueryDictionary().setStopWordMode(true); //stop words
+        queryParser.getCurrentQueryDictionary().setStemmedWordMode(true); //stemmed words
 
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE + Bundle.STOPWORD + Bundle.PORTERSTEM).getFile());
-//        queryParser.readDocumentLengthsFile(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.DOCUMENT_LENGTHS_FILE).getFile());
         Map<String, HashSet<String>> relevancyLists = queryParser.readRelevancyListsFile("../" + Bundle.RELEVANCY_LISTS_FILE);
+        StopWords.readStopWordsFile(StopWords.STOPWORDFILE);
 
         // Execute all the queries in the directory
-        //queryParser.executeAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), true);
         queryParser.precisionRecallGraphForAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), relevancyLists, Bundle.NO_EXPANSION, null, null);
     }
 
@@ -393,6 +385,7 @@ public class QueryParser {
         //Load index from file
         queryParser.readIndex(QueryParser.class.getResource("../" + Bundle.DOCS_DIR + "/" + Bundle.INDEX_FILE).getFile());
         Map<String, HashSet<String>> relevancyLists = queryParser.readRelevancyListsFile("../" + Bundle.RELEVANCY_LISTS_FILE);
+        PartOfSpeech.readPartOfSpeechFile(PartOfSpeech.PART_OF_SPEECH_FILE);
 
         // Execute all the queries in the directory
         queryParser.precisionRecallGraphForAllQueriesInDirectory(QueryParser.class.getResource("../" + Bundle.QUERY_2_DIR).getFile(), relevancyLists, Bundle.GLOBAL_EXPANSION, null, null);
@@ -489,6 +482,7 @@ public class QueryParser {
             }
         }
 
+        //for local query expansion only
         if(alpha != null &&  beta != null) {
             System.out.println("Alpha = " + alpha + ", Beta = " + beta);
         }
@@ -502,7 +496,7 @@ public class QueryParser {
             }
             
             Double average = sum / new Double(result.getValue().size());
-            System.out.println(result.getKey() + " , " + average);
+            System.out.println(average);
         }
     }
 
@@ -566,11 +560,11 @@ public class QueryParser {
         //QueryParser.phase2_Stemming();
         //QueryParser.phraseTest();
         //QueryParser.proximityTest();
-//        QueryParser.project2_vectorSpaceModel();
-//        QueryParser.project2_vectorSpaceModel_StopWords();
-//        QueryParser.project2_vectorSpaceModel_StemmedWords();
-//        QueryParser.project2_vectorSpaceModel_StopStemmedWords();
+        QueryParser.project2_vectorSpaceModel();
+        QueryParser.project2_vectorSpaceModel_StopWords();
+        QueryParser.project2_vectorSpaceModel_StemmedWords();
+        QueryParser.project2_vectorSpaceModel_StopStemmedWords();
         QueryParser.project2_vectorSpaceModel_LocalExpansionQuery();
-//        QueryParser.project2_vectorSpaceModel_GlobalExpansionQuery();
+        QueryParser.project2_vectorSpaceModel_GlobalExpansionQuery();
     }
 }
