@@ -14,11 +14,29 @@
 			
 			function getResults() {
 				$('#movie_results').html(LOADER);
+				$('#rating_results').html(LOADER);
+				
+				var sources = "";
+				var checkboxes = $('input:checkbox:checked');
+				
+				for (i=0; i<checkboxes.length; ++i) {
+					sources += (checkboxes[i].value + '|');
+				}
 				
 				$.ajax({
-					'url': 'default/index?query=' + document.search.query.value,
+					'url': 'default/movies?query=' + document.search.query.value + '&sources=' + sources,
 					'success': function(data) {
 							$('#movie_results').html(data);
+						},
+					'error': function() {
+							alert('Error');
+						}
+				});
+				
+				$.ajax({
+					'url': 'default/ratings?query=' + document.search.query.value,
+					'success': function(data) {
+							$('#rating_results').html(data);
 						},
 					'error': function() {
 							alert('Error');
@@ -40,7 +58,9 @@
 				<h1>WatchMoviesOnline</h1>
 				<form name="search" action="javascript:getResults();">
 					<input type="text" name="query" />
-					<input type="submit" value="Search" />
+					<input type="submit" value="Search" /><br />
+					<input type="checkbox" name="sources" value="sidereel" checked="checked" />SideReel.com
+					<input type="checkbox" name="sources" value="tvshack" checked="checked" />TVshack.cc
 				</form>
 			</div>
 			<div id="tabs">
@@ -48,9 +68,9 @@
 				<span id="twitter_tab" class="tab"><a href="javascript:show('twitter');">Tweets</a></span>
 				<span id="rating_tab" class="tab"><a href="javascript:show('rating');">Ratings</a></span>
 			</div>
-			<div id="movie_results" class="results">Movie</div>
-			<div id="twitter_results" class="results">Twitter</div>
-			<div id="rating_results" class="results">Rating</div>
+			<div id="movie_results" class="results">Please enter your query into the search box above.</div>
+			<div id="twitter_results" class="results">Please enter your query into the search box above.</div>
+			<div id="rating_results" class="results">Please enter your query into the search box above.</div>
 			<div class="center">
 				<h2>&copy; 2010, An Anshuman/Max Production.</h2>
 			</div>
