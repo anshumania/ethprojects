@@ -47,8 +47,5 @@ public class PorterStemmerDictionary extends Dictionary {
 
         temp.add(key);
         stemmedIndex.put(stemmedKey, temp);
-
-
-
     }
 }
