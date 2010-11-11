@@ -3,6 +3,7 @@ package com.eai.beans.session;
 import com.eai.beans.UserBean;
 import com.eai.beans.entity.Users;
 import java.util.Collection;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -38,9 +39,12 @@ public class UserSession implements UserSessionLocal {
     @Override
     public Users createUser(UserBean user) {
         EntityManager em = entityManagerEai.createEntityManager();
-        long userCount = em.createNamedQuery("Users.findAll").getResultList().size();
+        List<Users> users = em.createNamedQuery("Users.findAll")
+				.getResultList();
 
-        Users u = new Users(userCount+1, 
+		long id = users.get(users.size()-1).getId() + 1;
+
+        Users u = new Users(id,
                             user.getUsername(),
                             user.getPassword(),
                             user.getFirstname(),

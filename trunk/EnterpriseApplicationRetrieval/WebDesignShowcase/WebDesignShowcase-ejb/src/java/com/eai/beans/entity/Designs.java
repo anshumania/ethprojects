@@ -38,7 +38,7 @@ public class Designs implements Serializable {
     private Long id;
     @Basic(optional = false)
     @Column(name = "user_id")
-    private int userId;
+    private Long userId;
     @Basic(optional = false)
     @Column(name = "title")
     private String title;
@@ -56,7 +56,7 @@ public class Designs implements Serializable {
         this.id = id;
     }
 
-    public Designs(Long id, int userId, String title, String url, String imageUrl) {
+    public Designs(Long id, long userId, String title, String url, String imageUrl) {
         this.id = id;
         this.userId = userId;
         this.title = title;
@@ -72,11 +72,11 @@ public class Designs implements Serializable {
         this.id = id;
     }
 
-    public int getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(long userId) {
         this.userId = userId;
     }
 

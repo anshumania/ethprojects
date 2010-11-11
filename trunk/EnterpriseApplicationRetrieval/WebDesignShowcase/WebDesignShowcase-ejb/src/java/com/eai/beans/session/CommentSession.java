@@ -2,8 +2,8 @@ package com.eai.beans.session;
 
 import com.eai.beans.CommentBean;
 import com.eai.beans.entity.Comments;
-import com.eai.beans.entity.Users;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
@@ -55,10 +55,13 @@ public class CommentSession implements CommentSessionLocal {
     @Override
     public void addComment(CommentBean comment) {
         EntityManager em = entityManagerEai.createEntityManager();
-        long commentCount = em.createNamedQuery("Comments.findAll").getResultList().size();
+        List<Comments> commentList = em.createNamedQuery("Comments.findAll")
+				.getResultList();
+
+		long id = commentList.get(commentList.size()-1).getId() + 1;
 
         Comments c = new Comments();
-        c.setId(commentCount + 1);
+        c.setId(id);
         c.setComment(comment.getComment());
         c.setDesignId(comment.getDesignId());
         c.setUserId(comment.getUserId());
