@@ -20,6 +20,10 @@
         <servlet-name>UserDesigns</servlet-name>
         <servlet-class>com.eai.servlet.UserDesigns</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AddDesign</servlet-name>
+        <servlet-class>com.eai.servlet.AddDesign</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AddComment</servlet-name>
         <url-pattern>/AddComment</url-pattern>
@@ -39,6 +43,10 @@
     <servlet-mapping>
         <servlet-name>UserDesigns</servlet-name>
         <url-pattern>/UserDesigns</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AddDesign</servlet-name>
+        <url-pattern>/AddDesign</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

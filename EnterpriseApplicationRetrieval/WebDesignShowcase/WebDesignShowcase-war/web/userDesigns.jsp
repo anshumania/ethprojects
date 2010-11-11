@@ -21,7 +21,8 @@
             <div id="main">
                 <h1>Web Designs by ${user.username}</h1>
 
-                <table class="designs">
+				<center>
+                <table class="designs" cellpadding="5">
 					<tr>
 						<th>Design Name</th>
 						<th>URL</th>
@@ -33,6 +34,8 @@
 						</tr>
 					</c:forEach>
                 </table>
+				</center>
+				<p><a href="addDesign.jsp">[+] Add a New Design</a></p>
                 <p><a href="">Next</a></p>
             </div>
             <%@ include file="footer.jspf" %>

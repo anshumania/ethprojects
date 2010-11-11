@@ -20,7 +20,7 @@
             <div id="main">
                 <h1>Add a New Web Design</h1>
 
-                <form action="addComment" method="post">
+                <form action="AddDesign" method="post">
                     <table class="addDesignForm">
                         <tr>
                             <th><label for="title">Title</label></th>
@@ -32,7 +32,8 @@
                         </tr>
                         <tr>
                             <th><label for="design">Design Screenshot</label></th>
-                            <td><input type="file" name="design" size="50" /></td>
+							<td><input type="text" name="design" size="50" /></td>
+                            <!--<td><input type="file" name="design" size="50" /></td>-->
                         </tr>
                         <tr>
                             <th></th>

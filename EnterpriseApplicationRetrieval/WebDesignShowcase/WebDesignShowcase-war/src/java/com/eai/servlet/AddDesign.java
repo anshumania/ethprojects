@@ -1,11 +1,9 @@
 package com.eai.servlet;
 
-import com.eai.beans.entity.Designs;
 import com.eai.beans.entity.Users;
 import com.eai.beans.session.DesignSessionLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collection;
 import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -18,10 +16,9 @@ import javax.servlet.http.HttpSession;
  *
  * @author Max
  */
-public class UserDesigns extends HttpServlet {
-
+public class AddDesign extends HttpServlet {
 	@EJB
-	private DesignSessionLocal dsb;
+	private DesignSessionLocal designSession;
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -34,16 +31,20 @@ public class UserDesigns extends HttpServlet {
     throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
-        try {
+
+		try {
             HttpSession session = request.getSession(false);
 
 			if (session != null) {
 				Users user = (Users)session.getAttribute("user");
 				long userID = user.getId();
-				Collection<Designs> userDesigns = dsb.findDesignsByUserId(userID);
-				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/userDesigns.jsp");
+				String title = request.getParameter("title");
+				String url = request.getParameter("url");
+				String screenshot = request.getParameter("design");
 
-				request.setAttribute("userDesigns", userDesigns);
+				designSession.addDesign(userID, title, url, screenshot);
+
+				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/UserDesigns");
 				dispatcher.forward(request, response);
 			}
         } finally { 
