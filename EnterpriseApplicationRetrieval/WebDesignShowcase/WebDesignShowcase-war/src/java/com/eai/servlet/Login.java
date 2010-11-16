@@ -42,8 +42,7 @@ public class Login extends HttpServlet {
             HttpSession session = request.getSession(true);
             session.setAttribute("user", user);
 
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/UserDesigns");
-            dispatcher.forward(request, response);
+            response.sendRedirect("UserDesigns");
         } else {
             //login failed, redisplay login page with error message
             request.setAttribute("loginFailed", true);

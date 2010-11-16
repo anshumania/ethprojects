@@ -1,5 +1,6 @@
 package com.eai.beans.session;
 
+import com.eai.beans.entity.Comments;
 import com.eai.beans.entity.Designs;
 import java.util.Collection;
 import java.util.List;
@@ -17,6 +18,14 @@ public class DesignSession implements DesignSessionLocal {
 
 	@PersistenceUnit(unitName = "eai")
     EntityManagerFactory entityManagerEai;
+
+	@Override
+	public Collection<Designs> findAllDesigns() {
+		Collection<Designs> d = entityManagerEai.createEntityManager()
+				.createNamedQuery("Designs.findAll")
+				.getResultList();
+		return d;
+	}
 
 	@Override
 	public Collection<Designs> findDesignsByUserId(long userID) {
@@ -43,6 +52,28 @@ public class DesignSession implements DesignSessionLocal {
 		d.setImageUrl(screenshot);
 
 		em.persist(d);
+	}
+
+	@Override
+	public void deleteDesign(long designID) {
+		EntityManager em = entityManagerEai.createEntityManager();
+
+		Designs d = (Designs)em.createNamedQuery("Designs.findById")
+				.setParameter("id", designID)
+				.getResultList()
+				.get(0);
+
+		Collection<Comments> comments = em.createNamedQuery("Comments.findByDesignId")
+				.setParameter("designId", designID)
+				.getResultList();
+
+		for (Comments c : comments) {
+			em.remove(c);
+		}
+
+		if (d != null) {
+			em.remove(d);
+		}
 	}
  
 }

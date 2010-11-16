@@ -14,5 +14,9 @@ public interface DesignSessionLocal {
 	Collection<Designs> findDesignsByUserId(long userID);
 
 	void addDesign(long userId, String title, String url, String screenshot);
+
+	Collection<Designs> findAllDesigns();
+
+	void deleteDesign(long designID);
     
 }

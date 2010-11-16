@@ -24,6 +24,14 @@
         <servlet-name>AddDesign</servlet-name>
         <servlet-class>com.eai.servlet.AddDesign</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AllDesigns</servlet-name>
+        <servlet-class>com.eai.servlet.AllDesigns</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>DeleteDesign</servlet-name>
+        <servlet-class>com.eai.servlet.DeleteDesign</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AddComment</servlet-name>
         <url-pattern>/AddComment</url-pattern>
@@ -47,6 +55,14 @@
     <servlet-mapping>
         <servlet-name>AddDesign</servlet-name>
         <url-pattern>/AddDesign</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AllDesigns</servlet-name>
+        <url-pattern>/AllDesigns</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DeleteDesign</servlet-name>
+        <url-pattern>/DeleteDesign</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

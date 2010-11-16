@@ -1,7 +1,7 @@
 <%-- 
-    Document   : userDesigns
-    Created on : Oct 31, 2010, 12:03:45 AM
-    Author     : Tim Church
+    Document   : allDesigns
+    Created on : 16.11.2010, 20:10:00
+    Author     : Max
 --%>
 
 <%@taglib prefix="c" uri="http://java.sun.com/jstl/core_rt"%>
@@ -12,37 +12,42 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Web Designs by ${user.username} | Web Design Showcase</title>
+        <title>All Web Designs | Web Design Showcase</title>
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
         <div id="container">
             <%@ include file="header.jspf" %>
             <div id="main">
-                <h1>Web Designs by ${user.username}</h1>
+                <h1>All Web Designs</h1>
 
 				<center>
                 <table class="designs" cellpadding="5">
 					<tr>
 						<th>Design Name</th>
 						<th>URL</th>
-						<th>Delete?</th>
+						<th>Designer</th>
 					</tr>
-					<c:forEach items="${userDesigns}" var="design">
+					<c:forEach items="${allDesigns}" var="design">
 						<tr>
 							<td><a href="ShowDesign?designID=${design.id}">${design.title}</a></td>
 							<td>${design.url}</td>
-							<td><a href="DeleteDesign?designID=${design.id}">[-]</a></td>
+							<td>
+								<c:forEach items="${users}" var="user">
+									<c:if test="${user.id == design.userId}">
+										${user.username}
+									</c:if>
+								</c:forEach>
+							</td>
 						</tr>
 					</c:forEach>
                 </table>
 				</center>
                 <p><a href="">Next</a></p>
 				<p><a href="addDesign.jsp">[+] Add a New Design</a></p>
-				<p><a href="AllDesigns">Show All Designs</a></p>
+				<p><a href="UserDesigns">Show My Designs</a></p>
             </div>
             <%@ include file="footer.jspf" %>
         </div>
     </body>
 </html>
-
