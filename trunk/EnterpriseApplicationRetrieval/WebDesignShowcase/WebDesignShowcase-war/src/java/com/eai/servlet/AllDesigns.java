@@ -1,22 +1,28 @@
 package com.eai.servlet;
 
+import com.eai.beans.entity.Designs;
 import com.eai.beans.entity.Users;
 import com.eai.beans.session.DesignSessionLocal;
+import com.eai.beans.session.UserSessionLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 /**
  *
  * @author Max
  */
-public class AddDesign extends HttpServlet {
+public class AllDesigns extends HttpServlet {
+
+	@EJB
+	private UserSessionLocal userSession;
+
 	@EJB
 	private DesignSessionLocal designSession;
    
@@ -31,20 +37,14 @@ public class AddDesign extends HttpServlet {
     throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
+        try {
+            Collection<Designs> allDesigns = designSession.findAllDesigns();
+			Collection<Users> users = userSession.findAllUsers();
+			RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/allDesigns.jsp");
 
-		try {
-            HttpSession session = request.getSession(false);
-
-			if (session != null) {
-				Users user = (Users)session.getAttribute("user");
-				long userID = user.getId();
-				String title = request.getParameter("title");
-				String url = request.getParameter("url");
-				String screenshot = request.getParameter("design");
-
-				designSession.addDesign(userID, title, url, screenshot);
-				response.sendRedirect("UserDesigns");
-			}
+			request.setAttribute("allDesigns", allDesigns);
+			request.setAttribute("users", users);
+			dispatcher.forward(request, response);
         } finally { 
             out.close();
         }

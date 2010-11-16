@@ -23,9 +23,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "designs")
 @NamedQueries({
-    @NamedQuery(name = "Designs.findAll", query = "SELECT d FROM Designs d"),
+    @NamedQuery(name = "Designs.findAll", query = "SELECT d FROM Designs d ORDER BY d.id DESC"),
     @NamedQuery(name = "Designs.findById", query = "SELECT d FROM Designs d WHERE d.id = :id"),
-    @NamedQuery(name = "Designs.findByUserId", query = "SELECT d FROM Designs d WHERE d.userId = :userId"),
+    @NamedQuery(name = "Designs.findByUserId", query = "SELECT d FROM Designs d WHERE d.userId = :userId ORDER BY d.id DESC"),
     @NamedQuery(name = "Designs.findByTitle", query = "SELECT d FROM Designs d WHERE d.title = :title"),
     @NamedQuery(name = "Designs.findByUrl", query = "SELECT d FROM Designs d WHERE d.url = :url"),
     @NamedQuery(name = "Designs.findByImageUrl", query = "SELECT d FROM Designs d WHERE d.imageUrl = :imageUrl")})

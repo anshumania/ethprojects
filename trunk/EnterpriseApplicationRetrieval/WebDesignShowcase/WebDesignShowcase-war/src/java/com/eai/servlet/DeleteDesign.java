@@ -1,9 +1,11 @@
 package com.eai.servlet;
 
+import com.eai.beans.entity.Designs;
 import com.eai.beans.entity.Users;
 import com.eai.beans.session.DesignSessionLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -16,9 +18,9 @@ import javax.servlet.http.HttpSession;
  *
  * @author Max
  */
-public class AddDesign extends HttpServlet {
+public class DeleteDesign extends HttpServlet {
 	@EJB
-	private DesignSessionLocal designSession;
+	private DesignSessionLocal dsb;
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -31,18 +33,13 @@ public class AddDesign extends HttpServlet {
     throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
-
-		try {
+        try {
             HttpSession session = request.getSession(false);
 
 			if (session != null) {
-				Users user = (Users)session.getAttribute("user");
-				long userID = user.getId();
-				String title = request.getParameter("title");
-				String url = request.getParameter("url");
-				String screenshot = request.getParameter("design");
+				long designID = Long.parseLong(request.getParameter("designID"));
 
-				designSession.addDesign(userID, title, url, screenshot);
+				dsb.deleteDesign(designID);
 				response.sendRedirect("UserDesigns");
 			}
         } finally { 
