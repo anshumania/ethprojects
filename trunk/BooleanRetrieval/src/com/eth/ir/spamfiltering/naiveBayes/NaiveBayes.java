@@ -6,6 +6,7 @@ package com.eth.ir.spamfiltering.naiveBayes;
 
 import com.eth.ir.spamfiltering.SpamBundle;
 import java.io.File;
+import java.io.FileFilter;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -118,6 +119,20 @@ public class NaiveBayes {
 
     }
 
+    private class SpamFileFilter implements java.io.FileFilter {
+             public boolean accept(File f) {
+        if (f.isDirectory() || f.isHidden()) return false;
+        String name = f.getName().toLowerCase();
+        return name.contains(SpamBundle.SPAM_ID) && name.endsWith("txt");
+    }//end accept
+}//
+    private class SvnFileFilter implements java.io.FileFilter {
+             public boolean accept(File f) {
+        if (f.isDirectory() || f.isHidden()) return false;
+        return true;
+    }//end accept
+}//
+
     public void applyMultinomialNB(String testDir)//C,V,prior,condprob,d)
     {
 //        W<-extractTokensFromDoc(V,d)
@@ -128,12 +143,24 @@ public class NaiveBayes {
 //        return arg max(cinC) score[c]
 
 
-
         File directory = new File(SpamBundle.class.getResource(SpamBundle.DOC_CORPUS_DIR).getFile() + File.separator + testDir);
-        File[] files = directory.listFiles();
+        FileFilter spamFilter = new SpamFileFilter();
+        FileFilter svnFilter = new SvnFileFilter();
+        File[] files = directory.listFiles(svnFilter);
+        File[] spamFile = directory.listFiles(spamFilter);
+        int totalFileCount = files.length;
+        int spamTotalCount = spamFile.length;
+        int notSpamTotalCount = totalFileCount - spamTotalCount;
+
+        
+        // the roc plots of true positives(recall) vs sensitivity(1-false positives)
+        Map<Double,Double> rocPlotter = new HashMap<Double,Double>();
+
+        int fileCount = 0;
+
         for (File tFile : files) {
             if (!tFile.isHidden()) {
-
+            fileCount++;
 //            System.out.println("working on testfile=" + tFile.getName());
                 List<String> tokens = nbHelper.extractTokensFromDoc(tFile);
 //        System.out.println("tokensize" + tokens.size());
@@ -160,8 +187,52 @@ public class NaiveBayes {
                     System.out.println(tFile.getName() + " is NOTSPAM");
                 }
 
+
+                //TODO generate the ROC Plot
+                int truePositive = 0;
+                int falsePositive = 0;
+                int trueNegative = 0;
+                int falseNegative = 0;
+                boolean spam = score[0] > score [1];
+
+                //                                    actual value
+                //                                   spam  | notspam
+                //  predicition outcome      spam  |  tp   |   fp   |
+                //                        notspam  |  fn   |   tn   |
+                //                                     P        N
+                // TPR = tp/P ; FPR = fp/N
+
+                if(spam)
+                {
+                    if(tFile.getName().contains(SpamBundle.SPAM_ID))
+                    {
+                        
+                        truePositive++;
+                        // current True Positive Rate
+                        double tpRate = (double)truePositive / spamTotalCount;
+                        double fpRate =  (double) falsePositive / notSpamTotalCount;
+                        rocPlotter.put(tpRate,fpRate);
+                    }
+                    else
+                    {
+                        falsePositive++;
+                        // current false Positive Rate
+                        double tpRate = (double)truePositive / spamTotalCount;
+                        double fpRate =  (double) falsePositive / notSpamTotalCount;
+                        rocPlotter.put(tpRate,fpRate);
+                    }
+                }
+                else
+                {
+                    if(tFile.getName().contains(SpamBundle.SPAM_ID))
+                            falseNegative++;
+                    else
+                        trueNegative++;
+                }
             }
         }
+
+        System.out.println("rocPlotter"+rocPlotter);
 
 
 
