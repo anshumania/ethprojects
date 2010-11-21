@@ -27,6 +27,8 @@ import java.util.logging.Logger;
 public class NaiveBayesHelper {
 
 //    Map<String, Integer> vocabulary;
+    // a map of string < the terms > and a Map <sClass, Integer> : which contains the
+    // number of occurences of that term for a particular class
     Map<String, Map<sClass,Integer>> vocabulary;
     int spamDocsCount;
     int legitDocsCount;
@@ -42,6 +44,8 @@ public class NaiveBayesHelper {
 
     public void initializeNBHelper(String documentCorpusDir,String skipDir) {
 
+        vocabulary.clear();
+        
         File directory = new File(documentCorpusDir);
         File[] files = directory.listFiles();
         System.out.println("files="+files.length);
@@ -123,7 +127,7 @@ public class NaiveBayesHelper {
         List<String> tokensInFile = new ArrayList<String>();
 
         String docId = file.getName();
-        System.out.println("docId" + docId);
+//        System.out.println("docId" + docId);
         int tokenCount = 0;
         FileReader reader = null;
         BufferedReader in = null;
@@ -196,6 +200,7 @@ public class NaiveBayesHelper {
 
                 if (!nextString.isEmpty()) {
                     if (vocabulary.containsKey(nextString)) {
+
                         Map<sClass,Integer> mapClass =  vocabulary.get(nextString);
                         int count = 0;
                         if(mapClass.containsKey(sclass))
