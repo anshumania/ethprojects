@@ -6,6 +6,7 @@ package com.eth.ir.spamfiltering.naiveBayes;
 
 import com.eth.ir.spamfiltering.SpamBundle;
 import java.io.File;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +27,12 @@ public class NaiveBayes {
         SPAM, NOTSPAM
     };
     double prior[];
-    Map<String, Double> conditionalProbabilityMap;
+    Map<String, Map<sClass,Double>> conditionalProbabilityMap;
 
     NaiveBayes() {
         nbHelper = new NaiveBayesHelper();
         prior = new double[sClass.values().length];
-        conditionalProbabilityMap = new HashMap<String, Double>();
+        conditionalProbabilityMap = new HashMap<String, Map<sClass,Double>>();
     }
 
     public void trainMultinomialNB(String skipDir) //Classification C, DocumentSet D)
@@ -83,7 +84,16 @@ public class NaiveBayes {
 //                    System.out.println("for " + iterator.getKey() + "tct=" + tct);
                     double conditionalProbability = ((double) (tct + 1)) / (textc + noTermsInVocab);
 //                    System.out.println("connditionalprob=" + conditionalProbability);
-                    conditionalProbabilityMap.put(iterator.getKey(), conditionalProbability);
+                    
+                     Map<sClass,Double> cpm ;
+                    if(!conditionalProbabilityMap.containsKey(iterator.getKey()))
+                       cpm = new EnumMap<sClass,Double>(sClass.class);
+                    else
+                       cpm = conditionalProbabilityMap.get(iterator.getKey());
+
+                     cpm.put(sclass, conditionalProbability);
+
+                    conditionalProbabilityMap.put(iterator.getKey(), cpm);
                 } else {
                     // tct is the number of occurences of a term t 
                     // in training documents from class c
@@ -91,7 +101,13 @@ public class NaiveBayes {
 //                    System.out.println("for " + iterator.getKey() + "tct=" + tct);
                     double conditionalProbability = ((double) (tct + 1)) / (textc + noTermsInVocab);
 //                    System.out.println("connditionalprob=" + conditionalProbability);
-                    conditionalProbabilityMap.put(iterator.getKey(), conditionalProbability);
+                    Map<sClass,Double> cpm ;
+                    if(!conditionalProbabilityMap.containsKey(iterator.getKey()))
+                       cpm = new EnumMap<sClass,Double>(sClass.class);
+                    else
+                       cpm = conditionalProbabilityMap.get(iterator.getKey());
+                    cpm.put(sclass, conditionalProbability);
+                    conditionalProbabilityMap.put(iterator.getKey(), cpm);
                 }
             }
 
@@ -130,7 +146,9 @@ public class NaiveBayes {
 
                     for (String token : tokens) {
 //                System.out.println("for " + token);
-                        score[i] += Math.log(conditionalProbabilityMap.get(token));
+                        Map<sClass,Double> cpm = conditionalProbabilityMap.get(token);
+                        score[i] += Math.log(cpm.get(sclass));
+//                        score[i] += Math.log(conditionalProbabilityMap.get(token));
 //                score[i] *= conditionalProbabilityMap.get(token);
                     }
                     i++;
@@ -162,6 +180,7 @@ public class NaiveBayes {
 
                 nb.trainMultinomialNB(tFile.getName());
                 nb.applyMultinomialNB(tFile.getName());
+                
             }
         }
     }
