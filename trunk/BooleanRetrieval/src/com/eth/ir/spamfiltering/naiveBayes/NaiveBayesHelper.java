@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.eth.ir.spamfiltering.naiveBayes;
 
 import com.eth.ir.boolret.FileIndexer;
@@ -29,12 +25,11 @@ public class NaiveBayesHelper {
 //    Map<String, Integer> vocabulary;
     // a map of string < the terms > and a Map <sClass, Integer> : which contains the
     // number of occurences of that term for a particular class
-    Map<String, Map<sClass,Integer>> vocabulary;
+    Map<String, Map<sClass, Integer>> vocabulary;
     int spamDocsCount;
     int legitDocsCount;
     int spamTokensCount;
     int legitTokensCount;
-    
 
     NaiveBayesHelper() {
 //        vocabulary = new HashMap<String, Integer>();
@@ -42,79 +37,72 @@ public class NaiveBayesHelper {
 
     }
 
-    public void initializeNBHelper(String documentCorpusDir,String skipDir) {
+    public void initializeNBHelper(String documentCorpusDir, String skipDir) {
 
         vocabulary.clear();
-        
+
         File directory = new File(documentCorpusDir);
         File[] files = directory.listFiles();
-        System.out.println("files="+files.length);
+//        System.out.println("files=" + files.length);
         for (File file : files) {
             // hack for getting rid of svn files
             //if (!file.isHidden() && file.isDirectory()){ // && !file.getName().contains(Bundle.INDEX_FILE)) {
             if (!file.isHidden() && file.isDirectory()) {
-                if(file.getName().equals(skipDir)) continue;
-                System.out.println("working on=" + file.getName());
+                if (file.getName().equals(skipDir)) {
+                    continue;
+                }
+//                System.out.println("working on=" + file.getName());
                 File[] trainingSet = file.listFiles();
 //                System.out.println("trainingset="+ trainingSet.length);
                 for (File trainingFile : trainingSet) {
-                    if(!trainingFile.isHidden())
-                    {
-                    if (trainingFile.getName().contains(SpamBundle.SPAM_ID)) {
-                        spamDocsCount++;
-                        spamTokensCount += tokenizeFile(trainingFile,sClass.SPAM);
-                    } else {
-                        legitDocsCount++;
-                        legitTokensCount += tokenizeFile(trainingFile,sClass.NOTSPAM);
+                    if (!trainingFile.isHidden()) {
+                        if (trainingFile.getName().contains(SpamBundle.SPAM_ID)) {
+                            spamDocsCount++;
+                            spamTokensCount += tokenizeFile(trainingFile, sClass.SPAM);
+                        } else {
+                            legitDocsCount++;
+                            legitTokensCount += tokenizeFile(trainingFile, sClass.NOTSPAM);
+                        }
+
                     }
-                    
-                }
                 }
             }
 //            break;
         }
 
     }
-    
 
-    public Map<String,Map<sClass,Integer>> extractVocabulary()
-    {
+    public Map<String, Map<sClass, Integer>> extractVocabulary() {
         return vocabulary;
     }
 
-    public int countDocs()
-    {
+    public int countDocs() {
         return spamDocsCount + legitDocsCount;
     }
 
-    public int countDocsInClass(sClass sclass)
-    {
+    public int countDocsInClass(sClass sclass) {
         return sclass.equals(sClass.SPAM) ? spamDocsCount : legitDocsCount;
     }
 
-    public int concatenateTextOfALLDocsInClass(sClass sclass)
-    {
+    public int concatenateTextOfALLDocsInClass(sClass sclass) {
         return sclass.equals(sClass.SPAM) ? spamTokensCount : legitTokensCount;
     }
 
-    public List<String> extractTokensFromDocs(String documentCorpusDir, String workDir)
-    {
+    public List<String> extractTokensFromDocs(String documentCorpusDir, String workDir) {
         File directory = new File(documentCorpusDir + File.separator + workDir);
         File[] files = directory.listFiles();
         List<String> allTokens = new ArrayList<String>();
-        for(File tFile: files)
-        {
-            if(!tFile.isHidden())
-            {
-            System.out.println("working on testfile=" + tFile);
-            List<String> tokensInDoc = extractTokensFromDoc(tFile);
-            allTokens.addAll(tokensInDoc);
+        for (File tFile : files) {
+            if (!tFile.isHidden()) {
+                System.out.println("working on testfile=" + tFile);
+                List<String> tokensInDoc = extractTokensFromDoc(tFile);
+                allTokens.addAll(tokensInDoc);
             }
         }
         return allTokens;
     }
 
-     /**
+    /**
      * This method utilizes the StreamTokenizer class
      * to isolate words.
      * Characters in the ASCII set 33-47 and 58-64
@@ -122,7 +110,7 @@ public class NaiveBayesHelper {
      *
      * @param file - the file to be tokenized
      */
-    public  List<String> extractTokensFromDoc(File file) {
+    public List<String> extractTokensFromDoc(File file) {
 
         List<String> tokensInFile = new ArrayList<String>();
 
@@ -148,9 +136,9 @@ public class NaiveBayesHelper {
                 if (!nextString.isEmpty()) {
                     if (vocabulary.containsKey(nextString)) {
                         tokensInFile.add(nextString);
+                    }
                 }
-            }
-                    //fetch the next token.
+                //fetch the next token.
                 next = st.nextToken();
             }
 
@@ -168,7 +156,6 @@ public class NaiveBayesHelper {
         return tokensInFile;
     }
 
-
     /**
      * This method utilizes the StreamTokenizer class
      * to isolate words.
@@ -177,7 +164,7 @@ public class NaiveBayesHelper {
      *
      * @param file - the file to be tokenized
      */
-    public  int tokenizeFile(File file,sClass sclass) {
+    public int tokenizeFile(File file, sClass sclass) {
 
         String docId = file.getName();
 //        System.out.println("docId" + docId);
@@ -201,15 +188,16 @@ public class NaiveBayesHelper {
                 if (!nextString.isEmpty()) {
                     if (vocabulary.containsKey(nextString)) {
 
-                        Map<sClass,Integer> mapClass =  vocabulary.get(nextString);
+                        Map<sClass, Integer> mapClass = vocabulary.get(nextString);
                         int count = 0;
-                        if(mapClass.containsKey(sclass))
+                        if (mapClass.containsKey(sclass)) {
                             count = (Integer) mapClass.get(sclass);
+                        }
 
                         mapClass.put(sclass, count + 1);
                         vocabulary.put(nextString, mapClass);
                     } else {
-                        Map<sClass,Integer> mapClass = new EnumMap<sClass, Integer>(sClass.class);
+                        Map<sClass, Integer> mapClass = new EnumMap<sClass, Integer>(sClass.class);
                         mapClass.put(sclass, 1);
                         vocabulary.put(nextString, mapClass);
                     }
@@ -219,8 +207,6 @@ public class NaiveBayesHelper {
                 //fetch the next token.
                 next = st.nextToken();
             }
-
-
 
         } catch (IOException ex) {
             Logger.getLogger(FileIndexer.class.getName()).log(Level.SEVERE, null, ex);
@@ -236,8 +222,7 @@ public class NaiveBayesHelper {
         return tokenCount;
     }
 
-    public static void main(String args[])
-    {
-        new NaiveBayesHelper().initializeNBHelper(SpamBundle.class.getResource(SpamBundle.DOC_CORPUS_DIR).getFile(),"part1");
+    public static void main(String args[]) {
+        new NaiveBayesHelper().initializeNBHelper(SpamBundle.class.getResource(SpamBundle.DOC_CORPUS_DIR).getFile(), "part1");
     }
 }

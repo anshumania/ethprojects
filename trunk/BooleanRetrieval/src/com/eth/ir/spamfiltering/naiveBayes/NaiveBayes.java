@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.eth.ir.spamfiltering.naiveBayes;
 
 import com.eth.ir.spamfiltering.SpamBundle;
@@ -11,29 +7,27 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  *
  * @author ANSHUMAN
  */
 public class NaiveBayes {
-
     NaiveBayesHelper nbHelper;
 
     public enum sClass {
-
         SPAM, NOTSPAM
     };
     double prior[];
-    Map<String, Map<sClass,Double>> conditionalProbabilityMap;
+    Map<String, Map<sClass, Double>> conditionalProbabilityMap;
 
     NaiveBayes() {
         nbHelper = new NaiveBayesHelper();
         prior = new double[sClass.values().length];
-        conditionalProbabilityMap = new HashMap<String, Map<sClass,Double>>();
+        conditionalProbabilityMap = new HashMap<String, Map<sClass, Double>>();
     }
 
     public void trainMultinomialNB(String skipDir) //Classification C, DocumentSet D)
@@ -52,9 +46,9 @@ public class NaiveBayes {
 
         nbHelper.initializeNBHelper(SpamBundle.class.getResource(SpamBundle.DOC_CORPUS_DIR).getFile(), skipDir);
         Map<String, Map<sClass, Integer>> vocabulary = nbHelper.extractVocabulary();
-        System.out.println("vocabulary=" + vocabulary.size());
+//        System.out.println("vocabulary=" + vocabulary.size());
         int numDocsTrainingSet = nbHelper.countDocs();
-        System.out.println("numDocsTrainingSet=" + numDocsTrainingSet);
+//        System.out.println("numDocsTrainingSet=" + numDocsTrainingSet);
         int i = 0;
 
         //double conditionalProbability[][] = new double[vocabulary.size()][sClass.values().length];
@@ -85,14 +79,15 @@ public class NaiveBayes {
 //                    System.out.println("for " + iterator.getKey() + "tct=" + tct);
                     double conditionalProbability = ((double) (tct + 1)) / (textc + noTermsInVocab);
 //                    System.out.println("connditionalprob=" + conditionalProbability);
-                    
-                     Map<sClass,Double> cpm ;
-                    if(!conditionalProbabilityMap.containsKey(iterator.getKey()))
-                       cpm = new EnumMap<sClass,Double>(sClass.class);
-                    else
-                       cpm = conditionalProbabilityMap.get(iterator.getKey());
 
-                     cpm.put(sclass, conditionalProbability);
+                    Map<sClass, Double> cpm;
+                    if (!conditionalProbabilityMap.containsKey(iterator.getKey())) {
+                        cpm = new EnumMap<sClass, Double>(sClass.class);
+                    } else {
+                        cpm = conditionalProbabilityMap.get(iterator.getKey());
+                    }
+
+                    cpm.put(sclass, conditionalProbability);
 
                     conditionalProbabilityMap.put(iterator.getKey(), cpm);
                 } else {
@@ -102,11 +97,12 @@ public class NaiveBayes {
 //                    System.out.println("for " + iterator.getKey() + "tct=" + tct);
                     double conditionalProbability = ((double) (tct + 1)) / (textc + noTermsInVocab);
 //                    System.out.println("connditionalprob=" + conditionalProbability);
-                    Map<sClass,Double> cpm ;
-                    if(!conditionalProbabilityMap.containsKey(iterator.getKey()))
-                       cpm = new EnumMap<sClass,Double>(sClass.class);
-                    else
-                       cpm = conditionalProbabilityMap.get(iterator.getKey());
+                    Map<sClass, Double> cpm;
+                    if (!conditionalProbabilityMap.containsKey(iterator.getKey())) {
+                        cpm = new EnumMap<sClass, Double>(sClass.class);
+                    } else {
+                        cpm = conditionalProbabilityMap.get(iterator.getKey());
+                    }
                     cpm.put(sclass, conditionalProbability);
                     conditionalProbabilityMap.put(iterator.getKey(), cpm);
                 }
@@ -120,18 +116,25 @@ public class NaiveBayes {
     }
 
     private class SpamFileFilter implements java.io.FileFilter {
-             public boolean accept(File f) {
-        if (f.isDirectory() || f.isHidden()) return false;
-        String name = f.getName().toLowerCase();
-        return name.contains(SpamBundle.SPAM_ID) && name.endsWith("txt");
-    }//end accept
-}//
+
+        public boolean accept(File f) {
+            if (f.isDirectory() || f.isHidden()) {
+                return false;
+            }
+            String name = f.getName().toLowerCase();
+            return name.contains(SpamBundle.SPAM_ID) && name.endsWith("txt");
+        }//end accept
+    }//
+
     private class SvnFileFilter implements java.io.FileFilter {
-             public boolean accept(File f) {
-        if (f.isDirectory() || f.isHidden()) return false;
-        return true;
-    }//end accept
-}//
+
+        public boolean accept(File f) {
+            if (f.isDirectory() || f.isHidden()) {
+                return false;
+            }
+            return true;
+        }//end accept
+    }//
 
     public void applyMultinomialNB(String testDir)//C,V,prior,condprob,d)
     {
@@ -152,48 +155,62 @@ public class NaiveBayes {
         int spamTotalCount = spamFile.length;
         int notSpamTotalCount = totalFileCount - spamTotalCount;
 
-        
-        // the roc plots of true positives(recall) vs sensitivity(1-false positives)
-        Map<Double,Double> rocPlotter = new HashMap<Double,Double>();
+
+        // rocPlotter maps Sensitivity (recall) to false positive rate
+        Map<Double, Double> rocPlotter = new TreeMap<Double, Double>();
+        TreeSet<Double> notSpamScores = new TreeSet<Double>();
+        Map<String, Double> spamScoresForAllFiles = new HashMap<String, Double>();
 
         int fileCount = 0;
-
+        //for each file, calculate the spam/non-spam scores
         for (File tFile : files) {
             if (!tFile.isHidden()) {
-            fileCount++;
-//            System.out.println("working on testfile=" + tFile.getName());
+                fileCount++;
                 List<String> tokens = nbHelper.extractTokensFromDoc(tFile);
-//        System.out.println("tokensize" + tokens.size());
                 double score[] = new double[sClass.values().length];
                 int i = 0;
                 for (sClass sclass : sClass.values()) {
-
                     score[i] = Math.log(prior[i]);
-//            score[i] =prior[i];
 
                     for (String token : tokens) {
-//                System.out.println("for " + token);
-                        Map<sClass,Double> cpm = conditionalProbabilityMap.get(token);
+                        Map<sClass, Double> cpm = conditionalProbabilityMap.get(token);
                         score[i] += Math.log(cpm.get(sclass));
-//                        score[i] += Math.log(conditionalProbabilityMap.get(token));
-//                score[i] *= conditionalProbabilityMap.get(token);
                     }
                     i++;
                 }
-//        System.out.println("spam " + score[0] + " notspam " + score[1]);
+/*              System.out.println("spam " + score[0] + " notspam " + score[1]);
+
                 if (score[0] > score[1]) {
                     System.out.println(tFile.getName() + " is SPAM");
                 } else {
                     System.out.println(tFile.getName() + " is NOTSPAM");
                 }
+*/
 
+                //boolean spam = score[0] > score[1];
+                //double score_ratio = score[0] / score[1];
+                notSpamScores.add(score[1]);
+                //scoreRatioForAllFiles.put(tFile.getName(), score_ratio);
+                spamScoresForAllFiles.put(tFile.getName(), score[0]);
 
-                //TODO generate the ROC Plot
-                int truePositive = 0;
-                int falsePositive = 0;
-                int trueNegative = 0;
-                int falseNegative = 0;
-                boolean spam = score[0] > score [1];
+                /*
+                Map<sClass, Double> scores = new EnumMap<sClass, Double>(sClass.class);
+                scores.put(sClass.SPAM, score[0]);
+                scores.put(sClass.NOTSPAM, score[1]);
+                scoresForAllFiles.put(tFile.getName(), scores);
+                */
+            }
+        }
+
+        for(Double notSpamScore : notSpamScores) {
+            //reset counters
+            int truePositive = 0;
+            int falsePositive = 0;
+            int trueNegative = 0;
+            int falseNegative = 0;
+
+            for(Entry<String, Double> spamScoreForFile : spamScoresForAllFiles.entrySet()) {
+                String filename = spamScoreForFile.getKey();
 
                 //                                    actual value
                 //                                   spam  | notspam
@@ -202,40 +219,42 @@ public class NaiveBayes {
                 //                                     P        N
                 // TPR = tp/P ; FPR = fp/N
 
-                if(spam)
-                {
-                    if(tFile.getName().contains(SpamBundle.SPAM_ID))
-                    {
-                        
+                //boolean spam = scoreRatioForFile.getValue() > (ratio - 0.00001);
+                boolean spam = spamScoreForFile.getValue() > notSpamScore;
+
+                if (spam) {
+                    if (filename.contains(SpamBundle.SPAM_ID)) {
                         truePositive++;
-                        // current True Positive Rate
-                        double tpRate = (double)truePositive / spamTotalCount;
-                        double fpRate =  (double) falsePositive / notSpamTotalCount;
-                        rocPlotter.put(tpRate,fpRate);
-                    }
-                    else
-                    {
+                    } else {
                         falsePositive++;
-                        // current false Positive Rate
-                        double tpRate = (double)truePositive / spamTotalCount;
-                        double fpRate =  (double) falsePositive / notSpamTotalCount;
-                        rocPlotter.put(tpRate,fpRate);
                     }
-                }
-                else
-                {
-                    if(tFile.getName().contains(SpamBundle.SPAM_ID))
-                            falseNegative++;
-                    else
+                } else {
+                    if (filename.contains(SpamBundle.SPAM_ID)) {
+                        falseNegative++;
+                    } else {
                         trueNegative++;
+                    }
                 }
             }
+
+            double fpRate = (double) falsePositive / notSpamTotalCount;
+            double sensitivity = 0.0;
+            if((truePositive > 0 || falseNegative > 0)) {
+                sensitivity = (double) truePositive / (truePositive + falseNegative);
+            }
+            rocPlotter.put(sensitivity, fpRate);
+            //System.out.println(rocPlotter);
+            //System.out.println("Ratio = " + ratio + ", SPAM FOUND = " + truePositive + " (" + falsePositive + " false positives), (" + falseNegative + " false negatives), TOTAL = " + (truePositive + falsePositive + trueNegative + falseNegative) );
         }
 
-        System.out.println("rocPlotter"+rocPlotter);
 
-
-
+        //System.out.println("rocPlotter" + rocPlotter);
+        
+        System.out.println("Sensitivity vs False Positive Rate for " + testDir);
+        for(Entry<Double, Double> entry : rocPlotter.entrySet()) {
+            System.out.println(entry.getKey() + "," + entry.getValue());
+        }
+        
     }
 
     public static void main(String args[]) {
@@ -248,10 +267,10 @@ public class NaiveBayes {
 
                 // for every run the file passed as parameter is the testing set and
                 // all other directories are the training set
-
+System.out.println("Testing directory = " + tFile.getName());
                 nb.trainMultinomialNB(tFile.getName());
                 nb.applyMultinomialNB(tFile.getName());
-                
+break; //for testing
             }
         }
     }
