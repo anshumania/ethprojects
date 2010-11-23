@@ -158,8 +158,10 @@ public class NaiveBayes {
 
         // rocPlotter maps Sensitivity (recall) to false positive rate
         Map<Double, Double> rocPlotter = new TreeMap<Double, Double>();
-        TreeSet<Double> notSpamScores = new TreeSet<Double>();
-        Map<String, Double> spamScoresForAllFiles = new HashMap<String, Double>();
+        //TreeSet<Double> notSpamScores = new TreeSet<Double>();
+        //Map<String, Double> spamScoresForAllFiles = new HashMap<String, Double>();
+        TreeSet<Double> scoreRatios = new TreeSet<Double>();
+        Map<String, Double> scoreRatiosForAllFiles = new HashMap<String, Double>();
 
         int fileCount = 0;
         //for each file, calculate the spam/non-spam scores
@@ -167,14 +169,16 @@ public class NaiveBayes {
             if (!tFile.isHidden()) {
                 fileCount++;
                 List<String> tokens = nbHelper.extractTokensFromDoc(tFile);
-                double score[] = new double[sClass.values().length];
+                //double score[] = new double[sClass.values().length];
+                Map<sClass, Double> score = new EnumMap<sClass, Double>(sClass.class);
                 int i = 0;
                 for (sClass sclass : sClass.values()) {
-                    score[i] = Math.log(prior[i]);
+                    score.put(sclass, Math.log(prior[i]));
 
                     for (String token : tokens) {
                         Map<sClass, Double> cpm = conditionalProbabilityMap.get(token);
-                        score[i] += Math.log(cpm.get(sclass));
+                        //score[i] += Math.log(cpm.get(sclass));
+                        score.put(sclass, score.get(sclass) + Math.log(cpm.get(sclass)));
                     }
                     i++;
                 }
@@ -188,10 +192,11 @@ public class NaiveBayes {
 */
 
                 //boolean spam = score[0] > score[1];
-                //double score_ratio = score[0] / score[1];
-                notSpamScores.add(score[1]);
-                //scoreRatioForAllFiles.put(tFile.getName(), score_ratio);
-                spamScoresForAllFiles.put(tFile.getName(), score[0]);
+                double score_ratio = score.get(sClass.SPAM) / score.get(sClass.NOTSPAM);
+                scoreRatios.add(score_ratio);
+                scoreRatiosForAllFiles.put(tFile.getName(), score_ratio);
+                //notSpamScores.add(score[1]);
+                //spamScoresForAllFiles.put(tFile.getName(), score[0]);
 
                 /*
                 Map<sClass, Double> scores = new EnumMap<sClass, Double>(sClass.class);
@@ -202,15 +207,16 @@ public class NaiveBayes {
             }
         }
 
-        for(Double notSpamScore : notSpamScores) {
+        //for(Double notSpamScore : notSpamScores) {
+        for(Double ratio : scoreRatios) {
             //reset counters
             int truePositive = 0;
             int falsePositive = 0;
             int trueNegative = 0;
             int falseNegative = 0;
 
-            for(Entry<String, Double> spamScoreForFile : spamScoresForAllFiles.entrySet()) {
-                String filename = spamScoreForFile.getKey();
+            for(Entry<String, Double> scoreRatioForFile : scoreRatiosForAllFiles.entrySet()) {
+                String filename = scoreRatioForFile.getKey();
 
                 //                                    actual value
                 //                                   spam  | notspam
@@ -219,8 +225,8 @@ public class NaiveBayes {
                 //                                     P        N
                 // TPR = tp/P ; FPR = fp/N
 
-                //boolean spam = scoreRatioForFile.getValue() > (ratio - 0.00001);
-                boolean spam = spamScoreForFile.getValue() > notSpamScore;
+                boolean spam = scoreRatioForFile.getValue() < ratio;
+                //boolean spam = spamScoreForFile.getValue() > notSpamScore;
 
                 if (spam) {
                     if (filename.contains(SpamBundle.SPAM_ID)) {
@@ -249,12 +255,10 @@ public class NaiveBayes {
 
 
         //System.out.println("rocPlotter" + rocPlotter);
-        
-        System.out.println("Sensitivity vs False Positive Rate for " + testDir);
+        System.out.println("False Positive Rate, Sensitivity");
         for(Entry<Double, Double> entry : rocPlotter.entrySet()) {
-            System.out.println(entry.getKey() + "," + entry.getValue());
+            System.out.println(entry.getValue() + "," + entry.getKey());
         }
-        
     }
 
     public static void main(String args[]) {
@@ -267,10 +271,10 @@ public class NaiveBayes {
 
                 // for every run the file passed as parameter is the testing set and
                 // all other directories are the training set
-System.out.println("Testing directory = " + tFile.getName());
+System.out.println(tFile.getName());
                 nb.trainMultinomialNB(tFile.getName());
                 nb.applyMultinomialNB(tFile.getName());
-break; //for testing
+//break; //for testing
             }
         }
     }
