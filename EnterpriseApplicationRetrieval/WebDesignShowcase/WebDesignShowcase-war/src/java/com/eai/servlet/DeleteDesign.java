@@ -1,13 +1,10 @@
 package com.eai.servlet;
 
-import com.eai.beans.entity.Designs;
-import com.eai.beans.entity.Users;
-import com.eai.beans.session.DesignSessionLocal;
+import com.eai.beans.UserBean;
+import com.eai.beans.session.SessionFacadeLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collection;
 import javax.ejb.EJB;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,8 +16,11 @@ import javax.servlet.http.HttpSession;
  * @author Max
  */
 public class DeleteDesign extends HttpServlet {
-	@EJB
-	private DesignSessionLocal dsb;
+    @EJB
+    private SessionFacadeLocal sessionFacade;
+//	@EJB
+//	private DesignSessionLocal dsb;
+
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -37,9 +37,10 @@ public class DeleteDesign extends HttpServlet {
             HttpSession session = request.getSession(false);
 
 			if (session != null) {
-				long designID = Long.parseLong(request.getParameter("designID"));
+                                long designID = Long.parseLong(request.getParameter("designID"));
+                                sessionFacade.deleteDesign(designID);
 
-				dsb.deleteDesign(designID);
+//				dsb.deleteDesign(designID);
 				response.sendRedirect("UserDesigns");
 			}
         } finally { 

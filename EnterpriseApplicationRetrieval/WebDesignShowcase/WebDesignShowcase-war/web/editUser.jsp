@@ -18,36 +18,39 @@
         <div id="container">
             <%@ include file="header.jspf" %>
             <div id="main">
-                <h1>Create a New User Account</h1>
-                <form action="CreateUser" method="post">
+                 <h1>Edit your Account</h1>
+                 <form action="EditUser" method="post">
                     <table class="newUserForm">
                         <tr>
                             <th><label for="username">Username</label></th>
-                            <td><input type="text" name="username" size="30" maxlength="20" value="${username}" /></td>
+                            <td><input type="text" name="username" size="30" maxlength="20" value="${user.username}" readonly/></td>
                         </tr>
                         <tr>
                             <th><label for="password">Password</label></th>
-                            <td><input type="password" name="password" size="30" maxlength="20" value="${password}" /></td>
+                            <td><input type="password" name="password" size="30" maxlength="20" value="${user.password}" /></td>
                         </tr>
                         <tr>
                             <th><label for="firstName">First Name</label></th>
-                            <td><input type="text" name="firstName" size="50" maxlength="50" value="${firstName}" /></td>
+                            <td><input type="text" name="firstName" size="50" maxlength="50" value="${user.firstname}" /></td>
                         </tr>
                         <tr>
                             <th><label for="lastName">Last Name</label></th>
-                            <td><input type="text" name="lastName" size="50" maxlength="50" value="${lastName}" /></td>
+                            <td><input type="text" name="lastName" size="50" maxlength="50" value="${user.lastname}" /></td>
                         </tr>
                         <tr>
                             <th><label for="email">Email</label></th>
-                            <td><input type="text" name="email" size="50" maxlength="100" value="${email}" /></td>
+                            <td><input type="text" name="email" size="50" maxlength="100" value="${user.email}" readonly/></td>
                         </tr>
                         <tr>
                             <th></th>
                             <td>
-                                <input type="submit" value="Create Account" />
+                                <input type="submit" name="Operation" value="Edit Account"  />
+                                <input type="submit" name="Operation" value="Delete Account" />
                             </td>
                         </tr>
                     </table>
+                </form>
+
             </div>
             <%@ include file="footer.jspf" %>
         </div>

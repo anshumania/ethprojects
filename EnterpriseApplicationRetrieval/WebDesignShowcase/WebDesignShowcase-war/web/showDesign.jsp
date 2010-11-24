@@ -4,7 +4,7 @@
     Author     : Tim Church
 --%>
 
-<%@page import="com.eai.beans.entity.*"%>
+<%@page import="com.eai.beans.CommentBean"%>
 <%@page import="java.util.*"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
@@ -12,7 +12,7 @@
    "http://www.w3.org/TR/html4/loose.dtd">
 
 <%
-	Collection<Comments> comments = (Collection<Comments>)request.getAttribute("comments");
+	Collection<CommentBean> comments = (Collection<CommentBean>)request.getAttribute("comments");
 %>
 
 <html>
@@ -33,7 +33,7 @@
                     <h2>Comments:</h2>
                     <ul class="comments">
 						<%
-							for (Comments c : comments) {
+							for (CommentBean c : comments) {
 								out.print("<li class='comment'>");
 								out.print(c.getComment());
 								out.print("</li>\n");

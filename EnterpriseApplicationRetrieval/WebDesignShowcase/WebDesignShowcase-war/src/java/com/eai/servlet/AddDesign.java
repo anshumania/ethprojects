@@ -1,11 +1,10 @@
 package com.eai.servlet;
 
-import com.eai.beans.entity.Users;
-import com.eai.beans.session.DesignSessionLocal;
+import com.eai.beans.UserBean;
+import com.eai.beans.session.SessionFacadeLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.ejb.EJB;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,8 +16,10 @@ import javax.servlet.http.HttpSession;
  * @author Max
  */
 public class AddDesign extends HttpServlet {
-	@EJB
-	private DesignSessionLocal designSession;
+    @EJB
+    private SessionFacadeLocal sessionFacade;
+//	@EJB
+//	private DesignSessionLocal designSession;
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -36,13 +37,14 @@ public class AddDesign extends HttpServlet {
             HttpSession session = request.getSession(false);
 
 			if (session != null) {
-				Users user = (Users)session.getAttribute("user");
+				UserBean user = (UserBean)session.getAttribute("user");
 				long userID = user.getId();
 				String title = request.getParameter("title");
 				String url = request.getParameter("url");
 				String screenshot = request.getParameter("design");
 
-				designSession.addDesign(userID, title, url, screenshot);
+                                sessionFacade.addDesign(userID, title, url, screenshot);
+//				designSession.addDesign(userID, title, url, screenshot);
 				response.sendRedirect("UserDesigns");
 			}
         } finally { 

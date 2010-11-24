@@ -18,5 +18,7 @@ public interface DesignSessionLocal {
 	Collection<Designs> findAllDesigns();
 
 	void deleteDesign(long designID);
+
+        Designs findDesignByDesignId(long designID);
     
 }

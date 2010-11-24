@@ -1,9 +1,8 @@
 package com.eai.servlet;
 
-import com.eai.beans.entity.Designs;
-import com.eai.beans.entity.Users;
-import com.eai.beans.session.DesignSessionLocal;
-import com.eai.beans.session.UserSessionLocal;
+import com.eai.beans.DesignBean;
+import com.eai.beans.UserBean;
+import com.eai.beans.session.SessionFacadeLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -19,12 +18,16 @@ import javax.servlet.http.HttpServletResponse;
  * @author Max
  */
 public class AllDesigns extends HttpServlet {
+    @EJB
+    private SessionFacadeLocal sessionFacade;
 
-	@EJB
-	private UserSessionLocal userSession;
+//	@EJB
+//	private UserSessionLocal userSession;
+//
+//	@EJB
+//	private DesignSessionLocal designSession;
 
-	@EJB
-	private DesignSessionLocal designSession;
+
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -38,8 +41,10 @@ public class AllDesigns extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
         try {
-            Collection<Designs> allDesigns = designSession.findAllDesigns();
-			Collection<Users> users = userSession.findAllUsers();
+              Collection<DesignBean> allDesigns = sessionFacade.findAllDesigns();
+              Collection<UserBean> users = sessionFacade.findAllUsers();
+//            Collection<Designs> allDesigns = designSession.findAllDesigns();
+//			Collection<Users> users = userSession.findAllUsers();
 			RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/allDesigns.jsp");
 
 			request.setAttribute("allDesigns", allDesigns);

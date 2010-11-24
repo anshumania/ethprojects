@@ -1,8 +1,7 @@
 package com.eai.servlet;
 
 import com.eai.beans.UserBean;
-import com.eai.beans.entity.Users;
-import com.eai.beans.session.UserSessionLocal;
+import com.eai.beans.session.SessionFacadeLocal;
 import java.io.IOException;
 import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
@@ -19,9 +18,12 @@ import javax.servlet.http.HttpSession;
  */
 @WebServlet(name = "CreateUser", urlPatterns = {"/CreateUser"})
 public class CreateUser extends HttpServlet {
-
     @EJB
-    private UserSessionLocal userSession;
+    private SessionFacadeLocal sessionFacade;
+
+//    @EJB
+//    private UserSessionLocal userSession;
+
     
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -35,13 +37,15 @@ public class CreateUser extends HttpServlet {
 
         //TODO - validate input data (length, type, required)
 
+        
         UserBean userBean = new UserBean();
         userBean.setUsername(request.getParameter("username"));
         userBean.setPassword(request.getParameter("password"));
         userBean.setFirstname(request.getParameter("firstName"));
         userBean.setLastname(request.getParameter("lastName"));
         userBean.setEmail(request.getParameter("email"));
-        Users user = userSession.createUser(userBean);
+//        Users user = userSession.createUser(userBean);
+        UserBean user = sessionFacade.createUser(userBean);
 
         //Automatically login user by saving user to session
         HttpSession session = request.getSession(true);
@@ -49,7 +53,10 @@ public class CreateUser extends HttpServlet {
 
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/addDesign.jsp");
         dispatcher.forward(request, response);
+        
     }
+
+
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /** 

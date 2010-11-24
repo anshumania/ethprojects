@@ -1,8 +1,8 @@
 package com.eai.servlet;
 
 import com.eai.beans.CommentBean;
-import com.eai.beans.entity.Users;
-import com.eai.beans.session.CommentSessionLocal;
+import com.eai.beans.UserBean;
+import com.eai.beans.session.SessionFacadeLocal;
 import java.io.IOException;
 import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
@@ -17,9 +17,11 @@ import javax.servlet.http.HttpSession;
  * @author Tim Church
  */
 public class AddComment extends HttpServlet {
-
     @EJB
-    private CommentSessionLocal csb;
+    private SessionFacadeLocal sessionFacade;
+
+//    @EJB
+//    private CommentSessionLocal csb;
 
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -35,7 +37,7 @@ public class AddComment extends HttpServlet {
 		HttpSession session = request.getSession(false);
 
 		if (session != null) {
-			Users user = (Users)session.getAttribute("user");
+			UserBean user = (UserBean)session.getAttribute("user");
 
 			// comment information
 			long userID = user.getId();
@@ -47,8 +49,11 @@ public class AddComment extends HttpServlet {
 			commentBean.setDesignId(designID);
 			commentBean.setComment(comment);
 
-			csb.addComment(commentBean);
-			csb.notifySubscribers(commentBean);
+
+                        sessionFacade.addComment(commentBean);
+
+//			csb.addComment(commentBean);
+//			csb.notifySubscribers(commentBean);
 
 			RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/ShowDesign?designID=" + designID);
 			dispatcher.forward(request, response);

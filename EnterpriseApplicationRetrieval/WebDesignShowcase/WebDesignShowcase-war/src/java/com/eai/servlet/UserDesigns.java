@@ -1,8 +1,8 @@
 package com.eai.servlet;
 
-import com.eai.beans.entity.Designs;
-import com.eai.beans.entity.Users;
-import com.eai.beans.session.DesignSessionLocal;
+import com.eai.beans.DesignBean;
+import com.eai.beans.UserBean;
+import com.eai.beans.session.SessionFacadeLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -19,9 +19,12 @@ import javax.servlet.http.HttpSession;
  * @author Max
  */
 public class UserDesigns extends HttpServlet {
+    @EJB
+    private SessionFacadeLocal sessionFacade;
 
-	@EJB
-	private DesignSessionLocal dsb;
+//	@EJB
+//	private DesignSessionLocal dsb;
+
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -38,13 +41,14 @@ public class UserDesigns extends HttpServlet {
             HttpSession session = request.getSession(false);
 
 			if (session != null) {
-				Users user = (Users)session.getAttribute("user");
+				UserBean user = (UserBean)session.getAttribute("user");
 				long userID = user.getId();
-				Collection<Designs> userDesigns = dsb.findDesignsByUserId(userID);
+                                Collection<DesignBean> userDesigns = sessionFacade.findDesignsByUserId(userID);
+//				Collection<Designs> userDesigns = dsb.findDesignsByUserId(userID);
 				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/userDesigns.jsp");
 
 				request.setAttribute("userDesigns", userDesigns);
-				dispatcher.forward(request, response);
+                                dispatcher.forward(request, response);
 			}
         } finally { 
             out.close();
