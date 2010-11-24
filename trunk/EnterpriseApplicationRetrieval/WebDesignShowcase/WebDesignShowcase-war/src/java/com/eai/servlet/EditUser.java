@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,14 +16,15 @@ import javax.servlet.http.HttpSession;
  *
  * @author Tim Church
  */
-public class Login extends HttpServlet {
+@WebServlet(name = "EditUser", urlPatterns = {"/EditUser"})
+public class EditUser extends HttpServlet {
     @EJB
     private SessionFacadeLocal sessionFacade;
 
 //    @EJB
 //    private UserSessionLocal userSession;
 
-
+    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
@@ -33,28 +35,51 @@ public class Login extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        //load request parameters
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        //String nextPage = request.getParameter("nextPage"); //TODO - save page to return to after login
+        //TODO - validate input data (length, type, required)
 
-        //now try to login
-        UserBean user = sessionFacade.authenticate(username, password);
-//        Users user = userSession.authenticate(username, password);
-        if(user != null) {
-            //authentication successful.  save user in http session
-            HttpSession session = request.getSession(true);
-            session.setAttribute("user", user);
+        System.out.println("paramMap " + request.getParameterMap());
 
-            response.sendRedirect("UserDesigns");
-        } else {
-            //login failed, redisplay login page with error message
-            request.setAttribute("loginFailed", true);
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/login.jsp");
-            dispatcher.forward(request, response);
+        if(request.getParameter("Operation") != null )
+        {
+            String operation = (String)request.getParameter("Operation");
+            if(operation.equals("Edit Account"))
+            {
+        UserBean userBean = new UserBean();
+        // the primary key
+        userBean.setUsername(request.getParameter("username"));
+        // any of the following can be updated
+        userBean.setPassword(request.getParameter("password"));
+        userBean.setFirstname(request.getParameter("firstName"));
+        userBean.setLastname(request.getParameter("lastName"));
+        UserBean user = sessionFacade.updateUser(userBean);
+//            Users user = userSession.updateUser(userBean);
+
+        //Automatically login user by saving user to session
+        HttpSession session = request.getSession(true);
+                System.out.println("now the name is=" + user.getFirstname());
+//        session.removeAttribute("user");
+        session.setAttribute("user", user);
+
+
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/addDesign.jsp");
+        dispatcher.forward(request, response);
+            }
+        else
+            if (operation.equals("Delete Account"))
+            {
+                UserBean userBean = (UserBean)request.getSession().getAttribute("user");
+                sessionFacade.deleteUser(userBean);
+                request.getSession().removeAttribute("user");
+                RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/login.jsp");
+        dispatcher.forward(request, response);
+            }
+
+
         }
-
+        
     }
+
+
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /** 

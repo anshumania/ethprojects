@@ -5,6 +5,8 @@ import com.eai.beans.entity.Designs;
 import java.util.Collection;
 import java.util.List;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
@@ -54,7 +56,21 @@ public class DesignSession implements DesignSessionLocal {
 		em.persist(d);
 	}
 
+        @Override
+        public Designs findDesignByDesignId(long designID)
+        {
+            	EntityManager em = entityManagerEai.createEntityManager();
+
+		Designs d = (Designs)em.createNamedQuery("Designs.findById")
+				.setParameter("id", designID)
+				.getResultList()
+				.get(0);
+                return d;
+        }
+
+
 	@Override
+        @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public void deleteDesign(long designID) {
 		EntityManager em = entityManagerEai.createEntityManager();
 

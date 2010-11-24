@@ -12,9 +12,13 @@ import javax.ejb.Local;
 @Local
 public interface UserSessionLocal {
 
-	Collection<Users> findAllUsers();
+    Collection<Users> findAllUsers();
 
     Users authenticate(String username, String password);
 
     Users createUser(UserBean user);
+
+    Users updateUser(UserBean updatedUser);
+
+    boolean deleteUser(long deleteUser);
 }

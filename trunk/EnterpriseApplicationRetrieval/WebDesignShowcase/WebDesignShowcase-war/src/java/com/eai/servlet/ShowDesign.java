@@ -1,8 +1,8 @@
 package com.eai.servlet;
 
-import com.eai.beans.entity.Comments;
-import com.eai.beans.entity.Users;
-import com.eai.beans.session.CommentSessionLocal;
+import com.eai.beans.CommentBean;
+import com.eai.beans.UserBean;
+import com.eai.beans.session.SessionFacadeLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -19,9 +19,12 @@ import javax.servlet.http.HttpSession;
  * @author Max
  */
 public class ShowDesign extends HttpServlet {
+    @EJB
+    private SessionFacadeLocal sessionFacade;
 
-	@EJB
-	private CommentSessionLocal csb;
+//	@EJB
+//	private CommentSessionLocal csb;
+
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -39,10 +42,13 @@ public class ShowDesign extends HttpServlet {
 			HttpSession session = request.getSession(false);
 			
 			if (session != null) {
-				Users user = (Users)session.getAttribute("user");
+				UserBean user = (UserBean)session.getAttribute("user");
 				long userID = user.getId();
 				int designID = Integer.parseInt(request.getParameter("designID"));
-				Collection<Comments> c = csb.findCommentsByUserIdAndDesignId(userID, designID);
+                                //Collection<CommentBean> c = sessionFacade.findCommentsByUserIdAndDesignId(userID, designID);
+                                // get all comments for the design
+                                Collection<CommentBean> c = sessionFacade.findCommentsByDesignId(designID);
+//				Collection<Comments> c = csb.findCommentsByUserIdAndDesignId(userID, designID);
 				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
 
 				session.setAttribute("designID", designID);

@@ -10,6 +10,7 @@ public class UserBean {
     private String firstname;
     private String lastname;
     private String email;
+    private Long id;
 
     public UserBean() {
     }
@@ -60,6 +61,14 @@ public class UserBean {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
 }

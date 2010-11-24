@@ -5,6 +5,8 @@ import com.eai.beans.entity.Users;
 import java.util.Collection;
 import java.util.List;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
@@ -53,6 +55,31 @@ public class UserSession implements UserSessionLocal {
 
         em.persist(u);
         return u;
+    }
+
+     @Override
+    public Users updateUser(UserBean updatedUser) {
+        EntityManager em = entityManagerEai.createEntityManager();
+        Users user = (Users)em.createNamedQuery("Users.findByUsername").setParameter("username", updatedUser.getUsername())
+				.getSingleResult();
+
+        // any of the possible values which can be update
+        user.setFirstname(updatedUser.getFirstname());
+        user.setLastname(updatedUser.getLastname());
+        user.setPassword(updatedUser.getPassword());
+
+        em.persist(user);
+
+        return user;
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.MANDATORY)
+    public boolean deleteUser(long deleteUser) {
+        EntityManager em = entityManagerEai.createEntityManager();
+        Users user = (Users)em.createNamedQuery("Users.findById").setParameter("id", deleteUser).getSingleResult();
+        em.remove(user);
+        return true;
     }
  
 }

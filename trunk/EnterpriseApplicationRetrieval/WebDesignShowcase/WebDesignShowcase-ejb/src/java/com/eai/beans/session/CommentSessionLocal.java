@@ -18,9 +18,15 @@ public interface CommentSessionLocal {
 
     public Collection<Comments> findAllComments();
 
-	public Collection<Comments> findCommentsByUserIdAndDesignId(long userID, int designID);
+    public Collection<Comments> findCommentsByUserIdAndDesignId(long userID, long designID);
 
+    public Collection<Comments> findCommentsByDesignId(long designID);
+    
     public void notifySubscribers(CommentBean comment);
 
     public void addComment(CommentBean comment);
+
+    public void deleteCommentsForADesign(long designID);
+
+    public void deleteCommentsOfAUser(long userID);
 }
