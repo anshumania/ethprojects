@@ -7,6 +7,7 @@
 module namespace def = "http://watchmoviesonline.ethz.ch/default";
 
 declare namespace xhtml = "http://www.w3.org/1999/xhtml";
+declare namespace atom = "http://www.w3.org/2005/Atom";
 
 import module namespace http = "http://www.28msec.com/modules/http";
 import module namespace cookie = "http://www.28msec.com/modules/http/cookie";
@@ -24,15 +25,36 @@ declare sequential function def:movies ()
         return a sequence of <div class="entry"> elements.
     :)
     
-    if (fn:contains(http:get-parameters("sources"), "sidereel"))
+    if (fn:contains(http:get-parameters("sources"), "sidereeltv"))
     then
-        for $link in def:sidereel(http:get-parameters("query"))
-        let $rating := def:movie-rating($link/text())
+        for $link in def:sidereel(http:get-parameters("query"), "television")
         return (
+            if ($i eq 1)
+            then
+                fn:concat($link/text(), "///")
+            else
+                (),
             <div class="entry">
-                {$i}. {$link}<br />
-                <small>SideReel.com</small><br />
-                {$rating}
+                {$i}. {$link} | <a href="javascript:getData('{fn:replace($link/text(), "'", "\\'")}');">more info</a><br />
+                <small>SideReel.com</small>
+            </div>,
+            set $i := $i + 1
+        )
+    else (
+    ),
+    
+    if (fn:contains(http:get-parameters("sources"), "sidereelmovie"))
+    then
+        for $link in def:sidereel(http:get-parameters("query"), "movie")
+        return (
+            if ($i eq 1)
+            then
+                fn:concat($link/text(), "///")
+            else
+                (),
+            <div class="entry">
+                {$i}. {$link} | <a href="javascript:getData('{fn:replace($link/text(), "'", "\\'")}');">more info</a><br />
+                <small>SideReel.com</small>
             </div>,
             set $i := $i + 1
         )
@@ -42,12 +64,15 @@ declare sequential function def:movies ()
     if (fn:contains(http:get-parameters("sources"), "tvshack"))
     then
         for $link in def:tvshack(http:get-parameters("query"))
-        let $rating := def:movie-rating($link/text())
         return (
+            if ($i eq 1)
+            then
+                fn:concat($link/text(), "///")
+            else
+                (),
             <div class="entry">
-                {$i}. {$link}<br />
-                <small>TVshack.cc</small><br />
-                {$rating}
+                {$i}. {$link} | <a href="javascript:getData('{fn:replace($link/text(), "'", "\\'")}');">more info</a><br />
+                <small>TVshack.cc</small>
             </div>,
             set $i := $i + 1
         )
@@ -55,10 +80,33 @@ declare sequential function def:movies ()
     )
 };
 
-declare sequential function def:ratings ()
+declare sequential function def:meta-data()
+{
+    declare $ratings := def:ratings(http:get-parameters("movie"));
+    declare $tweets := def:tweets(http:get-parameters("movie"));
+    
+    <div class="subtitle">Ratings</div>,
+    if ($ratings)
+    then
+        $ratings
+    else
+        "No ratings available.",
+    <br />,<br />,
+    <div class="subtitle">Latest Tweets</div>,
+    if ($tweets)
+    then
+        $tweets
+    else
+        "No tweets available."
+};
+
+(:
+    Used to retrieve movie ratings from TheMovieDB.
+:)
+declare sequential function def:ratings ($movie as xs:string)
 {
     declare
-        $result := http-client:read(fn:concat("http://api.themoviedb.org/2.1/Movie.search/en/xml/5aacfe8b12e2c8b07e3b16ddc9fc3359/", http:get-parameters("query"))),
+        $result := http-client:read(fn:concat("http://api.themoviedb.org/2.1/Movie.search/en/xml/5aacfe8b12e2c8b07e3b16ddc9fc3359/", $movie)),
         $i := 1;
     
     try {
@@ -69,19 +117,24 @@ declare sequential function def:ratings ()
             $imdb := $movie/imdb_id/text(),
             $stars := def:get-rating-stars($rating, $name)
         return (
-            <div class="entry">
-                {$i}.
-                {
-                    if ($imdb ne "")
-                    then
-                        <a href="http://www.imdb.com/title/{$imdb}" target="_blank">{$name}</a>
-                    else
-                        $name
-                }
-                <br />
-                {$stars}
-            </div>,
-            set $i := $i + 1
+            if ($i le 10)
+            then (
+                <div class="entry">
+                    {$i}.
+                    {
+                        if ($imdb ne "")
+                        then
+                            <a href="http://www.imdb.com/title/{$imdb}" target="_blank">{$name}</a>
+                        else
+                            $name
+                    }
+                    <br />
+                    {$stars}
+                </div>,
+                set $i := $i + 1
+            )
+            else
+                ()
         )
     } catch err:XPTY0019 {
         "No ratings available."
@@ -89,6 +142,41 @@ declare sequential function def:ratings ()
         "No ratings available."
     }
 };
+
+(:
+    Used to retrieve current tweets based on the Twitter Search
+    API.
+:)
+declare sequential function def:tweets ($movie as xs:string)
+{
+    declare
+        $result := http-client:read(fn:concat("http://search.twitter.com/search.atom?q=", $movie)),
+        $i := 1;
+    
+    for $tweet in $result//atom:entry
+    let
+        $name := $tweet/atom:author/atom:name/text(),
+        $title := $tweet/atom:title/text(),
+        $content := $tweet/atom:content/text(),
+        $link := $tweet/atom:link[@type eq "text/html"]/@href
+    return (
+        if ($i le 10)
+        then (
+            <div class="entry">
+                {$i}. <a href="{$link}">Link</a><br/>
+                <small>{$title}</small><br />
+                <small>{$name}</small><br />
+            </div>,
+            set $i := $i + 1
+        )
+        else
+            ()
+    )
+};
+
+(:
+    This function is currently not in use due to request
+    limitations by TheMovieDB.
 
 declare sequential function def:movie-rating ($title as xs:string)
 {
@@ -106,6 +194,7 @@ declare sequential function def:movie-rating ($title as xs:string)
         "No rating"
     }
 };
+:)
 
 declare sequential function def:get-rating-stars ($rating as xs:double, $name as xs:string)
 {
@@ -133,15 +222,15 @@ declare sequential function def:get-rating-stars ($rating as xs:double, $name as
     a sequence of link elements.
 :)
 
-declare function def:sidereel ($query as xs:string)
+declare function def:sidereel ($query as xs:string, $mode as xs:string)
 {
     for $link in http-client:read(
-        fn:concat("http://www.sidereel.com/_search?siteSearchType=sidereel&amp;x=0&amp;y=0&amp;searchQuery=", $query)
-    )//xhtml:div[@class eq "medium"]
+        fn:concat("http://maxspeicher.orgfree.com/test/sidereel.php?m=", $mode, "&amp;q=", $query)
+    )//div[@class eq "title"]
     
     let
-        $href := $link//xhtml:a/@href,
-        $text := $link//xhtml:a/text()
+        $href := $link/h2/a/@href,
+        $text := $link/h2/a/text()
     
     return
         <a href="http://www.sidereel.com{$href}">
