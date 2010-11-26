@@ -14,7 +14,7 @@
 			
 			function getResults() {
 				$('#movie_results').html(LOADER);
-				$('#rating_results').html(LOADER);
+				$('#movie_data').html(LOADER);
 				
 				var sources = "";
 				var checkboxes = $('input:checkbox:checked');
@@ -26,29 +26,28 @@
 				$.ajax({
 					'url': 'default/movies?query=' + document.search.query.value + '&sources=' + sources,
 					'success': function(data) {
-							$('#movie_results').html(data);
-						},
-					'error': function() {
-							alert('Error');
-						}
-				});
-				
-				$.ajax({
-					'url': 'default/ratings?query=' + document.search.query.value,
-					'success': function(data) {
-							$('#rating_results').html(data);
+							var dataObj = data.split('///');
+							$('#movie_results').html(dataObj[1]);
+							getData(dataObj[0]);
 						},
 					'error': function() {
 							alert('Error');
 						}
 				});
 			}
-			
-			function show(id) {
-				$('.results').css('display', 'none');
-				$('.tab').removeClass('tab_active');
-				$('#' + id + '_results').css('display', 'block');
-				$('#' + id + '_tab').addClass('tab_active');
+
+			function getData(movie) {
+				$('#movie_data').html(LOADER);
+
+				$.ajax({
+					'url': 'default/meta-data?movie=' + movie,
+					'success': function(data) {
+							$('#movie_data').html(data);
+						},
+					'error': function() {
+							alert('Error');
+						}
+				});
 			}
 		</script>
 	</head>
@@ -59,18 +58,16 @@
 				<form name="search" action="javascript:getResults();">
 					<input type="text" name="query" />
 					<input type="submit" value="Search" /><br />
-					<input type="checkbox" name="sources" value="sidereel" checked="checked" />SideReel.com
+					<input type="checkbox" name="sources" value="sidereeltv" checked="checked" />SideReel.com Television
+					<input type="checkbox" name="sources" value="sidereelmovie" checked="checked" />SideReel.com Movies
 					<input type="checkbox" name="sources" value="tvshack" checked="checked" />TVshack.cc
 				</form>
 			</div>
-			<div id="tabs">
-				<span id="movie_tab" class="tab tab_active"><a href="javascript:show('movie');">Movies</a></span>
-				<span id="twitter_tab" class="tab"><a href="javascript:show('twitter');">Tweets</a></span>
-				<span id="rating_tab" class="tab"><a href="javascript:show('rating');">Ratings</a></span>
+			<div id="results_wrapper">
+				<div id="movie_results" class="results">Please enter your query into the search box above.</div>
+				<div id="movie_data" class="results"></div>
+				<br style="clear: left" />
 			</div>
-			<div id="movie_results" class="results">Please enter your query into the search box above.</div>
-			<div id="twitter_results" class="results">Please enter your query into the search box above.</div>
-			<div id="rating_results" class="results">Please enter your query into the search box above.</div>
 			<div class="center">
 				<h2>&copy; 2010, An Anshuman/Max Production.</h2>
 			</div>

@@ -28,21 +28,40 @@ div.entry {
 
 div#main {
 	margin: 0 auto;
+	width: 844px;
+}
+
+div#movie_data {
+	border-left: 1px #ccc solid;
+	float: left;
+	left: -1px;
+	position: relative;
 	width: 400px;
 }
 
 div#movie_results {
-	display: block;
+	border-right: 1px #ccc solid;
+	float: left;
+	width: 400px;
 }
 
 div#rating_results {
 	display: none;
 }
 
-div.results {
+div#results_wrapper {
 	background-color: #fff;
-	border: 1px #77A1FF solid;
+	border: 1px #8380ED solid;
+}
+
+div.results {
 	padding: 10px;
+}
+
+div.subtitle {
+	color: #666;
+	font-size: 14pt;
+	font-variant: small-caps;
 }
 
 div#tabs {
@@ -69,6 +88,12 @@ h2 {
 small {
 	color: #666;
 	font-size: 9pt;
+}
+
+span.movie_result {
+	background-color: #fff;
+	border: 1px #77A1FF solid;
+	padding: 5px;
 }
 
 span.tab {
