@@ -14,6 +14,7 @@ public class SpamBundle {
      // the directory with all the documents
     public final static String DOC_CORPUS_DIR_t = "resources/Spam_Filtering_Dataset/test";
     public final static String DOC_CORPUS_DIR = "resources/Spam_Filtering_Dataset/Ling-SpamCorpus";
+    public final static String CLUSTER_DIR = "part1";
     // the spam identifier
     public final static String SPAM_ID = "spmsg";
     public final static String QUERY_2_DIR = "resources/Queries2";

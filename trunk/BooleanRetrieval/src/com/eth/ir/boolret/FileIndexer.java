@@ -5,6 +5,7 @@ import com.eth.ir.boolret.dictionary.PorterStemmerDictionary;
 import com.eth.ir.boolret.dictionary.StopWordDictionary;
 import com.eth.ir.boolret.dictionary.VectorDictionary;
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
+import com.eth.ir.spamfiltering.SpamBundle;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -430,6 +431,31 @@ public class FileIndexer {
         tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
         // tkz.useStopWords = false;
     }
+
+
+ public static Map<String,PostingList> project3_phase2_vectorSpaceModel() {
+        FileIndexer tkz = new FileIndexer();
+        //create a new dictionary for this phase with its index file
+        Dictionary vectorDictionary = new VectorDictionary(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.INDEX_FILE);
+        // notify the fileIndex as to which dictionary its working on
+        tkz.setCurrentDictionary(vectorDictionary);
+        //delete the previous index if any
+        FileIndexer.deleteIndex(tkz.getCurrentDictionary().getINDEX_FILE());
+        FileIndexer.deleteFile(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.DOCUMENT_LENGTHS_FILE);
+        // read all the documents in the director and tokenize
+        tkz.tokenizeAllFilesInDirectory(SpamBundle.class.getResource(SpamBundle.DOC_CORPUS_DIR + "/" + SpamBundle.CLUSTER_DIR).getFile());
+        // apply the vector space model on terms of the document
+        tkz.getCurrentDictionary().createDocumentVectorSpaceModel();
+
+        // print the statistics
+        tkz.printIndexStats("Project2Phase1");
+
+        return tkz.getCurrentDictionary().getIndex();
+        // serialize the index
+        //tkz.serializeToFile(tkz.getCurrentDictionary().getINDEX_FILE());
+        //tkz.serializeToFile(FileIndexer.class.getResource(Bundle.DOCS_DIR).getFile() + "/" + Bundle.DOCUMENT_LENGTHS_FILE, tkz.getCurrentDictionary().getDocumentLengths());
+    }
+
 
     public static void main(String args[]) {
 
