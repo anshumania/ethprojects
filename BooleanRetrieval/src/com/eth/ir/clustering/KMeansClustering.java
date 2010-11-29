@@ -59,7 +59,9 @@ public class KMeansClustering {
 
 
         //pre-processing already done
-        selectK(k);
+        // do this 100 times to damp the randomness
+//        for(int i=0;i<100;i++)
+            selectK(k);
 
 
     }
