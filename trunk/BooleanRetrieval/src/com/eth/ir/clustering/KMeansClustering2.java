@@ -88,7 +88,7 @@ public class KMeansClustering2 {
             System.out.println("inital centroids=" + other.getKey() + " doc-" + other.getValue().getDocumentName());
         }
         //stopping criteria
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 20; i++) {
             System.out.println("run"+i);
 //            for (int j = 0; j < k; j++)
 //            {
@@ -292,7 +292,7 @@ public class KMeansClustering2 {
     public static void main(String args[])
     {
         KMeansClustering2 kmeans = new KMeansClustering2();
-        int k =4;
+        int k =8;
 //        for(int k=2 ; k<10; k++)
             kmeans.kmeans(k);
     }
