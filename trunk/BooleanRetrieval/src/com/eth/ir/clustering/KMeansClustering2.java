@@ -47,12 +47,7 @@ public class KMeansClustering2 {
     }
 
     public ClusterMeasure kmeans(int k) {
-        String file = SpamBundle.class.getResource(SpamBundle.DOC_CORPUS_DIR + "/" + SpamBundle.CLUSTER_DIR).getFile();
-        System.out.println("file=" + file);
-        TreeMap<String, PostingList> index = (TreeMap) FileIndexer.project3_phase2_vectorSpaceModel();
-        kmHelper.preprocess(file);
-        kmHelper.normalize(index);
-        kmHelper.transposeDStoClassificationDS(index);
+        
 
         // http://nlp.stanford.edu/IR-book/html/htmledition/k-means-1.html
         //    K-Means({x1,...xn},K)
@@ -88,7 +83,7 @@ public class KMeansClustering2 {
 
         //stopping criteria
         for (int i = 0; i < 20; i++) {
-            System.out.println("run" + (i + 1));
+            System.out.print("run" + (i + 1));
 
             // clear the cluster documents in the cluster map.
             for (int clusterId = 0; clusterId < k; clusterId++) {
@@ -119,7 +114,7 @@ public class KMeansClustering2 {
 //                }
 
             // now compute the new centroids
-            System.out.println("computing new centroids current cluster =" + clusterMap.size());
+//            System.out.println("computing new centroids current cluster =" + clusterMap.size());
             for (Map.Entry<Integer, List<KMeansDS>> iter : clusterMap.entrySet()) {
                 Integer clusterId = iter.getKey();
                 KMeansDS newCentroid = computeCentroidVector(clusterId, iter.getValue());
@@ -133,7 +128,8 @@ public class KMeansClustering2 {
         //calculate Rand Index and Purity
         Double purity = calculatePurity(clusterMap);
         Double randIndex = calculateRandIndex(clusterMap);
-    
+
+//        return new ClusterMeasure(null, purity);
         return new ClusterMeasure(randIndex, purity);
     }
 
@@ -314,6 +310,15 @@ public class KMeansClustering2 {
         KMeansClustering2 km = new KMeansClustering2();
         Map<Integer, Double> avgRandIndex = new TreeMap<Integer, Double>();
         Map<Integer, Double> avgPurity = new TreeMap<Integer, Double>();
+
+
+        String file = SpamBundle.class.getResource(SpamBundle.DOC_CORPUS_DIR + "/" + SpamBundle.CLUSTER_DIR).getFile();
+        System.out.println("file=" + file);
+        TreeMap<String, PostingList> index = (TreeMap) FileIndexer.project3_phase2_vectorSpaceModel();
+        km.kmHelper.preprocess(file);
+        km.kmHelper.normalize(index);
+        km.kmHelper.transposeDStoClassificationDS(index);
+
 
         //find average purity/rand index over 100 runs for K 2 to 10
 //        int k=8;
