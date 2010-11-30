@@ -94,6 +94,7 @@ public class KMeansHelper {
                     {
                         kmeans = new KMeansDS();
                         kmeans.setKclass(null);
+                        kmeans.setDocumentName(docId);
                         kmeans.setTermTfIdfMap(new HashMap<String, Double>());
 //                        termtfIdfMap = new HashMap<String, Double>();
                     }
@@ -117,7 +118,7 @@ public class KMeansHelper {
             }
         }
 
-        System.out.println("document=" + documentVectorsMap);
+//        System.out.println("document=" + documentVectorsMap);
     }
 
 
