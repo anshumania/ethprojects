@@ -8,12 +8,14 @@ package com.eth.ir.clustering;
 import com.eth.ir.boolret.FileIndexer;
 import com.eth.ir.boolret.dictionary.datastructure.PostingList;
 import com.eth.ir.boolret.dictionary.datastructure.PostingListNode;
+import com.eth.ir.boolret.query.QueryDictionary;
 import com.eth.ir.clustering.KMeansClustering.kClass;
 import com.eth.ir.clustering.datastructure.KMeansDS;
 import com.eth.ir.spamfiltering.SpamBundle;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  *
@@ -27,6 +29,8 @@ public class KMeansHelper {
 
 //    public Map<String,Map<String,Double>> documentVectors;
     public Map<String,KMeansDS> documentVectorsMap;
+
+    public Map<String, Double> vectorLenghtForDocuments;
 
     public Map<String, KMeansDS> getDocumentVectorsMap() {
         return documentVectorsMap;
@@ -67,7 +71,14 @@ public class KMeansHelper {
 
        // System.out.println(docClassification);
         System.out.println(docClassification.size());
+
+
     }
+    public void normalize(Map<String, PostingList>  index)
+    {
+        vectorLenghtForDocuments = QueryDictionary.normalize(index);
+    }
+
 
     public void transposeDStoClassificationDS(Map<String,PostingList> index)
     {
@@ -103,9 +114,11 @@ public class KMeansHelper {
 //                    if(!(termtfIdfMap.containsKey(term)))
                     if(!(kmeans.getTermTfIdfMap().containsKey(term)))
                     {
+
+                        Double vectorLength = vectorLenghtForDocuments.get(docId);
                         
 //                        termtfIdfMap.put(term, tfdfw);
-                        kmeans.getTermTfIdfMap().put(term, tfdfw);
+                        kmeans.getTermTfIdfMap().put(term, tfdfw /vectorLength);
 //                        documentVectors.put(docId, termtfIdfMap);
                         documentVectorsMap.put(docId, kmeans);
                         check++;
