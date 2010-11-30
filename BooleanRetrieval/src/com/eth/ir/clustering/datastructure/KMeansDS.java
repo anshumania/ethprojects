@@ -45,10 +45,21 @@ public class KMeansDS {
     kClass kclass;
     Map<String,Double> termTfIdfMap ;
 
+    public String getDocumentName() {
+        return documentName;
+    }
+
+    public void setDocumentName(String documentName) {
+        this.documentName = documentName;
+    }
+    String documentName;
+
     @Override
     public String toString()
     {
         return "[cluster=" + getClusterId() + "Map="+ getTermTfIdfMap()+"]";
     }
+
+
 
 }
