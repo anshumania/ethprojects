@@ -29,8 +29,8 @@ declare sequential function def:movies ()
             if ($i eq 1)
             then
                 fn:concat($link/text(), "///")
-            else
-                (),
+            else (
+            ),
             <div class="entry">
                 {$i}. {$link} | <a href="javascript:getData('{fn:replace($link/text(), "'", "\\'")}');">more info</a><br />
                 <small>SideReel.com</small>
@@ -47,8 +47,8 @@ declare sequential function def:movies ()
             if ($i eq 1)
             then
                 fn:concat($link/text(), "///")
-            else
-                (),
+            else (
+            ),
             <div class="entry">
                 {$i}. {$link} | <a href="javascript:getData('{fn:replace($link/text(), "'", "\\'")}');">more info</a><br />
                 <small>SideReel.com</small>
@@ -69,15 +69,15 @@ declare sequential function def:movies ()
             if ($i eq 1)
             then
                 fn:concat($link/text(), "///")
-            else
-                (),
+            else (
+            ),
             <div class="entry">
                 {$i}. {$link} | <a href="javascript:getData('{fn:replace($link/text(), "'", "\\'")}');">more info</a><br />
                 <small>TVshack.cc</small>
             </div>,
             set $i := $i + 1
         )
-    else(
+    else (
     )
     :)
 };

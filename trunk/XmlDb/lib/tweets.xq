@@ -29,7 +29,7 @@ declare sequential function tweets:get ($movie as xs:string)
             </div>,
             set $i := $i + 1
         )
-        else(
+        else (
         )
     )
 };

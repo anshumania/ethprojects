@@ -38,8 +38,8 @@ declare sequential function ratings:get ($movie as xs:string)
                 </div>,
                 set $i := $i + 1
             )
-            else
-                ()
+            else (
+            )
         )
     } catch err:XPTY0019 {
         "No ratings available."
