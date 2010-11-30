@@ -28,6 +28,11 @@ public class KMeansClustering2 {
         kmHelper = new KMeansHelper();
     }
 
+    public enum kClass {
+
+        SPAM, NOTSPAM
+    };
+
     public Map<String, Integer> selectRandomSeeds(int k) {
         Map<String, Integer> centroids = new HashMap<String, Integer>();
         Random randomGenerator = new Random();
@@ -92,8 +97,7 @@ public class KMeansClustering2 {
 
             //for each document, find nearest centroid, assign to cluster
             for (Map.Entry<String, KMeansDS> docVectorMap : kmHelper.getDocumentVectorsMap().entrySet()) {
-                //Map<Integer, Double> euclidianScores = new TreeMap<Integer, Double>();
-                Map<Double, Integer> euclidianScores = new TreeMap<Double, Integer>();
+                Map<Integer, Double> euclidianScores = new TreeMap<Integer, Double>();
                 KMeansDS documentVector = docVectorMap.getValue();
 
                 //calculate distance for this doc to each cluster centroid
@@ -102,17 +106,17 @@ public class KMeansClustering2 {
                     KMeansDS centroidVector = centroidIter.getValue();
                     Double euclidianDistance = calculateEuclideanDistance(centroidVector, documentVector);
                     //Double euclidianDistance = calculateCosineSimilarity(centroidVector, documentVector);
-                    euclidianScores.put(euclidianDistance, clusterId);
-
-                    //assign this doc to the nearest cluster
-                    Integer minCluster = euclidianScores.get((Double) euclidianScores.keySet().toArray()[0]);
-                    clusterMap.get(minCluster).add(documentVector);
-
-                    /*for (int j = 0; j < k; j++) {
-                        System.out.println("currentclustermap=[" + j + "]" + "size" + clusterMap.get(j).size());
-                    }*/
+                    euclidianScores.put(clusterId, euclidianDistance);
                 }
+                //assign this doc to the nearest cluster
+                Integer minCluster = entriesSortedByValues(euclidianScores).first().getKey();
+                clusterMap.get(minCluster).add(documentVector);
+
             }
+
+//            for (int j = 0; j < k; j++) {
+//                System.out.println("currentclustermap=[" + j + "]" + "size" + clusterMap.get(j).size());
+//                }
 
             // now compute the new centroids
             System.out.println("computing new centroids current cluster =" + clusterMap.size());
@@ -120,33 +124,16 @@ public class KMeansClustering2 {
                 Integer clusterId = iter.getKey();
                 KMeansDS newCentroid = computeCentroidVector(clusterId, iter.getValue());
                 centroidVectorMap.put(clusterId, newCentroid);
-                System.out.println("currentCentroids=" + centroidMap.size());
+//                System.out.println("currentCentroids=" + centroidMap.size());
             }
 
-            //print all docs in cluster
-            for (Map.Entry<Integer, List<KMeansDS>> iter : clusterMap.entrySet()) {
-                Integer clusterId = iter.getKey();
-                StringBuilder out = new StringBuilder();
-                Integer numberOfSpam = 0;
-                Integer numberOfHam = 0;
-                for (KMeansDS docVectors : iter.getValue()) {
-                    //if(docVectors.getKclass().equals(KMeansClustering.kClass.NOTSPAM)
-                    //spam++;
-                    if (docVectors.getDocumentName().contains(SpamBundle.SPAM_ID)) {
-                        numberOfSpam++;
-                    } else {
-                        numberOfHam++;
-                    }
-                    out.append(docVectors.getDocumentName()).append(",");
-                }
-                System.out.println("[Cluster=" + clusterId + "{spam=" + numberOfSpam + ";ham=" + numberOfHam + "}");
-                System.out.println("[Cluster=" + clusterId + "{docs=" + out + "}");
-            }
+
         }
-        
+
         //calculate Rand Index and Purity
-        Double randIndex = calculateRandIndex(clusterMap);
         Double purity = calculatePurity(clusterMap);
+        Double randIndex = calculateRandIndex(clusterMap);
+    
         return new ClusterMeasure(randIndex, purity);
     }
 
@@ -179,26 +166,6 @@ public class KMeansClustering2 {
             }
         }
 
-
-//        for (Map.Entry<String, Double> iter : centroidVector.getTermTfIdfMap().entrySet()) {
-//            String dimension = iter.getKey();
-//
-//
-//                Double centroidDMagnitude = iter.getValue();
-//            if (documentVector.getTermTfIdfMap().containsKey(dimension)) {
-//                Double documentMagnitude = documentVector.getTermTfIdfMap().get(dimension);
-////                dimensionDistance += (centroidDMagnitude - documentMagnitude) * (centroidDMagnitude - documentMagnitude);
-//                dimensionDistance += (documentMagnitude - centroidDMagnitude) * (documentMagnitude - centroidDMagnitude);
-//            }
-//            else
-//            {
-//                dimensionDistance += documentMagnitude*documentMagnitude;
-//                dimensionDistance += centroidDMagnitude*centroidDMagnitude;
-//
-//            }
-//
-//
-//        }
         return Math.sqrt(dimensionDistance);
         //euclidianScores.put(euclidieanDistance, centroid);
     }
@@ -227,7 +194,52 @@ public class KMeansClustering2 {
     }
 
     private Double calculatePurity(Map<Integer, List<KMeansDS>> clusterMap) {
-        throw new UnsupportedOperationException("Not yet implemented");
+
+        // calculation of purity
+        // 1/N * ( number of correctly assigned docs)
+
+        Integer numberOfDocsAssignedCorrectly = 0;
+        Integer totalDocs = 0;
+
+        //print all docs in cluster
+        for (Map.Entry<Integer, List<KMeansDS>> iter : clusterMap.entrySet()) {
+            Integer clusterId = iter.getKey();
+            StringBuilder out = new StringBuilder();
+            Integer numberOfSpam = 0;
+            Integer numberOfHam = 0;
+            kClass kclass;
+            for (KMeansDS docVectors : iter.getValue()) {
+                //if(docVectors.getKclass().equals(KMeansClustering.kClass.NOTSPAM)
+                //spam++;
+                if (docVectors.getDocumentName().contains(SpamBundle.SPAM_ID)) {
+                    numberOfSpam++;
+                } else {
+                    numberOfHam++;
+                }
+                out.append(docVectors.getDocumentName()).append(",");
+            }
+
+            if (numberOfSpam > numberOfHam) {
+                kclass = kClass.SPAM;
+                numberOfDocsAssignedCorrectly += numberOfSpam;
+            } else {
+                kclass = kClass.NOTSPAM;
+                numberOfDocsAssignedCorrectly += numberOfHam;
+            }
+            System.out.println("[Cluster=" + clusterId + " is [" + kclass + "]{spam=" + numberOfSpam + ";ham=" + numberOfHam + "}");
+
+            totalDocs += numberOfHam + numberOfSpam;
+//            System.out.println("totalDocs=" + totalDocs);
+//            System.out.println("[Cluster=" + clusterId + "{spam=" + numberOfSpam + ";ham=" + numberOfHam + "}");
+//            System.out.println("[Cluster=" + clusterId + "{docs=" + out + "}");
+        }
+
+        Double purity = (double) numberOfDocsAssignedCorrectly / totalDocs;
+        System.out.println("purity=" + purity);
+        return purity;
+
+
+//        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     private KMeansDS computeCentroidVector(Integer clusterId, List<KMeansDS> documentVectorsInThisCluster) {
@@ -295,6 +307,7 @@ public class KMeansClustering2 {
         Double averagePurity = puritySum / (double) purityScores.size();
 
         return new ClusterMeasure(averagePurity, averageRandIndex);
+        
     }
 
     public static void main(String args[]) {
@@ -303,7 +316,9 @@ public class KMeansClustering2 {
         Map<Integer, Double> avgPurity = new TreeMap<Integer, Double>();
 
         //find average purity/rand index over 100 runs for K 2 to 10
-        for (int k = 2; k <= 10; k++) {
+//        int k=8;
+        for (int k = 2; k <= 10; k++)
+        {
             ClusterMeasure averages = km.averageKMeans(k, 100);
             avgRandIndex.put(k, averages.getRandIndex());
             avgPurity.put(k, averages.getPurity());
