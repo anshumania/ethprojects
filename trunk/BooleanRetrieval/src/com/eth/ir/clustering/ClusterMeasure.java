@@ -21,4 +21,10 @@ public class ClusterMeasure {
         return randIndex;
     }
 
+    @Override
+    public String toString()
+    {
+        return purity + "," + randIndex;
+    }
+
 }
