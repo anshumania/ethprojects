@@ -18,13 +18,8 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
@@ -219,7 +214,7 @@ public class SessionFacade implements SessionFacadeLocal {
     @Override
     public UserBean createUser(UserBean userBean)
     {
-        Users user =  userSession.createUser(userBean);
+        Users user = userSession.createUser(userBean);
         userBean.setEmail(user.getEmail());
         userBean.setFirstname(user.getFirstname());
         userBean.setLastname(user.getLastname());
