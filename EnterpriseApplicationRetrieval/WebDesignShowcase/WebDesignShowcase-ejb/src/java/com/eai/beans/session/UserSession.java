@@ -2,6 +2,7 @@ package com.eai.beans.session;
 
 import com.eai.beans.UserBean;
 import com.eai.beans.entity.Users;
+import com.eai.loadbalancer.LB;
 import java.util.Collection;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -40,11 +41,17 @@ public class UserSession implements UserSessionLocal {
 
     @Override
     public Users createUser(UserBean user) {
-        EntityManager em = entityManagerEai.createEntityManager();
+        EntityManager em = LB.get();
         List<Users> users = em.createNamedQuery("Users.findAll")
 				.getResultList();
 
-		long id = users.get(users.size()-1).getId() + 1;
+		long id;
+
+		if (!users.isEmpty()) {
+			id = users.get(users.size()-1).getId() + 1;
+		} else {
+			id = 1;
+		}
 
         Users u = new Users(id,
                             user.getUsername(),
@@ -53,7 +60,7 @@ public class UserSession implements UserSessionLocal {
                             user.getLastname(),
                             user.getEmail());
 
-        em.persist(u);
+        LB.persist(u);
         return u;
     }
 
