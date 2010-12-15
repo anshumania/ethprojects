@@ -21,4 +21,6 @@ public interface UserSessionLocal {
     Users updateUser(UserBean updatedUser);
 
     boolean deleteUser(long deleteUser);
+
+    Users findUserById(long userID);
 }

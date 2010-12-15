@@ -5,6 +5,7 @@ import com.eai.beans.entity.Users;
 import com.eai.loadbalancer.LB;
 import java.util.Collection;
 import java.util.List;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -18,9 +19,13 @@ import javax.persistence.PersistenceUnit;
  */
 @Stateless
 public class UserSession implements UserSessionLocal {
+    @EJB
+    private LBalancerLocal lBalancer;
 
     @PersistenceUnit(unitName = "eai")
     EntityManagerFactory entityManagerEai;
+
+
 
 	@Override
     public Collection<Users> findAllUsers() {
@@ -41,7 +46,7 @@ public class UserSession implements UserSessionLocal {
 
     @Override
     public Users createUser(UserBean user) {
-        EntityManager em = LB.get();
+        EntityManager em = lBalancer.get();
         List<Users> users = em.createNamedQuery("Users.findAll")
 				.getResultList();
 
@@ -60,7 +65,7 @@ public class UserSession implements UserSessionLocal {
                             user.getLastname(),
                             user.getEmail());
 
-        LB.persist(u);
+        lBalancer.persist(u);
         return u;
     }
 
@@ -88,5 +93,11 @@ public class UserSession implements UserSessionLocal {
         em.remove(user);
         return true;
     }
- 
+
+    @Override
+    public Users findUserById(long userID) {
+        EntityManager em = entityManagerEai.createEntityManager();
+        Users user = (Users)em.createNamedQuery("Users.findById").setParameter("id", userID).getSingleResult();
+        return user;
+    }
 }
