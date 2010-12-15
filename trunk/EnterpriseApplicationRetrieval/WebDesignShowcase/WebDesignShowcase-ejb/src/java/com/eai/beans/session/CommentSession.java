@@ -118,7 +118,6 @@ public class CommentSession implements CommentSessionLocal {
     }
 
     private Message createJMSMessageForcomments(Session session, Object messageData) throws JMSException {
-        // TODO create and populate message to send
         ObjectMessage om = session.createObjectMessage();
         om.setObject((CommentBean) messageData);
         return om;

@@ -43,6 +43,10 @@ public class UserDesigns extends HttpServlet {
 			if (session != null) {
 				UserBean user = (UserBean)session.getAttribute("user");
 				long userID = user.getId();
+                                if(request.getParameter("userID") != null) {
+                                    userID = Integer.parseInt(request.getParameter("userID"));
+                                }
+
                                 Collection<DesignBean> userDesigns = sessionFacade.findDesignsByUserId(userID);
 //				Collection<Designs> userDesigns = dsb.findDesignsByUserId(userID);
 				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/userDesigns.jsp");

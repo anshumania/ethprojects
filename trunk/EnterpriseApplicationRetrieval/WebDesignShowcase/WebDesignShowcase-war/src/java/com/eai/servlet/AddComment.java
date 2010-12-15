@@ -41,7 +41,8 @@ public class AddComment extends HttpServlet {
 
 			// comment information
 			long userID = user.getId();
-			int designID = (Integer)session.getAttribute("designID");
+			//int designID = (Integer)session.getAttribute("designID");
+                        int designID = Integer.parseInt(request.getParameter("designID"));
 			String comment = request.getParameter("comment");
 
 			CommentBean commentBean = new CommentBean();
@@ -49,11 +50,8 @@ public class AddComment extends HttpServlet {
 			commentBean.setDesignId(designID);
 			commentBean.setComment(comment);
 
-
                         sessionFacade.addComment(commentBean);
-
-//			csb.addComment(commentBean);
-//			csb.notifySubscribers(commentBean);
+                        sessionFacade.notifySubscribers(commentBean);
 
 			RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/ShowDesign?designID=" + designID);
 			dispatcher.forward(request, response);
