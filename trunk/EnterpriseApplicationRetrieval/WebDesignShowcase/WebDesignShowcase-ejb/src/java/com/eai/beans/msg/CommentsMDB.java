@@ -52,12 +52,14 @@ public class CommentsMDB implements MessageListener {
             try {
                 CommentBean c = (CommentBean) om.getObject();
                 String comment = c.getComment();
-                long userID = c.getUserId();
-                int designID = c.getDesignId();
+
                 EntityManager em = lb.get();
 
-                Users u = (Users) em.createNamedQuery("Users.findById").setParameter("id", userID).getResultList().get(0);
+                int designID = c.getDesignId();
                 Designs d = (Designs) em.createNamedQuery("Designs.findById").setParameter("id", designID).getResultList().get(0);
+
+                long userID = d.getUserId();
+                Users u = (Users) em.createNamedQuery("Users.findById").setParameter("id", userID).getResultList().get(0);
 
                 try {
                     sendMail(u.getEmail(), "Comment on Design \"" + d.getTitle() + "\"", comment);
