@@ -1,6 +1,7 @@
 package com.eai.servlet;
 
 import com.eai.beans.CommentBean;
+import com.eai.beans.DesignBean;
 import com.eai.beans.UserBean;
 import com.eai.beans.session.SessionFacadeLocal;
 import java.io.IOException;
@@ -45,13 +46,15 @@ public class ShowDesign extends HttpServlet {
 				UserBean user = (UserBean)session.getAttribute("user");
 				long userID = user.getId();
 				int designID = Integer.parseInt(request.getParameter("designID"));
-                                //Collection<CommentBean> c = sessionFacade.findCommentsByUserIdAndDesignId(userID, designID);
+                                DesignBean design = sessionFacade.findDesignByDesignId(designID);
+                                UserBean designUser = sessionFacade.findUserById(design.getUserId());
                                 // get all comments for the design
                                 Collection<CommentBean> c = sessionFacade.findCommentsByDesignId(designID);
 //				Collection<Comments> c = csb.findCommentsByUserIdAndDesignId(userID, designID);
 				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
 
-				session.setAttribute("designID", designID);
+				request.setAttribute("design", design);
+                                request.setAttribute("designUser", designUser);
 				request.setAttribute("comments", c);
 				dispatcher.forward(request, response);
 			}

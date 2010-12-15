@@ -36,6 +36,8 @@ public interface SessionFacadeLocal {
 
     public Collection<DesignBean> findAllDesigns();
 
+    public DesignBean findDesignByDesignId(long designID);
+
     public void deleteDesign(long designID);
 
     //UserSession
@@ -49,4 +51,5 @@ public interface SessionFacadeLocal {
 
     public boolean deleteUser(UserBean deleteUser);
 
+    public UserBean findUserById(long userID);
 }
