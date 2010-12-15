@@ -56,6 +56,7 @@ public class ShowDesign extends HttpServlet {
 				request.setAttribute("design", design);
                                 request.setAttribute("designUser", designUser);
 				request.setAttribute("comments", c);
+                                //session.setAttribute("designID", designID);
 				dispatcher.forward(request, response);
 			}
         } finally { 

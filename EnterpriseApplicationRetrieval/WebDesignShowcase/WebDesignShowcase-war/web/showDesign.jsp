@@ -26,7 +26,7 @@
             <%@ include file="header.jspf" %>
             <div id="main">
                 <h1><a href="${design.url}">${design.title}</a></h1>
-                <p>by <a href="">${designUser.firstname} ${designUser.lastname}</a></p>
+                <p>by <a href="UserDesigns?userID=${designUser.id}">${designUser.firstname} ${designUser.lastname}</a></p>
                 <img src="${design.imageUrl}" alt="${design.title} Screenshot" class="design" />
 
                 <div id="comments">
@@ -48,6 +48,7 @@
                     <h3>Add a comment:</h3>
                     <form action="AddComment" method="post">
                         <textarea name="comment" cols="60" rows="6"></textarea><br/>
+                        <input type="hidden" name="designID" value="${design.id}" />
                         <input type="submit" value="Submit Comment" />
                     </form>
                 </div>

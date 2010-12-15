@@ -45,7 +45,7 @@ public class AddDesign extends HttpServlet {
 
                                 sessionFacade.addDesign(userID, title, url, screenshot);
 //				designSession.addDesign(userID, title, url, screenshot);
-				response.sendRedirect("UserDesigns");
+				response.sendRedirect("UserDesigns?userID="+userID);
 			}
         } finally { 
             out.close();

@@ -37,7 +37,6 @@
 					</c:forEach>
                 </table>
 				</center>
-                <p><a href="">Next</a></p>
 				<p><a href="addDesign.jsp">[+] Add a New Design</a></p>
 				<p><a href="AllDesigns">Show All Designs</a></p>
             </div>

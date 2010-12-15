@@ -35,7 +35,9 @@
 							<td>
 								<c:forEach items="${users}" var="user">
 									<c:if test="${user.id == design.userId}">
-										${user.username}
+									<a href="UserDesigns?userID=${user.id}" title="View all designs by this user">
+                                                                            ${user.username}
+                                                                        </a>
 									</c:if>
 								</c:forEach>
 							</td>
@@ -43,9 +45,8 @@
 					</c:forEach>
                 </table>
 				</center>
-                <p><a href="">Next</a></p>
 				<p><a href="addDesign.jsp">[+] Add a New Design</a></p>
-				<p><a href="UserDesigns">Show My Designs</a></p>
+				<p><a href="UserDesigns?userID=">Show My Designs</a></p>
             </div>
             <%@ include file="footer.jspf" %>
         </div>

@@ -45,8 +45,9 @@ public class Login extends HttpServlet {
             //authentication successful.  save user in http session
             HttpSession session = request.getSession(true);
             session.setAttribute("user", user);
+            long userID = user.getId();
 
-            response.sendRedirect("UserDesigns");
+            response.sendRedirect("UserDesigns?userID="+userID);
         } else {
             //login failed, redisplay login page with error message
             request.setAttribute("loginFailed", true);

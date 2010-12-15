@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -42,13 +43,20 @@ public class AllDesigns extends HttpServlet {
         PrintWriter out = response.getWriter();
         try {
               Collection<DesignBean> allDesigns = sessionFacade.findAllDesigns();
-              Collection<UserBean> users = sessionFacade.findAllUsers();
+              Collection<UserBean> users = sessionFacade.findAllUsers();;
 //            Collection<Designs> allDesigns = designSession.findAllDesigns();
 //			Collection<Users> users = userSession.findAllUsers();
 			RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/allDesigns.jsp");
 
 			request.setAttribute("allDesigns", allDesigns);
 			request.setAttribute("users", users);
+
+                        HttpSession session = request.getSession(false);
+                        if(session != null) {
+                            UserBean user = (UserBean)session.getAttribute("user");
+                            long userID = user.getId();
+                            request.setAttribute("userID", userID);
+                        }
 			dispatcher.forward(request, response);
         } finally { 
             out.close();
