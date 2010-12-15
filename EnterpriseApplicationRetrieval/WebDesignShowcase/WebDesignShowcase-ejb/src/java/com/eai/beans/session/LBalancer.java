@@ -44,8 +44,7 @@ public class LBalancer implements LBalancerLocal {
         if (roundRobin == 0) {
             result = entityManagerEai1.createEntityManager();
         } else {
-            //result = entityManagerEai2.createEntityManager();
-            result = entityManagerEai1.createEntityManager();  //TESTING
+            result = entityManagerEai2.createEntityManager();
         }
 
         roundRobin = (roundRobin + 1) % 2;

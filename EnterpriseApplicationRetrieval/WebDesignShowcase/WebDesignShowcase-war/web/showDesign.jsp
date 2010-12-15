@@ -18,27 +18,31 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>DESIGN TITLE | Web Design Showcase</title>
+        <title>${design.title} | Web Design Showcase</title>
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
         <div id="container">
             <%@ include file="header.jspf" %>
             <div id="main">
-                <h1><a href="">DESIGN TITLE</a></h1>
-                <p>by <a href="">USERNAME</a></p>
-                <img src="devcheatsheet.jpg" alt="DESIGN ALT TEXT" class="design" />
+                <h1><a href="${design.url}">${design.title}</a></h1>
+                <p>by <a href="">${designUser.firstname} ${designUser.lastname}</a></p>
+                <img src="${design.imageUrl}" alt="${design.title} Screenshot" class="design" />
 
                 <div id="comments">
                     <h2>Comments:</h2>
                     <ul class="comments">
-						<%
-							for (CommentBean c : comments) {
-								out.print("<li class='comment'>");
-								out.print(c.getComment());
-								out.print("</li>\n");
-							}
-						%>
+                        <%
+                            if(comments.isEmpty()) {
+                                out.print("No comments yet.");
+                            } else {
+                                for (CommentBean c : comments) {
+                                        out.print("<li class='comment'>");
+                                        out.print(c.getComment());
+                                        out.print("</li>\n");
+                                }
+                            }
+                        %>
                     </ul>
 
                     <h3>Add a comment:</h3>

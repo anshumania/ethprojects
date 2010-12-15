@@ -149,6 +149,19 @@ public class SessionFacade implements SessionFacadeLocal {
         }
         return designBeans;
     }
+
+    @Override
+    public DesignBean findDesignByDesignId(long designID) {
+        Designs design = designSession.findDesignByDesignId(designID);
+        DesignBean designBean = new DesignBean();
+        designBean.setId(design.getId());
+        designBean.setImageUrl(design.getImageUrl());
+        designBean.setTitle(design.getTitle());
+        designBean.setUrl(design.getUrl());
+        designBean.setUserId(design.getUserId());
+        return designBean;
+    }
+
     @Override
     public void deleteDesign(long designID)
     {
@@ -237,7 +250,6 @@ public class SessionFacade implements SessionFacadeLocal {
     }
 
     @Override
-    
     public boolean deleteUser(UserBean deleteUser)
     {
         System.out.println("Deleting user");
@@ -283,7 +295,18 @@ public class SessionFacade implements SessionFacadeLocal {
         return true;
     }
 
-
+    @Override
+    public UserBean findUserById(long userID) {
+        Users user = userSession.findUserById(userID);
+        UserBean userBean = new UserBean();
+        userBean.setEmail(user.getEmail());
+        userBean.setFirstname(user.getFirstname());
+        userBean.setLastname(user.getLastname());
+        userBean.setPassword(user.getPassword());
+        userBean.setUsername(user.getUsername());
+        userBean.setId(user.getId());
+        return userBean;
+    }
 
  
 }

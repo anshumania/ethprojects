@@ -2,7 +2,6 @@ package com.eai.beans.session;
 
 import com.eai.beans.UserBean;
 import com.eai.beans.entity.Users;
-import com.eai.loadbalancer.LB;
 import java.util.Collection;
 import java.util.List;
 import javax.ejb.EJB;
