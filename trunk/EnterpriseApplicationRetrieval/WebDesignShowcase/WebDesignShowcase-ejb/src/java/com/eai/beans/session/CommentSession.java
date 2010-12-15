@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -21,65 +22,58 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.PersistenceUnit;
 
 /**
  *
  * @author ANSHUMAN
  */
 @Stateless
-@TransactionManagement(value=TransactionManagementType.CONTAINER)
+@TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class CommentSession implements CommentSessionLocal {
 
+    @EJB
+    private LBLocal lb;
     @Resource(mappedName = "Comments")
     private Topic comments;
     @Resource(name = "TopicConnectionFactory")
     private ConnectionFactory topicConnectionFactory;
-    @PersistenceUnit(unitName = "eai")
-    EntityManagerFactory entityManagerEai;
 
     @Override
     public Collection<Comments> findAllComments() {
-        EntityManager em = entityManagerEai.createEntityManager();
-        Collection<Comments> c = em
-				.createNamedQuery("Comments.findAll")
-				.getResultList();
-        
+        EntityManager em = lb.get();
+        Collection<Comments> c = em.createNamedQuery("Comments.findAll").getResultList();
+
         return c;
     }
 
-	@Override
-        public Collection<Comments> findCommentsByUserIdAndDesignId(long userID, long designID) {
+    @Override
+    public Collection<Comments> findCommentsByUserIdAndDesignId(long userID, long designID) {
 
-            EntityManager em = entityManagerEai.createEntityManager();
-		Collection<Comments> c = em
-				.createNamedQuery("Comments.findByUserIdAndDesignId")
-				.setParameter("userId", userID)
-				.setParameter("designId", designID)
-				.getResultList();
-		return c;
-	}
+        EntityManager em = lb.get();
+        Collection<Comments> c = em.createNamedQuery("Comments.findByUserIdAndDesignId").setParameter("userId", userID).setParameter("designId", designID).getResultList();
+        return c;
+    }
 
-        @Override
-        public Collection<Comments> findCommentsByDesignId(long designID) {
+    @Override
+    public Collection<Comments> findCommentsByDesignId(long designID) {
 
-            EntityManager em = entityManagerEai.createEntityManager();
-		Collection<Comments> c = em
-				.createNamedQuery("Comments.findByDesignId")
-				.setParameter("designId", designID)
-				.getResultList();
-		return c;
-	}
+        EntityManager em = lb.get();
+        Collection<Comments> c = em.createNamedQuery("Comments.findByDesignId").setParameter("designId", designID).getResultList();
+        return c;
+    }
 
     @Override
     public void addComment(CommentBean comment) {
-        EntityManager em = entityManagerEai.createEntityManager();
-        List<Comments> commentList = em.createNamedQuery("Comments.findAll")
-				.getResultList();
+        EntityManager em = lb.get();
+        List<Comments> commentList = em.createNamedQuery("Comments.findAll").getResultList();
 
-		long id = commentList.get(commentList.size()-1).getId() + 1;
+        long id;
+
+        if (!commentList.isEmpty()) {
+            id = commentList.get(commentList.size() - 1).getId() + 1;
+        } else {
+            id = 1;
+        }
 
         Comments c = new Comments();
         c.setId(id);
@@ -87,37 +81,30 @@ public class CommentSession implements CommentSessionLocal {
         c.setDesignId(comment.getDesignId());
         c.setUserId(comment.getUserId());
 
-        em.persist(c);
+        lb.persist(c);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
     public void deleteCommentsForADesign(long designID) {
-        
-        EntityManager em = entityManagerEai.createEntityManager();
-	Collection<Comments> comments = em
-				.createNamedQuery("Comments.findByDesignId")
-				.setParameter("designId", designID)
-				.getResultList();
 
-              for (Comments c : comments) {
-			em.remove(c);
-		}
-      }
+        EntityManager em = lb.get();
+        Collection<Comments> commentsList = em.createNamedQuery("Comments.findByDesignId").setParameter("designId", designID).getResultList();
+
+        for (Comments c : commentsList) {
+            lb.remove(c);
+        }
+    }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public void deleteCommentsOfAUser(long userID)
-    {
-        EntityManager em = entityManagerEai.createEntityManager();
-	Collection<Comments> comments = em
-				.createNamedQuery("Comments.findByUserId")
-				.setParameter("userId", userID)
-				.getResultList();
+    public void deleteCommentsOfAUser(long userID) {
+        EntityManager em = lb.get();
+        Collection<Comments> commentsList = em.createNamedQuery("Comments.findByUserId").setParameter("userId", userID).getResultList();
 
-              for (Comments c : comments) {
-			em.remove(c);
-		}
+        for (Comments c : commentsList) {
+            lb.remove(c);
+        }
     }
 
     @Override

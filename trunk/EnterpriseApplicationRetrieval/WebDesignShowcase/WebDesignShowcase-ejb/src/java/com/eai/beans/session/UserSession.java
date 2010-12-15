@@ -9,8 +9,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
 
 /**
  *
@@ -18,68 +16,60 @@ import javax.persistence.PersistenceUnit;
  */
 @Stateless
 public class UserSession implements UserSessionLocal {
+
     @EJB
-    private LBalancerLocal lBalancer;
+    private LBLocal lb;
 
-    @PersistenceUnit(unitName = "eai")
-    EntityManagerFactory entityManagerEai;
-
-
-
-	@Override
+    @Override
     public Collection<Users> findAllUsers() {
-        Collection<Users> users = entityManagerEai.createEntityManager()
-				.createNamedQuery("Users.findAll")
-				.getResultList();
+        Collection<Users> users = lb.get().createNamedQuery("Users.findAll").getResultList();
         return users;
     }
 
     @Override
     public Users authenticate(String username, String password) {
-        Collection<Users> users = entityManagerEai.createEntityManager().createNamedQuery("Users.findByUsernameAndPassword").setParameter("username", username).setParameter("password", password).getResultList();
-        if(users.size() == 1) {
-             return users.iterator().next();
+        Collection<Users> users = lb.get().createNamedQuery("Users.findByUsernameAndPassword").setParameter("username", username).setParameter("password", password).getResultList();
+        if (users.size() == 1) {
+            return users.iterator().next();
         }
         return null;
     }
 
     @Override
     public Users createUser(UserBean user) {
-        EntityManager em = lBalancer.get();
-        List<Users> users = em.createNamedQuery("Users.findAll")
-				.getResultList();
+        EntityManager em = lb.get();
+        List<Users> users = em.createNamedQuery("Users.findAll").getResultList();
 
-		long id;
+        long id;
 
-		if (!users.isEmpty()) {
-			id = users.get(users.size()-1).getId() + 1;
-		} else {
-			id = 1;
-		}
+        if (!users.isEmpty()) {
+            id = users.get(users.size() - 1).getId() + 1;
+        } else {
+            id = 1;
+        }
 
         Users u = new Users(id,
-                            user.getUsername(),
-                            user.getPassword(),
-                            user.getFirstname(),
-                            user.getLastname(),
-                            user.getEmail());
+                user.getUsername(),
+                user.getPassword(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getEmail());
 
-        lBalancer.persist(u);
+        lb.persist(u);
         return u;
     }
 
-     @Override
+    @Override
     public Users updateUser(UserBean updatedUser) {
-        EntityManager em = entityManagerEai.createEntityManager();
-        Users user = (Users)em.createNamedQuery("Users.findByUsername").setParameter("username", updatedUser.getUsername())
-				.getSingleResult();
+        EntityManager em = lb.get();
+        Users user = (Users) em.createNamedQuery("Users.findByUsername").setParameter("username", updatedUser.getUsername()).getSingleResult();
 
         // any of the possible values which can be update
         user.setFirstname(updatedUser.getFirstname());
         user.setLastname(updatedUser.getLastname());
         user.setPassword(updatedUser.getPassword());
 
-        em.persist(user);
+        lb.persist(user);
 
         return user;
     }
@@ -87,16 +77,16 @@ public class UserSession implements UserSessionLocal {
     @Override
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
     public boolean deleteUser(long deleteUser) {
-        EntityManager em = entityManagerEai.createEntityManager();
-        Users user = (Users)em.createNamedQuery("Users.findById").setParameter("id", deleteUser).getSingleResult();
-        em.remove(user);
+        EntityManager em = lb.get();
+        Users user = (Users) em.createNamedQuery("Users.findById").setParameter("id", deleteUser).getSingleResult();
+        lb.remove(user);
         return true;
     }
 
     @Override
     public Users findUserById(long userID) {
-        EntityManager em = entityManagerEai.createEntityManager();
-        Users user = (Users)em.createNamedQuery("Users.findById").setParameter("id", userID).getSingleResult();
+        EntityManager em = lb.get();
+        Users user = (Users) em.createNamedQuery("Users.findById").setParameter("id", userID).getSingleResult();
         return user;
     }
 }

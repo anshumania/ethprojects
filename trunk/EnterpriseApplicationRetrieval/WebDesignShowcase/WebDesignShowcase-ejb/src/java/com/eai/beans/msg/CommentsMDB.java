@@ -3,10 +3,12 @@ package com.eai.beans.msg;
 import com.eai.beans.CommentBean;
 import com.eai.beans.entity.Designs;
 import com.eai.beans.entity.Users;
+import com.eai.beans.session.LBLocal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
+import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -20,63 +22,59 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
 
 /**
  *
  * @author ANSHUMAN
  */
-@MessageDriven(mappedName = "Comments", activationConfig =  {
-        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
-        @ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable"),
-        @ActivationConfigProperty(propertyName = "clientId", propertyValue = "CommentsMDB"),
-        @ActivationConfigProperty(propertyName = "subscriptionName", propertyValue = "CommentsMDB")
-    })
+@MessageDriven(mappedName = "Comments", activationConfig = {
+    @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+    @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
+    @ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable"),
+    @ActivationConfigProperty(propertyName = "clientId", propertyValue = "CommentsMDB"),
+    @ActivationConfigProperty(propertyName = "subscriptionName", propertyValue = "CommentsMDB")
+})
 public class CommentsMDB implements MessageListener {
 
-	@Resource(name = "mail/NotificationMail")
-	private Session mailNotificationMail;
+    @Resource(name = "mail/NotificationMail")
+    private Session mailNotificationMail;
+    @EJB
+    LBLocal lb;
 
-	@PersistenceUnit(unitName = "eai")
-    EntityManagerFactory emf;
-    
     public CommentsMDB() {
     }
 
-	@Override
+    @Override
     public void onMessage(Message message) {
-		if (message instanceof ObjectMessage) {
-			ObjectMessage om = (ObjectMessage)message;
+        if (message instanceof ObjectMessage) {
+            ObjectMessage om = (ObjectMessage) message;
 
-			try {
-				CommentBean c = (CommentBean)om.getObject();
-				String comment = c.getComment();
-				long userID = c.getUserId();
-				int designID = c.getDesignId();
-				EntityManager em = emf.createEntityManager();
+            try {
+                CommentBean c = (CommentBean) om.getObject();
+                String comment = c.getComment();
+                long userID = c.getUserId();
+                int designID = c.getDesignId();
+                EntityManager em = lb.get();
 
-				Users u = (Users)em.createNamedQuery("Users.findById").setParameter("id", userID).getResultList().get(0);
-				Designs d = (Designs)em.createNamedQuery("Designs.findById").setParameter("id", designID).getResultList().get(0);
+                Users u = (Users) em.createNamedQuery("Users.findById").setParameter("id", userID).getResultList().get(0);
+                Designs d = (Designs) em.createNamedQuery("Designs.findById").setParameter("id", designID).getResultList().get(0);
 
-				try {
-					sendMail(u.getEmail(), "Comment on Design \"" + d.getTitle() + "\"", comment);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			} catch (JMSException ex) {
-				Logger.getLogger(CommentsMDB.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
+                try {
+                    sendMail(u.getEmail(), "Comment on Design \"" + d.getTitle() + "\"", comment);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } catch (JMSException ex) {
+                Logger.getLogger(CommentsMDB.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
-	private void sendMail(String email, String subject, String body) throws NamingException, MessagingException {
-		MimeMessage message = new MimeMessage(mailNotificationMail);
-		message.setSubject(subject);
-		message.setRecipients(RecipientType.TO, InternetAddress.parse(email, false));
-		message.setText(body);
-		Transport.send(message);
-	}
-    
+    private void sendMail(String email, String subject, String body) throws NamingException, MessagingException {
+        MimeMessage message = new MimeMessage(mailNotificationMail);
+        message.setSubject(subject);
+        message.setRecipients(RecipientType.TO, InternetAddress.parse(email, false));
+        message.setText(body);
+        Transport.send(message);
+    }
 }
