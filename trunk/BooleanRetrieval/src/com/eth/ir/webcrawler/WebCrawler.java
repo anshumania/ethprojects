@@ -9,8 +9,14 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Scanner;
@@ -34,8 +40,9 @@ public class WebCrawler {
         //for duplicates
         Set<String> sitesSet = new HashSet<String>();
         Map<String, Set<String>> sitesGraph = new HashMap<String, Set<String>>();
+        Map<String,Map<String,Integer>> total = new HashMap<String,Map<String,Integer>>();
 
-        while (!sites.isEmpty() && sitesSet.size() < 10 )//sitesGraph.size() < 100)
+        while (!sites.isEmpty()  )// && sitesGraph.size() < 50)
         {
 
             String urlStr = sites.poll();
@@ -45,6 +52,7 @@ public class WebCrawler {
 
                 URL url = new URL(urlStr);
                 URLConnection site = url.openConnection();
+                site.setConnectTimeout(1000);
                 site.setAllowUserInteraction(false);
                 InputStream is = site.getInputStream();
                 Scanner scanner = new Scanner(is);
@@ -68,29 +76,55 @@ public class WebCrawler {
 
                 while (matcher.find()) {
                     String w = matcher.group().trim();
-                    
-//                    System.out.println(w);
-                    w=w.substring("href=\"".length(),w.length()-1);
-//                    System.out.println(w);
-                   
-//                    if(!Character.isLetter(w.charAt(w.length()-1)))
-//                    {
-//                     String actualUrl=w.substring(0,w.lastIndexOf('.'));
-//                     String extension = w.substring(w.lastIndexOf('.'),w.length());
-//                     String ext = ".";
-//                     for(char c : extension.toCharArray())
-//                     {
-//                         ext += Character.isLetter(c) ? c : "";
-//                     }
-//
-//                     w = actualUrl + ext ;
-//                    }
-                    
-                    if (!sitesSet.contains(w) && acceptable(w)) {
 
-                        sites.add(w);
-                        sitesSet.add(w);
+                    w=w.substring("href=\"".length(),w.length()-1);
+
+                    
+                    if (acceptable(w)) {
+
+                     if (match(w, "(\\w+\\.)*(ethz.ch)(\\/w+)*") == 1 )
+                     {
+                        if (sitesSet.size() < 10)
+                        {// only fetch 10,000 sites dont add to queue
+                            sites.add(w);
+                            sitesSet.add(w);
+                        }
                         setForThisSite.add(w);
+
+                        Map<String,Integer> forin =  total.get("in");
+                        if(null == forin)
+                            forin = new HashMap<String, Integer>();
+                        if(!forin.containsKey(w))
+                        {
+                            forin.put(w, 1);
+                        }
+                        else
+                        {
+                            Integer prev = forin.get(w);
+                            forin.put(w, prev+1);
+                        }
+                        total.put("in", forin);
+
+
+                     }
+                     else
+                     {
+                        Map<String,Integer> forout =  total.get("out");
+                        if(null == forout)
+                            forout = new HashMap<String, Integer>();
+                        if(!forout.containsKey(w))
+                        {
+                            forout.put(w, 1);
+                        }
+                        else
+                        {
+                            Integer prev = forout.get(w);
+                            forout.put(w, prev+1);
+                        }
+                        total.put("out", forout);
+
+                     }
+
                     }
                 }
                 System.out.println("found " + setForThisSite.size() + " links in " + urlStr);
@@ -108,7 +142,35 @@ public class WebCrawler {
                 Logger.getLogger(WebCrawler.class.getName()).log(Level.INFO, "Could not open {0}", urlStr);
             }
         }
-        System.out.println(sitesGraph.size());
+//        System.out.println(sitesGraph.size());
+        Map<String,Integer> outs = total.get("out");
+        Map<String,Integer> in = total.get("in");
+        Map<String,Integer> sin  = sortByValue(in);
+        Map<String,Integer> souts = sortByValue(outs);
+        System.out.println("souts " + souts);
+        System.out.println("sin " + sin);
+
+        System.out.println("total number of nodes = " + sitesGraph.size());
+        int numberOfedges = 0;
+        for(Map.Entry<String,Set<String>> iter : sitesGraph.entrySet())
+        {
+            numberOfedges += iter.getValue().size();
+        }
+        System.out.println("total number of edges =" + numberOfedges);
+
+        for (int i=0;i<4;i++)
+        {
+             String maxin = (String)sin.keySet().toArray()[i];
+             Integer maxinValue = sin.get(maxin);
+             System.out.println("inbound = " + maxin + " value " + maxinValue);
+        }
+        for( int i=0; i<4 ; i++)
+        {
+        String maxout = (String)souts.keySet().toArray()[i];
+        Integer maxoutValue = souts.get(maxout);
+        System.out.println("outbound = " + maxout + " value " + maxoutValue);
+        }
+
 
     }
 
@@ -125,7 +187,7 @@ public class WebCrawler {
         }
         if( match(url, "/") > 6 ) return false;
         if (match(url, "\\.") > 5 ) return false;
-        if (match(url, "(\\w+\\.)*(ethz.ch)(\\/w+)*") == 1 ) return true;
+//        if (match(url, "(\\w+\\.)*(ethz.ch)(\\/w+)*") == 1 ) return true;
         return true;
 
 
@@ -143,6 +205,25 @@ public class WebCrawler {
         }
         return i;
 
+    }
+
+
+        public static Map sortByValue(Map map) {
+        List list = new LinkedList(map.entrySet());
+        Collections.sort(list, new Comparator() {
+
+            public int compare(Object o1, Object o2) {
+                return ((Comparable) ((Map.Entry) (o1)).getValue()).compareTo(((Map.Entry) (o2)).getValue());
+            }
+        });
+
+        Map result = new LinkedHashMap();
+        for (Iterator it = list.iterator(); it.hasNext();) {
+            Map.Entry entry = (Map.Entry) it.next();
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        return result;
     }
 
 }
