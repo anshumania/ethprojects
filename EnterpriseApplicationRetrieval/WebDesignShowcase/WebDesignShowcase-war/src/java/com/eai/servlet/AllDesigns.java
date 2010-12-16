@@ -19,6 +19,7 @@ import javax.servlet.http.HttpSession;
  * @author Max
  */
 public class AllDesigns extends HttpServlet {
+
     @EJB
     private SessionFacadeLocal sessionFacade;
 
@@ -27,9 +28,6 @@ public class AllDesigns extends HttpServlet {
 //
 //	@EJB
 //	private DesignSessionLocal designSession;
-
-
-   
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
@@ -38,30 +36,31 @@ public class AllDesigns extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
         try {
-              Collection<DesignBean> allDesigns = sessionFacade.findAllDesigns();
-              Collection<UserBean> users = sessionFacade.findAllUsers();;
-//            Collection<Designs> allDesigns = designSession.findAllDesigns();
+            Collection<DesignBean> allDesigns = sessionFacade.findAllDesigns();
+            Collection<UserBean> users = sessionFacade.findAllUsers();
+
+//          Collection<Designs> allDesigns = designSession.findAllDesigns();
 //			Collection<Users> users = userSession.findAllUsers();
-			RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/allDesigns.jsp");
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/allDesigns.jsp");
 
-			request.setAttribute("allDesigns", allDesigns);
-			request.setAttribute("users", users);
+            request.setAttribute("allDesigns", allDesigns);
+            request.setAttribute("users", users);
 
-                        HttpSession session = request.getSession(false);
-                        if(session != null) {
-                            UserBean user = (UserBean)session.getAttribute("user");
-                            long userID = user.getId();
-                            request.setAttribute("userID", userID);
-                        }
-			dispatcher.forward(request, response);
-        } finally { 
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                UserBean user = (UserBean) session.getAttribute("user");
+                long userID = user.getId();
+                request.setAttribute("userID", userID);
+            }
+            dispatcher.forward(request, response);
+        } finally {
             out.close();
         }
-    } 
+    }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /** 
@@ -73,9 +72,9 @@ public class AllDesigns extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         processRequest(request, response);
-    } 
+    }
 
     /** 
      * Handles the HTTP <code>POST</code> method.
@@ -86,7 +85,7 @@ public class AllDesigns extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         processRequest(request, response);
     }
 
@@ -98,5 +97,4 @@ public class AllDesigns extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
 }
