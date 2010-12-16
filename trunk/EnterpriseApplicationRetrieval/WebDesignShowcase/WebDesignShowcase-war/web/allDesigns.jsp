@@ -46,7 +46,7 @@
                 </table>
 				</center>
 				<p><a href="addDesign.jsp">[+] Add a New Design</a></p>
-				<p><a href="UserDesigns?userID=">Show My Designs</a></p>
+				<p><a href="UserDesigns?userID=${requestScope.userID}">Show My Designs</a></p>
             </div>
             <%@ include file="footer.jspf" %>
         </div>
