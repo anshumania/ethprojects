@@ -15,4 +15,6 @@ public interface LBLocal {
     public void persist(Object entity);
 
     public void remove(Object entity);
+
+    public void merge(Object entity);
 }
