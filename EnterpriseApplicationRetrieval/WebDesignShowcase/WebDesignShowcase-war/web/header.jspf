@@ -5,7 +5,9 @@
         <h2 class="logo"><a href="/WebDesignShowcase-war/">Web Design Showcase</a></h2>
 
         <c:if test="${sessionScope.user != null}" >
-            <b>Welcome ${sessionScope.user.firstname} | <a href="editUser.jsp">Edit Profile</a></b>
-            <b> <a href="Logout">| Logout</a></b>
+            <div id="login-header">
+            <b>Welcome ${sessionScope.user.firstname} | <a href="editUser.jsp">Edit Profile</a>
+            |  <a href="Logout">Logout</a></b>
+            </div>
         </c:if>
     </div>
