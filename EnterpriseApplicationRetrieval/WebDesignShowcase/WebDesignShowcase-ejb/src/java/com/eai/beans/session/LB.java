@@ -100,4 +100,32 @@ public class LB implements LBLocal {
             Logger.getLogger(LB.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    @Override
+    public void merge(Object entity) {
+        try {
+            EntityManager em1;
+            EntityManager em2;
+            utx.begin();
+            em1 = entityManagerEai1.createEntityManager();
+            em1.merge(entity);
+            em2 = entityManagerEai2.createEntityManager();
+            em2.merge(entity);
+            utx.commit();
+        } catch (javax.transaction.RollbackException ex) {
+            Logger.getLogger(LB.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (HeuristicMixedException ex) {
+            Logger.getLogger(LB.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (HeuristicRollbackException ex) {
+            Logger.getLogger(LB.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(LB.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalStateException ex) {
+            Logger.getLogger(LB.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (javax.transaction.NotSupportedException ex) {
+            Logger.getLogger(LB.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SystemException ex) {
+            Logger.getLogger(LB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }

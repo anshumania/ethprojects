@@ -1,9 +1,13 @@
 package com.eai.servlet;
 
 import com.eai.beans.CommentBean;
-import com.eai.beans.DesignBean;
 import com.eai.beans.UserBean;
+import com.eai.beans.entity.Designs;
+import com.eai.beans.entity.Users;
+import com.eai.beans.session.CommentSessionLocal;
+import com.eai.beans.session.DesignSessionLocal;
 import com.eai.beans.session.SessionFacadeLocal;
+import com.eai.beans.session.UserSessionLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -20,13 +24,16 @@ import javax.servlet.http.HttpSession;
  * @author Max
  */
 public class ShowDesign extends HttpServlet {
+
     @EJB
     private SessionFacadeLocal sessionFacade;
+    @EJB
+    private CommentSessionLocal csb;
+    @EJB
+    private DesignSessionLocal dsb;
+    @EJB
+    private UserSessionLocal usb;
 
-//	@EJB
-//	private CommentSessionLocal csb;
-
-   
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
@@ -35,34 +42,35 @@ public class ShowDesign extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
 
         try {
-			HttpSession session = request.getSession(false);
-			
-			if (session != null) {
-				UserBean user = (UserBean)session.getAttribute("user");
-				long userID = user.getId();
-				int designID = Integer.parseInt(request.getParameter("designID"));
-                                DesignBean design = sessionFacade.findDesignByDesignId(designID);
-                                UserBean designUser = sessionFacade.findUserById(design.getUserId());
-                                // get all comments for the design
-                                Collection<CommentBean> c = sessionFacade.findCommentsByDesignId(designID);
-//				Collection<Comments> c = csb.findCommentsByUserIdAndDesignId(userID, designID);
-				RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
+            HttpSession session = request.getSession(false);
 
-				request.setAttribute("design", design);
-                                request.setAttribute("designUser", designUser);
-				request.setAttribute("comments", c);
-                                //session.setAttribute("designID", designID);
-				dispatcher.forward(request, response);
-			}
-        } finally { 
+            if (session != null) {
+                UserBean user = (UserBean) session.getAttribute("user");
+                long userID = user.getId();
+                int designID = Integer.parseInt(request.getParameter("designID"));
+                Designs design = dsb.findDesignByDesignId(designID);
+                Users designUser = usb.findUserById(design.getUserId());
+                // get all comments for the design
+                Collection<CommentBean> c = sessionFacade.findCommentsByDesignId(designID);
+//				Collection<Comments> c = csb.findCommentsByUserIdAndDesignId(userID, designID);
+                RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/showDesign.jsp");
+
+                session.setAttribute("designID", designID);
+
+                request.setAttribute("design", design);
+                request.setAttribute("designUser", designUser);
+                request.setAttribute("comments", c);
+                dispatcher.forward(request, response);
+            }
+        } finally {
             out.close();
         }
-    } 
+    }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /** 
@@ -74,9 +82,9 @@ public class ShowDesign extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         processRequest(request, response);
-    } 
+    }
 
     /** 
      * Handles the HTTP <code>POST</code> method.
@@ -87,7 +95,7 @@ public class ShowDesign extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         processRequest(request, response);
     }
 
@@ -99,5 +107,4 @@ public class ShowDesign extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
 }

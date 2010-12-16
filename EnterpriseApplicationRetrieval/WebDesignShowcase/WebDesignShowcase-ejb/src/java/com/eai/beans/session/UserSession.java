@@ -69,7 +69,7 @@ public class UserSession implements UserSessionLocal {
         user.setLastname(updatedUser.getLastname());
         user.setPassword(updatedUser.getPassword());
 
-        lb.persist(user);
+        lb.merge(user);
 
         return user;
     }
