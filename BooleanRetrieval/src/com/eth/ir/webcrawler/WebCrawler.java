@@ -46,7 +46,7 @@ public class WebCrawler implements Runnable {
         if(null == urlStr)
         {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(2000);
                 urlStr = webSpider.getURLfromWebSpiderQ();
                 if (null == urlStr) {
                     webSpider.issueCrawlingTerminationRequest();
@@ -58,9 +58,14 @@ public class WebCrawler implements Runnable {
         }
 //        int size = webSpider.getURLSetSize();
         
-        if(webSpider.getURLSetSize() < WebSpider.MAX_CAPACITY)
+//        if(webSpider.getURLSetSize() < WebSpider.MAX_CAPACITY)
         {
 //            System.out.println("size="+size);
+
+        //ignore urls outside of eth
+//        if(!(URLSelector.match(urlStr, "(\\w+\\.)*(ethz.ch)(\\/w+)*") == 1))
+//            return;
+
         URLSelector selector = new URLSelector();
         String stream = selector.fetchStreamAsStringromURL(urlStr);
         if(null == stream)
@@ -72,7 +77,12 @@ public class WebCrawler implements Runnable {
         urls = webSpider.getSetIntersection(urls);
         urls = webSpider.addURLSettoSpiderURLSet(urls);
         if(!urls.isEmpty())
-            webSpider.addURLsToWebSpiderQ(urls);
+        {
+            if(webSpider.getURLSetSize() < WebSpider.MAX_CAPACITY)
+                webSpider.addURLsToWebSpiderQ(urls);
+            webSpider.addEdgesToGraph(urlStr,urls);
+        }
+        
         }
     }
 

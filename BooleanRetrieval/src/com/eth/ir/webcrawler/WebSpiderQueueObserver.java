@@ -24,7 +24,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class WebSpiderQueueObserver implements Observer {
 
-    int MAX_THREADS = 15;
+    int MAX_THREADS = 40;
     private Executor exec ;
     static int threadId =0 ;
 
