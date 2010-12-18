@@ -2,228 +2,130 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package com.eth.ir.webcrawler;
 
+import com.sun.crypto.provider.DESCipher;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayDeque;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  *
  * @author ANSHUMAN
  */
-public class WebCrawler {
+public class WebCrawler implements Runnable {
 
-    public static void main(String args[]) {
-        String initial = "http://www.ethz.ch";
-//        String initial = "http://www.rektorat.ethz.ch";
-        Queue<String> sites = new ArrayDeque<String>();
-        sites.add(initial);
-        //for duplicates
-        Set<String> sitesSet = new HashSet<String>();
-        Map<String, Set<String>> sitesGraph = new HashMap<String, Set<String>>();
-        Map<String,Map<String,Integer>> total = new HashMap<String,Map<String,Integer>>();
+    WebSpider webSpider;
+    int webCrawlerId;
 
-        while (!sites.isEmpty()  )// && sitesGraph.size() < 50)
+    WebCrawler(Object webSpider,int webCrawlerId)
+    {
+        // attach this crawler to a webspider
+        this.webCrawlerId = webCrawlerId;
+        this.webSpider = (WebSpider)webSpider;
+    }
+
+    /** functional flow crawlWebsite()
+     *      establish connection
+     *      read stream
+     *      fetch urls
+     *      do acceptance test
+     *      insert in queue
+     **/
+
+    public void crawl()
+    {
+        String urlStr = webSpider.getURLfromWebSpiderQ();
+//        System.out.println( Thread.currentThread().getName() + " crawlerid=" + webCrawlerId + " polled -" + urlStr);
+        if(null == urlStr)
         {
-
-            String urlStr = sites.poll();
-            System.out.println("-----------------------");
-            System.out.println("processing : " + urlStr);
             try {
-
-                URL url = new URL(urlStr);
-                URLConnection site = url.openConnection();
-                site.setConnectTimeout(1000);
-                site.setAllowUserInteraction(false);
-                InputStream is = site.getInputStream();
-                Scanner scanner = new Scanner(is);
-                String text = scanner.useDelimiter("\\A").next();
-
-//                System.out.println(text);
-//                String regexp = "http://(\\w+\\.)*(ethz.ch)(\\/w+)*";
-//                String regexp = "^((http[s]?|ftp):\\/)?\\/?([^:\\/\\s]+)((\\/\\w+)*\\/)([\\w\\-\\.]+[^#?\\s]+)(.*)?(#[\\w\\-]+)?$";
-//                String regexp = "http://(\\w+\\.)*(\\w+)*([\\w\\-\\.]+[^#?\\s]+)";
-
-                String regexp = "href=\\\"(.*?)\\\"";
-                Pattern pattern = Pattern.compile(regexp,Pattern.CASE_INSENSITIVE);
-                Matcher matcher = pattern.matcher(text);
-
-                // first add the url to the map
-                if (!sitesGraph.containsKey(urlStr)) {
-                    sitesGraph.put(urlStr, new HashSet<String>());
+                Thread.sleep(1000);
+                urlStr = webSpider.getURLfromWebSpiderQ();
+                if (null == urlStr) {
+                    webSpider.issueCrawlingTerminationRequest();
+                    return;
                 }
-
-                Set setForThisSite = sitesGraph.get(urlStr);
-
-                while (matcher.find()) {
-                    String w = matcher.group().trim();
-
-                    w=w.substring("href=\"".length(),w.length()-1);
-
-                    
-                    if (acceptable(w)) {
-
-                     if (match(w, "(\\w+\\.)*(ethz.ch)(\\/w+)*") == 1 )
-                     {
-                        if (sitesSet.size() < 10)
-                        {// only fetch 10,000 sites dont add to queue
-                            sites.add(w);
-                            sitesSet.add(w);
-                        }
-                        setForThisSite.add(w);
-
-                        Map<String,Integer> forin =  total.get("in");
-                        if(null == forin)
-                            forin = new HashMap<String, Integer>();
-                        if(!forin.containsKey(w))
-                        {
-                            forin.put(w, 1);
-                        }
-                        else
-                        {
-                            Integer prev = forin.get(w);
-                            forin.put(w, prev+1);
-                        }
-                        total.put("in", forin);
-
-
-                     }
-                     else
-                     {
-                        Map<String,Integer> forout =  total.get("out");
-                        if(null == forout)
-                            forout = new HashMap<String, Integer>();
-                        if(!forout.containsKey(w))
-                        {
-                            forout.put(w, 1);
-                        }
-                        else
-                        {
-                            Integer prev = forout.get(w);
-                            forout.put(w, prev+1);
-                        }
-                        total.put("out", forout);
-
-                     }
-
-                    }
-                }
-                System.out.println("found " + setForThisSite.size() + " links in " + urlStr);
-                System.out.println("current site queue size = " + sites.size());
-                System.out.println("current sitegraph size = " + sitesGraph.size());
-                System.out.println("current sites set size = " + sitesSet.size());
-                System.out.println(setForThisSite);
-                // add set to this current url
-                sitesGraph.put(urlStr, setForThisSite);
-                is.close();
-
-                System.out.println("-----------------------");
-
-            } catch (IOException ex) {
-                Logger.getLogger(WebCrawler.class.getName()).log(Level.INFO, "Could not open {0}", urlStr);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(WebCrawler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-//        System.out.println(sitesGraph.size());
-        Map<String,Integer> outs = total.get("out");
-        Map<String,Integer> in = total.get("in");
-        Map<String,Integer> sin  = sortByValue(in);
-        Map<String,Integer> souts = sortByValue(outs);
-        System.out.println("souts " + souts);
-        System.out.println("sin " + sin);
-
-        System.out.println("total number of nodes = " + sitesGraph.size());
-        int numberOfedges = 0;
-        for(Map.Entry<String,Set<String>> iter : sitesGraph.entrySet())
+//        int size = webSpider.getURLSetSize();
+        
+        if(webSpider.getURLSetSize() < WebSpider.MAX_CAPACITY)
         {
-            numberOfedges += iter.getValue().size();
-        }
-        System.out.println("total number of edges =" + numberOfedges);
-
-        for (int i=0;i<4;i++)
+//            System.out.println("size="+size);
+        URLSelector selector = new URLSelector();
+        String stream = selector.fetchStreamAsStringromURL(urlStr);
+        if(null == stream)
         {
-             String maxin = (String)sin.keySet().toArray()[i];
-             Integer maxinValue = sin.get(maxin);
-             System.out.println("inbound = " + maxin + " value " + maxinValue);
+            System.out.println("could not open " + urlStr);
+            return;
         }
-        for( int i=0; i<4 ; i++)
-        {
-        String maxout = (String)souts.keySet().toArray()[i];
-        Integer maxoutValue = souts.get(maxout);
-        System.out.println("outbound = " + maxout + " value " + maxoutValue);
+        Set<String> urls = selector.fetchURLsFromString(stream);
+        urls = webSpider.getSetIntersection(urls);
+        urls = webSpider.addURLSettoSpiderURLSet(urls);
+        if(!urls.isEmpty())
+            webSpider.addURLsToWebSpiderQ(urls);
         }
-
-
     }
 
-    public static boolean acceptable(String url) {
-        if(!url.contains("http://")) return false;
-        if (url.length() > 50) {
-            return false;
-        }
-        if (url.endsWith("jpg") || url.endsWith("jpeg") || url.endsWith("gif")
-                || url.endsWith("xls") || url.endsWith("css") || url.endsWith("pdf")
-                || url.endsWith("dtd") || url.endsWith("ppt") || url.endsWith("js")
-                || url.endsWith("ps") || url.endsWith("png") || url.endsWith("zexp")) {
-            return false;
-        }
-        if( match(url, "/") > 6 ) return false;
-        if (match(url, "\\.") > 5 ) return false;
-//        if (match(url, "(\\w+\\.)*(ethz.ch)(\\/w+)*") == 1 ) return true;
-        return true;
-
-
-    }
-
-    public static int match(String url, String regex) {
-
-
-        String nohttp = url.substring("http://".length(), url.length());
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(nohttp);
-        int i = 0;
-        while (matcher.find()) {
-            i++;
-        }
-        return i;
-
-    }
-
-
-        public static Map sortByValue(Map map) {
-        List list = new LinkedList(map.entrySet());
-        Collections.sort(list, new Comparator() {
-
-            public int compare(Object o1, Object o2) {
-                return ((Comparable) ((Map.Entry) (o1)).getValue()).compareTo(((Map.Entry) (o2)).getValue());
+    public void crawl2() {
+//        try {
+            String urlStr = webSpider.getURLfromWebSpiderQ();
+            int vals = WebSpider.getDummyValue();
+//            System.out.println( Thread.currentThread().getName() + "polled -" + urlStr);
+            if(null == urlStr)
+            {
+            try {
+                Thread.sleep(10000);
+                // try again
+                urlStr = webSpider.getURLfromWebSpiderQ();
+                if(null == urlStr)
+                {
+//                    System.out.println("now urlStr is null");
+                    webSpider.issueCrawlingTerminationRequest();
+                    return;
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(WebCrawler.class.getName()).log(Level.SEVERE, null, ex);
             }
-        });
+            }
+//
+//            if(vals == 0)
+//            {
+//                System.out.println("now vals is 0 ; simply return");
+//                return;
+//            }
+            for(int i=0;i<vals;i++)
+                webSpider.addURLToWebSpiderQ("web["+webCrawlerId+"]some["+i+"]");
 
-        Map result = new LinkedHashMap();
-        for (Iterator it = list.iterator(); it.hasNext();) {
-            Map.Entry entry = (Map.Entry) it.next();
-            result.put(entry.getKey(), entry.getValue());
-        }
+//            System.out.println("added for thread " + webCrawlerId);
+            
 
-        return result;
+
+//            URL url = new URL(urlStr);
+//            URLConnection site = url.openConnection();
+//            site.setConnectTimeout(1000);
+//            site.setAllowUserInteraction(false);
+//            InputStream is = site.getInputStream();
+//            Scanner scanner = new Scanner(is);
+//        } catch (IOException ex) {
+//            Logger.getLogger(WebSpider.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
+    public void run() {
+//        throw new UnsupportedOperationException("Not supported yet.");
+        crawl();
+//        System.out.println("returning Thread [" + webCrawlerId + "]");
+//        System.out.println("returning [" + Thread.currentThread().getName() + "]");
+        
+    }
 }
